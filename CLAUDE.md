@@ -10,29 +10,50 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 
 ## Project Status
 
-**Through Phase 2A.** Data pipeline, synthetic votes, feature extraction, and clustering are implemented.
+**Through Phase 2B.** Data pipeline, synthetic votes, feature extraction, and full-scale clustering are complete. All 12,217 thumbnails downloaded, all features extracted, all clustering done.
 
 ### What exists
 
 | Layer | Status |
 |---|---|
-| Extract / parse / load pipeline | Working — metadata, images, vote manifest |
+| Extract / parse / load pipeline | Working — metadata, images (concurrent downloader), vote manifest |
 | Warehouse (`D:/artemis/warehouse.duckdb`) | `dim_image` 12,736 rows, `dim_category` 8, synthetic voters/votes populated |
-| Feature extraction | `features/visual.py` (Pillow), `features/embeddings.py` (CLIP 512-dim + sentence-transformers 384-dim), `features/text_features.py` (VADER, TF-IDF, entities) |
-| Clustering | `cluster/clustering.py` (k-means, HDBSCAN), `cluster/marts.py` (summary + top images) |
+| Thumbnails | **All 12,217** vote-pool thumbnails downloaded to `D:/artemis/raw/images/thumbs/` |
+| Feature extraction | `features/visual.py` (Pillow, parallel), `features/embeddings.py` (CLIP 512-dim + sentence-transformers 384-dim), `features/text_features.py` (VADER, TF-IDF, entities) |
+| Clustering | `cluster/clustering.py` (k-means, HDBSCAN), `cluster/marts.py` (summary + top images). Full-scale k=25 clustering complete: visual (12,217), text (502), multimodal (12,217) |
 | CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `run-all` |
 | Tests | 52 passing (pytest), ruff clean |
 
-### Data gap
+### Current data state
 
-Only **5 of 12,217** vote-pool images have downloaded thumbnails. Feature extraction and clustering ran on this tiny sample. The next step is downloading all thumbnails from the R2 CDN before re-running feature extraction at scale.
+| Table | Rows | Notes |
+|---|---|---|
+| `dim_image` | 12,736 | 12,217 vote-pool + 519 editorial |
+| `feature_image_visual` | 12,217 | Brightness, contrast, saturation, dominant colors |
+| `feature_image_embedding` | 12,217 | CLIP 512-dim vectors |
+| `feature_description_embedding` | 502 | Sentence-transformer 384-dim (editorial images with text only) |
+| `feature_description_text` | 502 | VADER sentiment, TF-IDF topics, entity flags |
+| `feature_image_cluster` | 24,936 | 3 cluster types x ~12K/502 images each |
+| `mart_image_cluster_summary` | 75 | 25 clusters x 3 types |
+| `mart_cluster_top_images` | 369 | Top 5 per cluster x 3 types |
+
+### Two image populations in dim_image
+
+| Population | image_sk range | Count | vote_pool | Has thumbnails | Has titles/descriptions |
+|---|---|---|---|---|---|
+| Editorial (NASA press) | 13256–13774 | 519 | false | No | 502 yes |
+| Mission photos (ART002-E-*) | 13775–25991 | 12,217 | true | Yes (all) | No |
+
+Vote-pool images have CLIP embeddings but no text metadata. Editorial images have text but no thumbnails. This is why text embeddings cover only 502 images and multimodal clustering zero-fills text for the 12,217 vote-pool images.
 
 ### Design documents
 
+- `docs/calendar_design.md` — Calendar product spec (13-month layout, page layout, cover selection)
 - `docs/pdr.md` — Physical Design Review: full data model, pipeline architecture, warehouse schema, statistical methods, acceptance criteria
 - `docs/pdr_revisions.md` — Addenda: archive/refresh pipeline, clustering design, month/cover scoring, lessons-learned registry, Pipeline Explorer
 - `docs/synthetic_vote_pdr.md` — Synthetic voter data generator design for bias detection testing
 - `docs/feature_extraction_plan.md` — Phase 2A plan (all 5 phases completed)
+- `docs/thumbnail_download_plan.md` — Thumbnail download and full-scale feature extraction plan (all 3 phases completed)
 
 ## Architecture
 
@@ -45,18 +66,42 @@ Package layout under `src/artemis_calendar/`:
 | Module | Status | Purpose |
 |---|---|---|
 | `config/` | Exists | Source manifests, settings, paths, database connection |
-| `extract/` | Exists | Download source pages, manifests, images, vote data |
+| `extract/` | Exists | Download source pages, manifests, images (concurrent), vote data |
 | `parse/` | Exists | Source-specific parsers (timeline, category, leaderboard, vote manifest) |
 | `load/` | Exists | Staging and warehouse loaders |
 | `validate/` | Partial | `checks.py` exists; drift/referential/semantic checks not yet wired |
 | `observe/` | Exists | Run manifests, structured JSON logging |
-| `features/` | Exists | Image/text embeddings, sentiment, visual features |
+| `features/` | Exists | Image/text embeddings, sentiment, visual features (parallel extraction) |
 | `cluster/` | Exists | Visual, text, and multimodal clustering + mart builders |
 | `synthetic/` | Exists | Voter profiles, ground truth, vote generator |
 | `models/` | Not started | Preference scoring (Elo, BTL, Bayesian), reliability models |
 | `optimize/` | Not started | Calendar slate generation and month assignment |
 | `marts/` | Not started | Analytical outputs (beyond cluster marts) |
 | `reports/` | Not started | Review packages |
+
+## Clustering Analysis
+
+### Why k=25?
+
+The k-means clustering uses k=25 clusters for 12,217 images. This number was chosen to balance several competing goals for calendar selection:
+
+**Practical calendar constraint.** The calendar needs 13 images. With 25 clusters, each cluster averages ~489 images. Selecting 1 image from roughly every other cluster gives the calendar guaranteed visual diversity — no two monthly images will come from the same visual neighborhood. If k were smaller (say 10), each cluster would be too broad to distinguish meaningfully different image types. If k were larger (say 100), many clusters would have too few images to offer meaningful choice, and the optimization problem becomes over-constrained.
+
+**Rule of thumb for k-means.** A common heuristic is k ≈ √(n/2). For n=12,217 that gives k ≈ 78, which is an upper bound. For calendar selection we want interpretable, visually distinct groups — not maximum granularity — so we pull k well below this ceiling.
+
+**Cluster size distribution.** The actual distribution ranges from 77 images (smallest) to 1,411 (largest), with a median around 400. This spread is healthy — it means the CLIP embedding space has a few dominant visual themes (likely Earth views and dark space scenes) and many smaller distinctive groupings (crew shots, hardware details, specific orbital perspectives). The large clusters will need sub-sampling during optimization; the small clusters represent rare and potentially high-value diversity.
+
+**Multimodal weighting.** Multimodal clustering uses weights of 0.80 visual / 0.05 text / 0.15 metadata. This is visual-dominant because voters choose by appearance, not captions. The metadata features (brightness, contrast, saturation, aspect ratio) add perceptual signal that CLIP alone may underweight — two images might look similar to CLIP but one is dramatically brighter or more saturated. Text is nearly zero-weighted because only 502 of 12,217 images have text, and those 502 aren't even in the vote pool.
+
+### Three clustering views
+
+| Type | Images | What it captures |
+|---|---|---|
+| **Visual** | 12,217 | Pure CLIP similarity — scene content, composition, color palette |
+| **Text** | 502 | Semantic grouping by caption/description (editorial images only) |
+| **Multimodal** | 12,217 | CLIP + perceptual metadata (brightness, contrast, saturation, aspect ratio) |
+
+The visual and multimodal clusterings cover the full vote pool and are the ones that matter for calendar optimization. Text clustering is informational only — it groups the 502 editorial images by what they depict according to their captions.
 
 ## Source Sites and Download Rules
 
@@ -66,11 +111,8 @@ Three upstream sources serve image data. All permit automated access but require
 
 - **Base URL:** `https://pub-1f1ce68455c0432ea65ac3155a6b2409.r2.dev/thumbs/{guid}.jpg`
 - **robots.txt:** No robots.txt (404). Cloudflare R2 public bucket.
-- **Rate limit headers:** None returned. No `Retry-After`, no `X-RateLimit-*`.
-- **Observed behavior:** Cloudflare-fronted, SEA edge. No throttling detected at 10 req/s in small tests.
-- **Our rate limit:** `RATE_LIMIT_R2_CDN = 0.1s` (10/sec) in `config/settings.py`. This is aggressive for 12K images — consider raising to 0.2–0.5s for sustained bulk download to avoid triggering Cloudflare bot detection.
-- **Thumbnail size:** ~20 KB avg. Total for 12,217 images: ~234 MB.
-- **Estimated time at 0.1s:** ~20 min. At 0.25s: ~50 min.
+- **Our approach:** Concurrent download with 3 workers, shared `httpx.Client` with HTTP/2 and connection pooling. No per-request delay. All 12,217 thumbnails downloaded successfully (0 failures, ~2.7 min).
+- **Thumbnail size:** ~20 KB avg. Total: ~234 MB.
 
 ### NASA JSC — Full-Resolution Images
 
@@ -88,13 +130,6 @@ Three upstream sources serve image data. All permit automated access but require
 - **API:** Cloudflare Workers at `photovote-api.hankmt.workers.dev` (leaderboard, elo-top, count endpoints). No documented rate limits, but these are lightweight JSON endpoints on a free-tier worker — keep requests sparse.
 - **Manifest:** `vote/manifest.json` (12,217 items) already archived at `D:/artemis/raw/artemistimeline/vote_manifest/`.
 
-### Download Strategy
-
-1. **Thumbnails first.** Download all 12,217 thumbnails from R2 CDN. This unblocks visual feature extraction, CLIP embeddings, and clustering at full scale.
-2. **Full images deferred.** Only needed for Phase C4 (page rendering). ~7 GB download at 1 req/s = ~3.4 hours from NASA. Not urgent.
-3. **Use `--limit` for incremental runs.** Download in batches (e.g., `--limit 1000`) to monitor progress and catch failures early.
-4. **Existing code handles resume.** `collect-images` skips images already on disk and updates `thumb_downloaded` flags. Safe to re-run.
-
 ## Key Design Decisions
 
 - **Immutable raw archive**: Every source snapshot preserved with content hash, never modified after capture
@@ -103,6 +138,9 @@ Three upstream sources serve image data. All permit automated access but require
 - **Dual operating modes**: Full raw-vote mode (if data is provided) and aggregate-only fallback mode
 - **Calendar as portfolio optimization**: Multi-objective function balancing preference, diversity, month fit, cover fit, mission coverage, minus redundancy/uncertainty penalties
 - **13-image calendar**: Cover image must be one of the 13 monthly images, selected by composite popularity + cover suitability score
+- **Visual-dominant clustering**: Multimodal weights 0.80 visual / 0.05 text / 0.15 metadata — voters choose by appearance, text is optional and sparse
+- **Concurrent downloads**: Thumbnail downloader uses `ThreadPoolExecutor` with shared `httpx.Client` (HTTP/2, connection pooling) and batch DB updates
+- **Fast visual features**: Pillow quantize for dominant colors (~0.2ms/image) instead of sklearn KMeans (~147ms/image)
 
 ## Data Model Conventions
 
@@ -128,8 +166,8 @@ Three upstream sources serve image data. All permit automated access but require
 | **Phase 1A** | Done | Extract → parse → load → validate → observe pipeline |
 | **Phase 2** | Done (synthetic) | Voter surrogates, batch/pairwise/category fact tables (100 synthetic voters) |
 | **Phase 2A** | Done | Feature extraction (visual, CLIP, text) + clustering (k-means, HDBSCAN) |
-| **Thumbnail download** | **Next** | Download 12,212 remaining thumbnails, then re-run feature extraction at scale |
-| **Phase 3** | Not started | Statistical modeling (Elo, BTL, Bayesian scores, reliability) |
+| **Phase 2B** | Done | Full-scale: all thumbnails downloaded, features extracted, k=25 clustering complete |
+| **Phase 3** | **Next** | Statistical modeling (Elo, BTL, Bayesian scores, reliability) |
 | **Phase 4** | Not started | Calendar optimization (objective function, month/cover scoring, candidate generation) |
 | **Phase 5** | Not started | Learning and publication package |
 | **C1–C5** | Not started | Calendar rendering: selection, month assignment, cover, 8.5x11 PDF/PNG, review |
