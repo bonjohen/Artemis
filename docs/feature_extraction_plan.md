@@ -89,7 +89,7 @@ Open  -->  Started  -->  Completed
 | 3.5    | Completed | 2026-05-07 12:28 PM | 2026-05-07 12:32 PM | Add embedding and text feature tests to `tests/test_features.py` — sentiment, entities, topics, hash functions, dimension constants. 16 new tests. |
 | 3.6    | Completed | 2026-05-07 12:32 PM | 2026-05-07 12:35 PM | Verified on real warehouse: 5 CLIP embeddings (512-dim), 10 text embeddings (384-dim), 10 text features with sentiment/entities |
 | 3.7    | Completed | 2026-05-07 12:35 PM | 2026-05-07 12:36 PM | `ruff check src/ tests/` and `pytest` — both clean (43 tests pass) |
-| 3.8    | Started | 2026-05-07 12:36 PM |                  | Stage and commit |
+| 3.8    | Completed | 2026-05-07 12:36 PM | 2026-05-07 12:37 PM | Stage and commit |
 
 ### Phase 3 Summary
 
@@ -104,18 +104,18 @@ Open  -->  Started  -->  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 4.1    | Open   |               |                  | Create `src/artemis_calendar/cluster/__init__.py` |
-| 4.2    | Open   |               |                  | Create `src/artemis_calendar/cluster/clustering.py` — load embeddings from DuckDB as numpy arrays. Implement k-means (scikit-learn) and HDBSCAN. Visual clustering on CLIP vectors. Text clustering on sentence-transformer vectors. Multimodal: L2-normalize each vector, concatenate with weights (visual 0.60, text 0.30, metadata features 0.10), then cluster. Write `feature_image_cluster` with cluster_run_id, distances. |
-| 4.3    | Open   |               |                  | Create `src/artemis_calendar/cluster/marts.py` — SQL-based builders. `mart_image_cluster_summary`: image_count, top_image_sk (min distance_to_centroid), mean_sentiment_score from feature_description_text. Score columns (preference, elo, borda) = NULL. `mart_cluster_top_images`: rank by distance_to_centroid within cluster, score columns NULL. |
-| 4.4    | Open   |               |                  | Add `run-clustering` CLI subcommand with `--algorithm` (kmeans|hdbscan), `--cluster-type` (visual|text|multimodal|all), `--n-clusters` (default 25), `--seed`. |
-| 4.5    | Open   |               |                  | Create `tests/test_clustering.py` — generate small random embedding matrices, verify cluster assignments are complete (every image assigned), reproducible (same seed = same result), and mart tables populated. |
-| 4.6    | Open   |               |                  | Run full sequence: `extract-visual`, `extract-embeddings --limit 50`, `run-clustering --cluster-type all` and verify end-to-end |
-| 4.7    | Open   |               |                  | `ruff check src/ tests/` and `pytest` — both clean |
-| 4.8    | Open   |               |                  | Stage and commit |
+| 4.1    | Completed | 2026-05-07 12:38 PM | 2026-05-07 12:38 PM | Create `src/artemis_calendar/cluster/__init__.py` |
+| 4.2    | Completed | 2026-05-07 12:38 PM | 2026-05-07 12:44 PM | Create `src/artemis_calendar/cluster/clustering.py` — k-means + HDBSCAN, visual/text/multimodal clustering with weighted concatenation (0.60/0.30/0.10) |
+| 4.3    | Completed | 2026-05-07 12:44 PM | 2026-05-07 12:48 PM | Create `src/artemis_calendar/cluster/marts.py` — cluster summary and top-images builders. Worked around DuckDB ROW_NUMBER + composite PK binding bug. |
+| 4.4    | Completed | 2026-05-07 12:48 PM | 2026-05-07 12:50 PM | Add `run-clustering` CLI subcommand with `--algorithm`, `--cluster-type`, `--n-clusters`, `--seed` |
+| 4.5    | Completed | 2026-05-07 12:50 PM | 2026-05-07 12:54 PM | Create `tests/test_clustering.py` — 9 tests: k-means basics, HDBSCAN, integration with in-memory DB, mart population, reproducibility |
+| 4.6    | Completed | 2026-05-07 12:54 PM | 2026-05-07 12:56 PM | Verified on real warehouse: 5 visual, 10 text clusters (multimodal=0 due to non-overlapping image sets with partial data) |
+| 4.7    | Completed | 2026-05-07 12:56 PM | 2026-05-07 12:57 PM | `ruff check src/ tests/` and `pytest` — both clean (52 tests pass) |
+| 4.8    | Started | 2026-05-07 12:57 PM |                  | Stage and commit |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `cluster/__init__.py`, `cluster/clustering.py` (k-means + HDBSCAN, visual/text/multimodal weighted clustering), `cluster/marts.py` (cluster summary + top images builders). Added `run-clustering` CLI. Created `tests/test_clustering.py` (9 tests). Worked around DuckDB composite PK + ROW_NUMBER binding bug.
 - **Changes hosted at:** TBD
 - **Commit:** `Add visual/text/multimodal clustering with mart tables`
 

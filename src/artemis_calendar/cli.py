@@ -130,6 +130,33 @@ def cmd_extract_embeddings(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_run_clustering(args: argparse.Namespace) -> None:
+    from artemis_calendar.cluster.clustering import run_clustering
+    from artemis_calendar.cluster.marts import build_cluster_summary, build_cluster_top_images
+
+    conn = get_connection()
+    apply_migrations(conn)
+    results = run_clustering(
+        conn,
+        algorithm=args.algorithm,
+        cluster_type=args.cluster_type,
+        n_clusters=args.n_clusters,
+        seed=args.seed,
+    )
+    logger.info(f"Clustering results: {results}")
+
+    # Build mart tables for the most recent run
+    run_ids = conn.execute(
+        "SELECT DISTINCT cluster_run_id FROM feature_image_cluster ORDER BY cluster_run_id DESC LIMIT 1"
+    ).fetchall()
+    if run_ids:
+        run_id = run_ids[0][0]
+        build_cluster_summary(conn, run_id)
+        build_cluster_top_images(conn, run_id)
+
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -188,6 +215,14 @@ def main() -> None:
     extract_emb.add_argument("--image-only", action="store_true", help="Only generate image embeddings")
     extract_emb.add_argument("--text-only", action="store_true", help="Only generate text embeddings and features")
 
+    cluster = sub.add_parser("run-clustering", help="Run clustering on embeddings")
+    cluster.add_argument("--algorithm", choices=["kmeans", "hdbscan"], default="kmeans", help="Clustering algorithm")
+    cluster.add_argument(
+        "--cluster-type", choices=["visual", "text", "multimodal", "all"], default="all", help="Type to cluster"
+    )
+    cluster.add_argument("--n-clusters", type=int, default=25, help="Number of clusters (k-means only)")
+    cluster.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -202,6 +237,7 @@ def main() -> None:
         "generate-votes": cmd_generate_votes,
         "extract-visual": cmd_extract_visual,
         "extract-embeddings": cmd_extract_embeddings,
+        "run-clustering": cmd_run_clustering,
         "run-all": cmd_run_all,
     }
 
