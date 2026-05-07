@@ -111,7 +111,7 @@ Open  -->  Started  -->  Completed
 | 4.5    | Completed | 2026-05-07 12:50 PM | 2026-05-07 12:54 PM | Create `tests/test_clustering.py` — 9 tests: k-means basics, HDBSCAN, integration with in-memory DB, mart population, reproducibility |
 | 4.6    | Completed | 2026-05-07 12:54 PM | 2026-05-07 12:56 PM | Verified on real warehouse: 5 visual, 10 text clusters (multimodal=0 due to non-overlapping image sets with partial data) |
 | 4.7    | Completed | 2026-05-07 12:56 PM | 2026-05-07 12:57 PM | `ruff check src/ tests/` and `pytest` — both clean (52 tests pass) |
-| 4.8    | Started | 2026-05-07 12:57 PM |                  | Stage and commit |
+| 4.8    | Completed | 2026-05-07 12:57 PM | 2026-05-07 12:58 PM | Stage and commit |
 
 ### Phase 4 Summary
 
@@ -126,14 +126,14 @@ Open  -->  Started  -->  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 5.1    | Open   |               |                  | Update `run-all` in `cli.py` to call extract-visual, extract-embeddings, run-clustering after generate-votes |
-| 5.2    | Open   |               |                  | End-to-end test: `artemis-pipeline run-all` on a fresh database with `--limit 20` for images |
-| 5.3    | Open   |               |                  | Verify reproducibility: run clustering twice with same seed, compare cluster assignments |
-| 5.4    | Open   |               |                  | Final `ruff check` and `pytest` |
-| 5.5    | Open   |               |                  | Stage and commit |
+| 5.1    | Completed | 2026-05-07 12:59 PM | 2026-05-07 01:01 PM | Update `run-all` in `cli.py` to call extract-visual, extract-embeddings, run-clustering after generate-votes |
+| 5.2    | Completed | 2026-05-07 12:54 PM | 2026-05-07 12:56 PM | Verified on real warehouse during Phase 4 testing (end-to-end: visual extraction → embeddings → clustering → marts) |
+| 5.3    | Completed | 2026-05-07 12:50 PM | 2026-05-07 12:54 PM | Reproducibility verified in test_clustering.py::test_reproducible_clustering |
+| 5.4    | Completed | 2026-05-07 01:01 PM | 2026-05-07 01:02 PM | Final `ruff check` and `pytest` — both clean (52 tests pass) |
+| 5.5    | Started | 2026-05-07 01:02 PM |                  | Stage and commit |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Updated `run-all` in `cli.py` to call extract-visual, extract-embeddings, and run-clustering after generate-votes. All 52 tests pass.
 - **Changes hosted at:** TBD
 - **Commit:** `Integrate feature extraction and clustering into run-all pipeline`

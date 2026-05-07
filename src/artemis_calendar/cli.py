@@ -177,6 +177,22 @@ def cmd_run_all(args: argparse.Namespace) -> None:
     fake_args.rankings = 250
     cmd_generate_votes(fake_args)
 
+    # Feature extraction
+    fake_args.limit = None
+    fake_args.batch_size = 100
+    cmd_extract_visual(fake_args)
+
+    fake_args.batch_size = 32
+    fake_args.image_only = False
+    fake_args.text_only = False
+    cmd_extract_embeddings(fake_args)
+
+    # Clustering
+    fake_args.algorithm = "kmeans"
+    fake_args.cluster_type = "all"
+    fake_args.n_clusters = 25
+    cmd_run_clustering(fake_args)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
