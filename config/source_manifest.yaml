@@ -1,0 +1,42 @@
+sources:
+  - source_name: timeline_photos_js
+    source_type: metadata
+    source_url: https://artemistimeline.com/photos.js
+    expected_format: js
+    refresh_frequency: weekly
+    notes: "220 curated timeline photos — JS file wrapping PHOTO_DATA object"
+
+  - source_name: vote_manifest
+    source_type: manifest
+    source_url: https://artemistimeline.com/vote/manifest.json
+    expected_format: json
+    refresh_frequency: weekly
+    notes: "~1500+ image GUIDs in voting pool with NASA links"
+
+  - source_name: category_index
+    source_type: manifest
+    source_url: https://artemistimeline.com/vote/c/index.json
+    expected_format: json
+    refresh_frequency: weekly
+    notes: "8 voting categories with image counts totaling ~6,584"
+
+  - source_name: leaderboard_batch
+    source_type: leaderboard
+    source_url: https://photovote-api.hankmt.workers.dev/top
+    expected_format: api_json
+    refresh_frequency: daily
+    notes: "Top 50 by selection rate (guid, picks, shown, rate, wilson)"
+
+  - source_name: leaderboard_elo
+    source_type: leaderboard
+    source_url: https://photovote-api.hankmt.workers.dev/elo-top
+    expected_format: api_json
+    refresh_frequency: daily
+    notes: "Top 50 by Elo (guid, elo, wins, losses)"
+
+  - source_name: vote_counts
+    source_type: api
+    source_url: https://photovote-api.hankmt.workers.dev/count
+    expected_format: api_json
+    refresh_frequency: daily
+    notes: "Aggregate totals: ballot count, unique photos picked"
