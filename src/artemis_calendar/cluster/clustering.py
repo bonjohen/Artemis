@@ -12,10 +12,11 @@ from artemis_calendar.observe.run_manifest import create_run_record, generate_ru
 
 logger = get_logger("artemis.cluster")
 
-# Multimodal concatenation weights
-WEIGHT_VISUAL = 0.60
-WEIGHT_TEXT = 0.30
-WEIGHT_METADATA = 0.10
+# Multimodal concatenation weights — visual-dominant because voters choose by
+# appearance, not text.  Text is optional (most vote-pool images have none).
+WEIGHT_VISUAL = 0.80
+WEIGHT_TEXT = 0.05
+WEIGHT_METADATA = 0.15
 
 
 def _load_embeddings(
@@ -174,32 +175,46 @@ def run_clustering(
         elif ctype == "text":
             image_sks, vectors = _load_embeddings(conn, "feature_description_embedding", "all-MiniLM-L6-v2")
         elif ctype == "multimodal":
+            # Visual-first multimodal: CLIP embeddings are the backbone,
+            # metadata features (brightness, contrast, saturation, aspect ratio)
+            # add perceptual signal, and text is blended in only where available.
+            # This reflects how voters actually choose — by appearance.
             vis_sks, vis_vectors = _load_embeddings(conn, "feature_image_embedding", "openai/clip-vit-base-patch32")
-            txt_sks, txt_vectors = _load_embeddings(conn, "feature_description_embedding", "all-MiniLM-L6-v2")
-
-            # Find common image_sks
-            common_sks = sorted(set(vis_sks) & set(txt_sks))
-            if not common_sks:
-                logger.warning("No common images for multimodal clustering")
+            if not vis_sks:
+                logger.warning("No CLIP embeddings for multimodal clustering")
                 results[ctype] = 0
                 continue
 
-            vis_map = dict(zip(vis_sks, vis_vectors, strict=True))
-            txt_map = dict(zip(txt_sks, txt_vectors, strict=True))
-
-            vis_arr = normalize(np.array([vis_map[sk] for sk in common_sks], dtype=np.float32))
-            txt_arr = normalize(np.array([txt_map[sk] for sk in common_sks], dtype=np.float32))
-            meta_arr = normalize(_load_metadata_features(conn, common_sks))
-
-            # Handle zero-norm rows in metadata (all zeros → normalize produces nan)
+            image_sks = vis_sks
+            vis_arr = normalize(np.array(vis_vectors, dtype=np.float32))
+            meta_arr = normalize(_load_metadata_features(conn, image_sks))
             meta_arr = np.nan_to_num(meta_arr, nan=0.0)
+
+            # Text is optional — zero-fill for images without text embeddings
+            txt_sks, txt_vectors = _load_embeddings(conn, "feature_description_embedding", "all-MiniLM-L6-v2")
+            txt_map = dict(zip(txt_sks, txt_vectors, strict=True))
+            txt_dim = txt_vectors.shape[1] if len(txt_vectors) > 0 else 384
+            txt_rows = []
+            for sk in image_sks:
+                if sk in txt_map:
+                    txt_rows.append(txt_map[sk])
+                else:
+                    txt_rows.append(np.zeros(txt_dim, dtype=np.float32))
+            txt_arr = normalize(np.array(txt_rows, dtype=np.float32))
+            txt_arr = np.nan_to_num(txt_arr, nan=0.0)
+
+            n_with_text = sum(1 for sk in image_sks if sk in txt_map)
+            logger.info(
+                f"Multimodal: {len(image_sks)} images, "
+                f"{n_with_text} with text embeddings, "
+                f"weights visual={WEIGHT_VISUAL} text={WEIGHT_TEXT} meta={WEIGHT_METADATA}"
+            )
 
             vectors = np.hstack([
                 vis_arr * WEIGHT_VISUAL,
                 txt_arr * WEIGHT_TEXT,
                 meta_arr * WEIGHT_METADATA,
             ])
-            image_sks = common_sks
         else:
             logger.warning(f"Unknown cluster type: {ctype}")
             continue
