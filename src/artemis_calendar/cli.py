@@ -157,6 +157,16 @@ def cmd_run_clustering(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_compute_scores(args: argparse.Namespace) -> None:
+    from artemis_calendar.models import compute_preference_scores
+
+    conn = get_connection()
+    apply_migrations(conn)
+    counts = compute_preference_scores(conn)
+    logger.info(f"Scoring complete: {counts}")
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -192,6 +202,9 @@ def cmd_run_all(args: argparse.Namespace) -> None:
     fake_args.cluster_type = "all"
     fake_args.n_clusters = 25
     cmd_run_clustering(fake_args)
+
+    # Statistical modeling
+    cmd_compute_scores(fake_args)
 
 
 def main() -> None:
@@ -239,6 +252,8 @@ def main() -> None:
     cluster.add_argument("--n-clusters", type=int, default=25, help="Number of clusters (k-means only)")
     cluster.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
 
+    sub.add_parser("compute-scores", help="Compute preference scores from vote data")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -254,6 +269,7 @@ def main() -> None:
         "extract-visual": cmd_extract_visual,
         "extract-embeddings": cmd_extract_embeddings,
         "run-clustering": cmd_run_clustering,
+        "compute-scores": cmd_compute_scores,
         "run-all": cmd_run_all,
     }
 
