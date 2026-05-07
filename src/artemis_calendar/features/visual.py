@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from itertools import batched
 from pathlib import Path
 
 import duckdb
@@ -16,6 +18,8 @@ from artemis_calendar.observe.run_manifest import create_run_record, generate_ru
 logger = get_logger("artemis.features.visual")
 
 THUMB_DIR = RAW_ROOT / "images" / "thumbs"
+FEATURE_WORKERS = 4
+PROGRESS_EVERY = 1000
 
 
 def _compute_orientation(width: int, height: int) -> str:
@@ -49,30 +53,27 @@ def _compute_saturation(img: Image.Image) -> float:
 
 
 def _compute_dominant_colors(img: Image.Image, k: int = 5) -> list[dict]:
-    """K-means clustering on downsampled pixel colors. Returns k dominant colors."""
-    from sklearn.cluster import KMeans
-
-    # Downsample for speed
+    """Pillow quantize for dominant colors — ~0.2ms vs 147ms for sklearn KMeans."""
     small = img.copy()
     small.thumbnail((100, 100))
-    pixels = np.array(small.convert("RGB")).reshape(-1, 3).astype(np.float64)
+    small_rgb = small.convert("RGB")
+    q = small_rgb.quantize(colors=k, method=Image.Quantize.MEDIANCUT)
+    palette = q.getpalette()
+    hist = q.histogram()
 
-    kmeans = KMeans(n_clusters=min(k, len(pixels)), random_state=42, n_init=3)
-    kmeans.fit(pixels)
-
-    # Sort by cluster size descending
-    labels, counts = np.unique(kmeans.labels_, return_counts=True)
-    order = np.argsort(-counts)
+    n_colors = max(idx for idx, v in enumerate(hist) if v > 0) + 1
+    color_counts = [(hist[i], i) for i in range(n_colors) if hist[i] > 0]
+    color_counts.sort(key=lambda x: -x[0])
+    total = sum(c[0] for c in color_counts)
 
     colors = []
-    total = len(pixels)
-    for idx in order:
-        center = kmeans.cluster_centers_[labels[idx]]
+    for count, idx in color_counts[:k]:
+        r, g, b = palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]
         colors.append({
-            "r": int(round(center[0])),
-            "g": int(round(center[1])),
-            "b": int(round(center[2])),
-            "proportion": round(float(counts[idx]) / total, 4),
+            "r": r,
+            "g": g,
+            "b": b,
+            "proportion": round(count / total, 4),
         })
     return colors
 
@@ -80,14 +81,52 @@ def _compute_dominant_colors(img: Image.Image, k: int = 5) -> list[dict]:
 def extract_visual_features_for_image(img: Image.Image) -> dict:
     """Extract all visual features from a PIL Image. Returns a flat dict."""
     width, height = img.size
+
+    # Single LAB conversion for both brightness and contrast
+    lab = img.convert("LAB")
+    l_channel = np.array(lab.split()[0], dtype=np.float64)
+    brightness = float(l_channel.mean() / 255.0)
+    contrast = float(l_channel.std() / 255.0)
+
+    # Saturation from HSV
+    hsv = img.convert("HSV")
+    s_channel = np.array(hsv.split()[1], dtype=np.float64)
+    saturation = float(s_channel.mean() / 255.0)
+
     return {
         "orientation": _compute_orientation(width, height),
         "aspect_ratio": round(width / height, 4),
-        "brightness_score": round(_compute_brightness(img), 4),
-        "contrast_score": round(_compute_contrast(img), 4),
-        "saturation_score": round(_compute_saturation(img), 4),
+        "brightness_score": round(brightness, 4),
+        "contrast_score": round(contrast, 4),
+        "saturation_score": round(saturation, 4),
         "dominant_color_json": json.dumps(_compute_dominant_colors(img)),
     }
+
+
+def _extract_one(image_sk: int, source_image_id: str, run_id: str, tdir: Path) -> tuple | None:
+    """Extract features for one image. Returns INSERT tuple or None on failure."""
+    thumb_path = tdir / f"{source_image_id}.jpg"
+    if not thumb_path.exists():
+        thumb_path = tdir / f"{source_image_id}.JPG"
+    if not thumb_path.exists():
+        return None
+
+    try:
+        img = Image.open(thumb_path)
+        f = extract_visual_features_for_image(img)
+        return (
+            image_sk,
+            run_id,
+            f["orientation"],
+            f["aspect_ratio"],
+            f["brightness_score"],
+            f["contrast_score"],
+            f["saturation_score"],
+            f["dominant_color_json"],
+        )
+    except Exception:
+        logger.exception(f"Failed to extract features for {source_image_id}")
+        return None
 
 
 def extract_visual_features(
@@ -112,7 +151,6 @@ def extract_visual_features(
         source_name="thumbnails",
     )
 
-    # Get images with thumbs that haven't been feature-extracted yet
     query = """
         SELECT di.image_sk, di.source_image_id
         FROM dim_image di
@@ -125,46 +163,38 @@ def extract_visual_features(
     rows = conn.execute(query).fetchall()
     logger.info(f"Found {len(rows)} images to extract visual features for")
 
-    processed = 0
-    for i in range(0, len(rows), batch_size):
-        batch = rows[i : i + batch_size]
-        for image_sk, source_image_id in batch:
-            # Try both .jpg and .JPG extensions
-            thumb_path = tdir / f"{source_image_id}.jpg"
-            if not thumb_path.exists():
-                thumb_path = tdir / f"{source_image_id}.JPG"
-            if not thumb_path.exists():
-                logger.debug(f"No thumbnail for {source_image_id}, skipping")
-                continue
+    if not rows:
+        update_run_status(conn, run_id, row_count_raw=0, row_count_loaded=0, load_status="complete")
+        return 0
 
-            try:
-                img = Image.open(thumb_path)
-                features = extract_visual_features_for_image(img)
-                conn.execute(
-                    """
-                    INSERT INTO feature_image_visual (
-                        image_sk, feature_run_id, orientation, aspect_ratio,
-                        brightness_score, contrast_score, saturation_score,
-                        dominant_color_json
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    [
-                        image_sk,
-                        run_id,
-                        features["orientation"],
-                        features["aspect_ratio"],
-                        features["brightness_score"],
-                        features["contrast_score"],
-                        features["saturation_score"],
-                        features["dominant_color_json"],
-                    ],
-                )
-                processed += 1
-            except Exception:
-                logger.exception(f"Failed to extract features for {source_image_id}")
+    # Extract features in parallel threads
+    results: list[tuple] = []
+    with ThreadPoolExecutor(max_workers=FEATURE_WORKERS) as executor:
+        futures = {
+            executor.submit(_extract_one, image_sk, sid, run_id, tdir): sid
+            for image_sk, sid in rows
+        }
+        for done, future in enumerate(as_completed(futures), 1):
+            row = future.result()
+            if row is not None:
+                results.append(row)
+            if done % PROGRESS_EVERY == 0:
+                logger.info(f"Extracted {done}/{len(rows)} images ({len(results)} ok)")
 
-        logger.info(f"Processed {min(i + batch_size, len(rows))}/{len(rows)} images")
+    # Batch insert all results
+    for chunk in batched(results, 2000):
+        chunk_list = list(chunk)
+        conn.executemany(
+            """
+            INSERT INTO feature_image_visual (
+                image_sk, feature_run_id, orientation, aspect_ratio,
+                brightness_score, contrast_score, saturation_score,
+                dominant_color_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            chunk_list,
+        )
 
-    update_run_status(conn, run_id, row_count_raw=len(rows), row_count_loaded=processed, load_status="complete")
-    logger.info(f"Visual feature extraction complete: {processed}/{len(rows)} images")
-    return processed
+    update_run_status(conn, run_id, row_count_raw=len(rows), row_count_loaded=len(results), load_status="complete")
+    logger.info(f"Visual feature extraction complete: {len(results)}/{len(rows)} images")
+    return len(results)

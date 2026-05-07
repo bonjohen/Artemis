@@ -1,10 +1,14 @@
-"""Image downloader with resume, dedup, and rate limiting."""
+"""Image downloader with resume, dedup, and concurrent downloads."""
 
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from itertools import batched
+from pathlib import Path
 
 import duckdb
+import httpx
 
-from artemis_calendar.config.settings import RATE_LIMIT_NASA, RATE_LIMIT_R2_CDN, RAW_ROOT
+from artemis_calendar.config.settings import RATE_LIMIT_NASA, RAW_ROOT, THUMB_DOWNLOAD_WORKERS
 from artemis_calendar.extract.download import DownloadError, download_artifact
 from artemis_calendar.observe.logging import get_logger
 from artemis_calendar.observe.run_manifest import create_run_record, generate_run_id, update_run_status
@@ -16,6 +20,9 @@ NASA_BASE = "https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ART002"
 
 THUMB_DIR = RAW_ROOT / "images" / "thumbs"
 LARGE_DIR = RAW_ROOT / "images" / "large"
+
+PROGRESS_EVERY = 500
+DB_BATCH_SIZE = 2000
 
 
 def _get_pending_images(
@@ -40,67 +47,126 @@ def _get_pending_images(
     return [row[0] for row in conn.execute(query).fetchall()]
 
 
+def _download_one_thumb(
+    client: httpx.Client, guid: str, dest_dir: Path
+) -> tuple[str, bool, str | None]:
+    """Download a single thumbnail. Returns (guid, success, error_message)."""
+    dest = dest_dir / f"{guid}.jpg"
+    if dest.exists():
+        return (guid, True, None)
+
+    url = f"{R2_BASE}/thumbs/{guid}.jpg"
+    try:
+        resp = client.get(url)
+        resp.raise_for_status()
+        dest.write_bytes(resp.content)
+        return (guid, True, None)
+    except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.ConnectError, OSError) as e:
+        return (guid, False, str(e))
+
+
+def _flush_succeeded(conn: duckdb.DuckDBPyConnection, guids: list[str]) -> None:
+    """Batch-update dim_image for successfully downloaded thumbnails."""
+    for chunk in batched(guids, DB_BATCH_SIZE):
+        chunk_list = list(chunk)
+        conn.execute(
+            "UPDATE dim_image SET thumb_downloaded = true, updated_at = now() "
+            "WHERE source_image_id IN (SELECT unnest($1::VARCHAR[]))",
+            [chunk_list],
+        )
+
+
 def download_thumbnails(
     conn: duckdb.DuckDBPyConnection,
     limit: int | None = None,
-    rate_limit: float = RATE_LIMIT_R2_CDN,
+    rate_limit: float = 0.0,  # kept for CLI compat, unused in concurrent mode
+    workers: int = THUMB_DOWNLOAD_WORKERS,
 ) -> int:
-    """Download thumbnail images from R2 CDN. Returns count of newly downloaded."""
+    """Download thumbnail images from R2 CDN concurrently. Returns count of newly downloaded."""
     THUMB_DIR.mkdir(parents=True, exist_ok=True)
     guids = _get_pending_images(conn, thumbs=True, full=False, limit=limit)
-    logger.info(f"Thumbnails to download: {len(guids)}")
+    if not guids:
+        logger.info("No thumbnails to download.")
+        return 0
 
-    downloaded = 0
-    for guid in guids:
-        dest = THUMB_DIR / f"{guid}.jpg"
-        if dest.exists():
-            # Already on disk — just update the flag
-            conn.execute(
-                "UPDATE dim_image SET thumb_downloaded = true, updated_at = now() WHERE source_image_id = ?",
-                [guid],
-            )
-            continue
+    logger.info(f"Thumbnails to download: {len(guids)} (workers={workers})")
 
-        url = f"{R2_BASE}/thumbs/{guid}.jpg"
-        run_id = generate_run_id()
-        create_run_record(
+    # Single run manifest record for the batch
+    run_id = generate_run_id()
+    create_run_record(
+        conn,
+        run_id=run_id,
+        pipeline_name="collect-images",
+        dataset_name="thumbnail_batch",
+        source_name=f"batch-{len(guids)}",
+        source_url=f"{R2_BASE}/thumbs/",
+    )
+
+    succeeded: list[str] = []
+    failed: list[tuple[str, str]] = []
+
+    try:
+        with (
+            httpx.Client(
+                timeout=20.0,
+                follow_redirects=True,
+                http2=True,
+                limits=httpx.Limits(
+                    max_connections=workers,
+                    max_keepalive_connections=workers,
+                ),
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/131.0.0.0 Safari/537.36"
+                    ),
+                },
+            ) as client,
+            ThreadPoolExecutor(max_workers=workers) as executor,
+        ):
+                futures = {
+                    executor.submit(_download_one_thumb, client, guid, THUMB_DIR): guid
+                    for guid in guids
+                }
+
+                for i, future in enumerate(as_completed(futures), 1):
+                    guid, ok, err = future.result()
+                    if ok:
+                        succeeded.append(guid)
+                    else:
+                        failed.append((guid, err or "unknown"))
+
+                    if i % PROGRESS_EVERY == 0:
+                        logger.info(
+                            f"Progress: {i}/{len(guids)} processed, "
+                            f"{len(succeeded)} ok, {len(failed)} failed"
+                        )
+    finally:
+        # Flush whatever succeeded to DB even on interrupt
+        if succeeded:
+            _flush_succeeded(conn, succeeded)
+            logger.info(f"Flushed {len(succeeded)} successful downloads to DB")
+
+        status = "success" if not failed else "partial"
+        failure_msg = f"{len(failed)} failures" if failed else None
+        update_run_status(
             conn,
-            run_id=run_id,
-            pipeline_name="collect-images",
-            dataset_name="thumbnail",
-            source_name=guid,
-            source_url=url,
+            run_id,
+            row_count_raw=len(succeeded),
+            load_status=status,
+            failure_message=failure_msg,
         )
 
-        try:
-            result = download_artifact(url, timeout=30.0)
-            dest.write_bytes(result.content)
-            conn.execute(
-                "UPDATE dim_image SET thumb_downloaded = true, updated_at = now() WHERE source_image_id = ?",
-                [guid],
-            )
-            update_run_status(
-                conn,
-                run_id,
-                row_count_raw=len(result.content),
-                load_status="success",
-            )
-            conn.execute(
-                "UPDATE run_manifest SET raw_checksum = ?, raw_file_path = ? WHERE run_id = ?",
-                [result.checksum, str(dest), run_id],
-            )
-            downloaded += 1
-            if (downloaded % 50) == 0:
-                logger.info(f"Downloaded {downloaded}/{len(guids)} thumbnails")
-        except DownloadError as e:
-            update_run_status(conn, run_id, load_status="failed", failure_message=str(e))
-            logger.debug(f"Failed thumbnail {guid}: {e}")
+    if failed:
+        logger.warning(f"Failed thumbnails: {len(failed)}")
+        for guid, err in failed[:10]:
+            logger.debug(f"  {guid}: {err}")
+        if len(failed) > 10:
+            logger.debug(f"  ... and {len(failed) - 10} more")
 
-        if rate_limit > 0:
-            time.sleep(rate_limit)
-
-    logger.info(f"Thumbnail download complete: {downloaded} new")
-    return downloaded
+    logger.info(f"Thumbnail download complete: {len(succeeded)} new, {len(failed)} failed")
+    return len(succeeded)
 
 
 def download_full_images(
