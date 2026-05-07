@@ -22,6 +22,15 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
 ]
+ml = [
+    "pillow>=10.0",
+    "torch>=2.0",
+    "transformers>=4.40",
+    "sentence-transformers>=3.0",
+    "scikit-learn>=1.4",
+    "hdbscan>=0.8.33",
+    "nltk>=3.9",
+]
 
 [tool.ruff]
 target-version = "py311"

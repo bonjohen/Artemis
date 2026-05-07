@@ -43,14 +43,14 @@ Open  -->  Started  -->  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 1.1    | Open   |               |                  | Create `migrations/005_create_feature_tables.sql` with `feature_image_visual`, `feature_description_text`, `feature_image_embedding`, `feature_description_embedding`, `feature_image_cluster`, `mart_image_cluster_summary`, `mart_cluster_top_images` |
-| 1.2    | Open   |               |                  | Add `[project.optional-dependencies] ml` to `pyproject.toml` (pillow, torch, transformers, sentence-transformers, scikit-learn, hdbscan, nltk) |
-| 1.3    | Open   |               |                  | Verify `artemis-pipeline migrate` applies 005 cleanly on a fresh DB |
-| 1.4    | Open   |               |                  | Stage and commit |
+| 1.1    | Completed | 2026-05-07 12:00 PM | 2026-05-07 12:02 PM | Create `migrations/005_create_feature_tables.sql` with `feature_image_visual`, `feature_description_text`, `feature_image_embedding`, `feature_description_embedding`, `feature_image_cluster`, `mart_image_cluster_summary`, `mart_cluster_top_images` |
+| 1.2    | Completed | 2026-05-07 12:00 PM | 2026-05-07 12:02 PM | Add `[project.optional-dependencies] ml` to `pyproject.toml` (pillow, torch, transformers, sentence-transformers, scikit-learn, hdbscan, nltk) |
+| 1.3    | Completed | 2026-05-07 12:02 PM | 2026-05-07 12:03 PM | Verify `artemis-pipeline migrate` applies 005 cleanly on a fresh DB |
+| 1.4    | Started | 2026-05-07 12:03 PM |                  | Stage and commit |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `migrations/005_create_feature_tables.sql` (7 tables: feature_image_visual, feature_description_text, feature_image_embedding, feature_description_embedding, feature_image_cluster, mart_image_cluster_summary, mart_cluster_top_images). Added `[project.optional-dependencies] ml` group to `pyproject.toml`.
 - **Changes hosted at:** TBD
 - **Commit:** `Add feature store schema (migration 005) and ML dependency group`
 
