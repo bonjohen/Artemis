@@ -8,6 +8,17 @@ The Artemis pairwise voting mode shows two images side by side and asks "which i
 
 Pairwise comparisons are the strongest form of preference data — voters make a direct choice between two specific alternatives, eliminating the ambiguity of batch voting (where "not selected" could mean "not seen" or "seen but beaten by 5 stronger options"). However, pairwise data only covers a tiny fraction of possible image pairs, so the conversion to scores must be robust to sparsity.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. Had 2,000 pairwise comparison votes (synthetic) across 12,217 images. Each vote is a binary outcome: image A beats image B. Needed to convert these relative comparisons into absolute strength scores.
+2. Evaluated Bradley-Terry-Luce (BTL) first as the theoretically superior model. Discovered that the comparison graph was overwhelmingly disconnected — at most ~4,000 images appear in any comparison, and the remaining 8,000+ are isolated nodes. BTL's MLE requires graph connectivity; it couldn't converge.
+3. Chose standard Elo as the pragmatic alternative. Elo processes comparisons sequentially, assigning a default rating (1500) to first-seen images. It degrades gracefully with disconnection — scores are meaningful within connected components, just not perfectly calibrated across them.
+4. Set K=32 as a moderate K-factor. Higher K (64) would converge faster but amplify noise from synthetic vote patterns. Lower K (16) would be more stable but needs more data to differentiate images.
+5. Processed 2,000 comparisons in database insertion order (mirroring vote submission order). Produced Elo ratings for 394 distinct images. The remaining 11,823 images have NULL Elo scores — honest missing data, not zero.
+6. Elo scores enter the composite formula as a 15% quantile-ranked adjustment to the Beta posterior backbone. The modest weight reflects sparse coverage — only 3.2% of images have Elo data.
+
 ## Design Choice: Standard Elo with K=32
 
 We use the classic **Elo rating system** with K-factor 32 and starting rating 1500.

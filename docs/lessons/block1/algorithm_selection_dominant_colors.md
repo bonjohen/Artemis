@@ -8,6 +8,17 @@ The visual feature extraction pipeline ran sklearn's `KMeans` on every thumbnail
 
 This is a case of reaching for a general-purpose tool (sklearn KMeans) when a domain-specific tool (color quantization) solves the exact same problem orders of magnitude faster. The dominant color problem is literally what image quantization algorithms were designed for — they've been optimized for decades in image processing libraries.
 
+## What Happened
+
+<!-- reconstructed from git history (72a73ef, 9ad5892) and lesson context -->
+
+1. Initial visual feature extraction used sklearn's `KMeans(n_clusters=5)` to find dominant colors in each thumbnail. The code reshaped pixel arrays into an N×3 matrix, ran k-means with 3 random restarts, and extracted centroids as colors. This was mathematically correct and produced good results on test images.
+2. At full scale (12,217 images), dominant color extraction alone consumed ~30 minutes of CPU time. Profiling showed ~147ms per image for `KMeans.fit()` — a single JSON column was the most expensive operation in the entire visual feature pipeline.
+3. Recognized that dominant color extraction is literally the problem that image quantization algorithms were designed for. Color quantization has been optimized in libraries like Pillow for decades, exploiting the constrained 3D RGB space that general-purpose k-means ignores.
+4. Replaced `KMeans` with Pillow's `quantize(colors=5, method=Image.Quantize.MEDIANCUT)`. Benchmarked at 0.2ms per image — a 735x speedup.
+5. Verified output quality: solid-color images produce the expected dominant color, real space photos show black as dominant with >90% proportion. For downstream use (clustering diversity), the perceptual grouping from MEDIANCUT is more than adequate.
+6. Combined with two other fixes in the same commit (single LAB conversion, batch DB inserts), total visual feature extraction went from "killed after running too long" to ~2 minutes for all 12,217 images.
+
 ## The Benchmark
 
 ```python

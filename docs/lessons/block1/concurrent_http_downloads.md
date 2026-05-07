@@ -8,6 +8,17 @@ The original thumbnail downloader processed 12,217 images sequentially. Each dow
 
 Sequential HTTP downloads to a single host is one of the most common performance anti-patterns in data pipelines. The cost isn't just the network latency — it's the repeated connection setup. A TLS 1.3 handshake to Cloudflare takes 50-200ms depending on the client. Multiply that by 12,000 and you've added 10-40 minutes of pure overhead that does nothing useful.
 
+## What Happened
+
+<!-- reconstructed from git history (3234106, 9ad5892) and lesson context -->
+
+1. Built the initial thumbnail downloader as a sequential loop. Each iteration created a new `httpx.Client`, downloaded one image, performed 4 DB operations, and called `time.sleep(0.1)` for rate limiting. Tested on 5 images — worked perfectly in ~2 seconds.
+2. Projected the time for 12,217 images: 20-50 minutes. The dominant cost was not network latency (20KB thumbnails download in ~20-50ms each) but per-image connection overhead — a fresh TLS 1.3 handshake to Cloudflare R2 on every single request.
+3. Redesigned around three independent optimizations: shared `httpx.Client` with HTTP/2 connection pooling (one TLS handshake instead of 12,217), `ThreadPoolExecutor(max_workers=3)` for concurrent I/O, and batch DB updates after all downloads complete.
+4. Chose 3 workers deliberately — respectful of the CDN without being needlessly slow. No rate-limit headers from R2, but 20 concurrent connections risks bot detection on a free public bucket.
+5. Chose `ThreadPoolExecutor` over `asyncio` because the entire codebase is synchronous. Threading parallelizes I/O without requiring an architectural rewrite. Workers do pure network + disk I/O; the main thread handles all DuckDB writes (single-writer constraint).
+6. First run downloaded 7,798 images in 2.7 minutes (~50 images/sec, zero failures). Second run completed the remaining 4,419 images, demonstrating the resume-safe design. Total: 12,217 thumbnails with 0 failures.
+
 ## The Fix
 
 Three changes, each independently valuable but multiplicative together:

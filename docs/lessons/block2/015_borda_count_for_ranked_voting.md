@@ -8,6 +8,17 @@ The Artemis category voting mode asks voters to rank their top 3 images within a
 
 Ranked voting captures more information than binary choice — a voter who ranks image A first, B second, and C third is telling us more than a voter who just picks A. The scoring method determines whether this extra information is preserved or lost.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. Had 250 category ranking submissions (synthetic), each ranking the voter's top 3 images within a category. Needed to convert these partial ordinal rankings into numeric scores that aggregate across voters and combine with batch and pairwise signals.
+2. Considered Plackett-Luce as the probabilistic model for ranked data (analogous to BTL for pairwise). Rejected for the same reason as BTL — requires connectivity in the comparison structure, and with only 250 rankings across 8 categories, coverage is too sparse.
+3. Chose standard Borda count: rank 1 = 3 points, rank 2 = 2 points, rank 3 = 1 point. Simple, transparent, and aggregates naturally by summation.
+4. Decided to use total Borda score (not mean) as the primary metric. An image ranked #1 in 10 submissions (30 points) carries stronger signal than one ranked #1 in 2 submissions (6 points), even though both have mean = 3. Total rewards both high ranking and frequent ranking.
+5. Identified the exposure-set problem: when a voter ranks top 3, we don't know which other images they saw and rejected. Unranked images are treated as missing data, which may slightly overestimate scores for images that were seen but not ranked. No clean fix without logging the full exposure set.
+6. Borda enters the composite formula at 10% weight via quantile rank — the most modest of the three signals. The low weight reflects both the sparse coverage (only 75 images have any Borda score) and the exposure-set uncertainty.
+
 ## Design Choice: Standard Borda Count with 3/2/1 Scoring
 
 ### Key terms

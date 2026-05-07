@@ -10,6 +10,17 @@ Rather than wait, the project generated synthetic vote data with known propertie
 
 Data pipelines that are built without data tend to be fragile. The developer makes assumptions about data shapes, volumes, and distributions that don't survive contact with real data. Synthetic data lets you build and test the entire pipeline — from ingestion through modeling to output — while the real data is still being sourced.
 
+## What Happened
+
+<!-- reconstructed from git history (84e911d, 3234106) and design documents -->
+
+1. Needed voter preference data to build statistical models and a calendar optimizer. Real vote data from ArtemisTimeline.com wasn't available — the vote export hadn't been requested, and the site's API only exposes aggregate leaderboards, not raw ballots.
+2. Wrote a design document (`docs/synthetic_vote_pdr.md`) specifying synthetic voter profiles with intentional biases: 60% neutral, 20% visual-drama seekers, 10% position-biased, 10% random. The biases were chosen to test whether the pipeline could detect known patterns.
+3. Implemented a seed-based generator producing three vote types matching the real voting modes: batch ballots (pick 5 from 50), pairwise comparisons (head-to-head), and category rankings (top 3). Each type preserves natural grain — raw votes, not collapsed scores.
+4. Generated ground truth via deterministic hash-based latent quality scores per image. Timeline images get a +0.15 boost, category showcases get +0.25. Stored in `synthetic_image_truth` — kept separate from model inputs, usable only for post-hoc evaluation.
+5. Ran the full pipeline end-to-end: 100 voters, 500 ballots, 2,000 pairwise votes, 250 category rankings. Schema validation passed, all fact tables populated, downstream models (Phase 3) ran successfully against synthetic data.
+6. The synthetic data became permanent scaffolding — Phase 3 (Elo, Beta-Binomial, Borda) and Phase 4 (calendar optimization) were both developed and validated against it. When real data arrives, the pipeline switches seamlessly because the schema is identical.
+
 ## What Was Built
 
 ### Synthetic voter profiles (4 bias types)

@@ -8,6 +8,17 @@ We have three different types of preference data — batch selection rates, Elo 
 
 The calendar optimizer needs to compare any image against any other image on a single preference dimension. Three separate scores, each on a different scale and each covering a different subset, don't work — you can't compare an Elo score of 1532 to a selection rate of 0.15. The composite score must: (a) work for all 12,217 images, (b) incorporate secondary signals where available, and (c) not break when signals are missing.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. Had three separate preference signals on different scales: batch selection rates as Beta posteriors (0.15–0.38 range, all 12,217 images), Elo ratings (1300–1700 range, ~394 images), and Borda scores (1–30 range, ~75 images). The calendar optimizer needed a single comparable score per image.
+2. Considered a simple weighted average but rejected it — what's the "normalized Elo" for an image with no pairwise data? Zero would actively penalize it. Mean-imputation would claim false knowledge.
+3. Chose quantile normalization to make scales comparable: rank each signal's values to [0, 1]. This eliminates the Elo-is-1500 vs. Borda-is-6 problem without requiring arbitrary scale factors.
+4. Designed a multiplicative adjustment formula: `adjusted_mean = posterior_mean × (1 + 0.15 × elo_quantile + 0.10 × borda_quantile)`. Multiplicative preserves ordinal ranking unless secondary signals are strong enough to override. Maximum total adjustment is 25%.
+5. Set weights conservatively: batch at ~85% (most complete coverage), Elo at 15% (most informative per observation but sparse), Borda at 10% (least reliable due to exposure-set problem). The backbone dominates by design — batch data covers all images, secondary signals cover 3-6%.
+6. Added two derived metrics for downstream use: polarization (voter disagreement, computed as std dev of per-voter binary outcomes) and broad appeal (posterior_mean × (1 - polarization_quantile)). These capture dimensions that raw preference doesn't — an image with high posterior_mean but high polarization divides voters and may be a risky calendar choice.
+
 ## Design Choice: Beta Posterior Backbone with Quantile-Rank Adjustments
 
 ### Key terms

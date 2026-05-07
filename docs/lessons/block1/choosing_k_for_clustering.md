@@ -8,6 +8,17 @@ We needed to cluster 12,217 Artemis II mission photos into visually distinct gro
 
 k is the most important hyperparameter in k-means and one of the most commonly hand-waved. Too small and the clusters are too broad — visually different images land in the same group, defeating the diversity guarantee. Too large and many clusters have too few images to offer meaningful choice, and the optimization becomes over-constrained. For a selection problem with a fixed output size (13 images), k needs to be chosen with the output in mind, not just the input.
 
+## What Happened
+
+<!-- reconstructed from git history (62df488, c494f89) and design documents -->
+
+1. Needed to partition 12,217 Artemis II mission photos into visually distinct groups using CLIP embeddings. The clustering output feeds a downstream optimization: select 13 images for a calendar with guaranteed visual diversity.
+2. Considered using statistical methods (elbow, silhouette, gap statistic) to determine k. Recognized that these methods optimize for data structure — the "natural" number of clusters in the embedding space — which is a different question from what the task needs.
+3. Reasoned from the output constraint: the calendar needs 13 images. With a hard diversity constraint of "no two from the same cluster," k must be ≥ 13. With k=13, every cluster must contribute exactly one image — zero slack for the optimizer.
+4. Applied the heuristic k ≈ √(n/2) ≈ 78 as an upper bound, but pulled well below it for interpretability. Settled on k=25: roughly 2x the output size, giving the optimizer room to skip weak clusters while staying in the 15-30 range where clusters remain human-interpretable.
+5. Ran k-means with k=25 on CLIP visual embeddings. Observed cluster sizes ranging from 77 to 1,411 (median ~400). The skewed distribution confirmed that the embedding space has a few dominant visual themes and many distinctive smaller groupings — informative for selection.
+6. Later validated the choice during multimodal clustering (c494f89): the same k=25 with different feature weights still produced interpretable, actionable groups. The downstream optimization (Phase 4) uses these clusters for both hard constraints (max 2 per cluster) and soft diversity scoring.
+
 ## The Decision: k=25
 
 ### Reasoning from the output constraint

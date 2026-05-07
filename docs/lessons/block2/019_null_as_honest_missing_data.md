@@ -8,6 +8,17 @@ Several columns in the scoring output have no meaningful value for most images. 
 
 The wrong answer silently corrupts downstream analysis. If `btl_score` is set to 0.0 instead of NULL, a downstream query like `WHERE btl_score > 0` will correctly exclude images — but `AVG(btl_score)` will be dragged toward zero by thousands of fake zeros, and a scatter plot of btl_score vs. elo_score will show a misleading cluster at the origin. The damage is subtle and hard to detect because the data looks complete.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. After implementing the three scoring models (Beta-Binomial, Elo, Borda), found that most columns were empty for most images: only ~394 of 12,217 images had Elo scores, only ~75 had Borda scores, BTL was not run at all, and Fleiss' kappa / Kendall's W couldn't be computed on the sparse matrix.
+2. First instinct was to fill missing scores with zero — standard practice in ML feature engineering where models need dense matrices. Realized this was wrong for analytical outputs: `AVG(btl_score)` would be dragged toward zero by 12,217 fake zeros, and scatter plots would show a misleading cluster at the origin.
+3. Considered mean-imputation (fill with column average). Rejected — "we don't know this image's Elo" is not the same as "this image is average at Elo." Imputation fabricates knowledge.
+4. Chose NULL for all "not computed" values. Distinguished three states: computed-and-positive (a real measurement), computed-as-zero (a real measurement that happened to be zero, e.g., zero pairwise wins), and not-computed (NULL — the model didn't run for this image).
+5. Verified that downstream code handles NULLs correctly: the composite scoring formula treats NULL Elo/Borda as "no adjustment" (multiplicative factor of 1.0). SQL's `AVG()` ignores NULLs automatically, but `COUNT(*)` vs `COUNT(column)` must be used carefully.
+6. Applied the same principle to reliability metrics: `fleiss_kappa` and `kendall_w` are NULL because the metrics are mathematically undefined for incomplete matrices — not because agreement is zero.
+
 ## Design Choice: NULL Means "Not Computed," Zero Means "Measured as Zero"
 
 Three distinct states exist for any score column:

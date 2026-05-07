@@ -8,6 +8,17 @@ The original thumbnail downloader worked flawlessly on 5 images during developme
 
 This is the most common performance trap in data pipelines: code that's correct and fast at development scale becomes a bottleneck at production scale. The per-record overhead is often in "bookkeeping" operations that seem cheap individually but multiply catastrophically.
 
+## What Happened
+
+<!-- reconstructed from git history (3234106, 9ad5892) and lesson context -->
+
+1. Wrote the thumbnail downloader and tested it on 5 images during development. Total runtime: ~2-3 seconds. No performance concerns. The code was clean, correct, and well-structured with proper audit trails.
+2. Attempted to run it on the full dataset of 12,217 images. Projected runtime: 32-62 minutes. Killed the process and investigated.
+3. Profiled a single iteration. Found 155-305ms of per-image overhead — connection setup (50-200ms), four DB operations (4-12ms), and rate-limit sleep (100ms) — against only 20-50ms of useful work (downloading a 20KB file). The overhead-to-work ratio was 3-15x.
+4. The overhead was invisible at 5 images because the total overhead (0.75-1.5 sec) was indistinguishable from the useful work time (0.1-0.25 sec). At 12,217 images, the 2,443x multiplier turned seconds into tens of minutes.
+5. Eliminated overhead in three categories: shared HTTP client (saved 10-40 min of TLS handshakes), batch DB writes (saved ~2 min of round-trips and eliminated 48,000+ run_manifest rows), and concurrent workers replaced explicit sleep (saved 20 min).
+6. After fixes, the download completed in 2.7 minutes for 7,798 images. The profiling pattern (measure overhead separately from useful work, compute overhead_ratio) became a standard pre-scaling check for subsequent pipeline stages.
+
 ## The Overhead Inventory
 
 For each of the 12,217 thumbnails, the original downloader performed:

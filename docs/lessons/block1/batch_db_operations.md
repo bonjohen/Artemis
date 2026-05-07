@@ -12,6 +12,17 @@ Multiple pipeline stages in Artemis started with per-row INSERT or UPDATE patter
 
 Database round-trips have fixed overhead: query parsing, plan optimization, lock acquisition, transaction commit, and network latency (even for embedded databases like DuckDB). At 1-3ms per operation, 12,000 individual INSERTs take 12-36 seconds of pure overhead. Batching amortizes this overhead across thousands of rows.
 
+## What Happened
+
+<!-- reconstructed from git history (3234106, 9ad5892) and lesson context -->
+
+1. Built the initial data pipeline with per-row INSERT and UPDATE patterns. The thumbnail downloader performed 4 DB operations per image: create run_manifest record, download, update run_manifest with checksum, update dim_image flag. Visual feature extraction did a per-image INSERT into `feature_image_visual`. All of this worked correctly at development scale (5-10 images).
+2. Scaled to 12,217 images. The downloader projected at 20+ minutes and visual feature extraction at 15-20 seconds of pure DB overhead — separate from any actual computation or network I/O. DuckDB's per-operation overhead (parse, plan, lock, commit) at 1-3ms per call was invisible at 10 rows but added up to minutes at 12,000.
+3. Profiled and identified three categories of per-row overhead: homogeneous INSERTs, repetitive flag UPDATEs, and per-item audit trail records in run_manifest.
+4. Applied three distinct batching patterns: `executemany` with 2000-row chunks for INSERTs, `UPDATE ... WHERE IN (SELECT unnest($1::VARCHAR[]))` for batch flag updates, and single aggregate run_manifest records instead of per-item records.
+5. Measured results: per-row INSERT dropped from ~15-20 sec to < 1 sec. Per-row UPDATE dropped from ~15-20 sec to < 1 sec. Run manifest went from 24,434 operations (~30-40 sec) to 2 operations (< 0.01 sec).
+6. The batch patterns became the standard for all subsequent pipeline stages (embedding extraction, clustering, scoring).
+
 ## Three Batching Patterns Used
 
 ### Pattern 1: `executemany` for homogeneous INSERTs

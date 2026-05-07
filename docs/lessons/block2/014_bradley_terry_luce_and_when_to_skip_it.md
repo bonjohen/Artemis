@@ -8,6 +8,17 @@ We have pairwise comparison data (image A beats image B) and want the best possi
 
 Choosing the right model isn't about sophistication — it's about whether the data supports the model's assumptions. BTL is better than Elo in theory, but a model that can't converge is worse than a simpler model that produces usable results.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. Designed the scoring schema with a `btl_score` column alongside `elo_score`, intending to implement both pairwise models. BTL is the textbook-superior model for pairwise comparison data.
+2. Before implementing, analyzed the comparison graph structure. With 2,000 comparisons, at most ~4,000 images could appear (fewer due to repeats). The remaining 8,000+ images have zero comparisons — singleton components.
+3. Computed the connectivity threshold: for a random graph on 12,217 nodes, a single connected component requires m ~ (n/2) * ln(n) ≈ 57,000 edges. We have 2,000 — off by a factor of ~28x.
+4. Confirmed that BTL's MLE is non-identifiable on disconnected graphs: strengths of isolated components can be scaled arbitrarily without changing the likelihood. The optimizer would either fail to converge or produce meaningless absolute values.
+5. Evaluated three workarounds: (a) run BTL on the connected component only (~200-500 images — too few), (b) Bayesian BTL with regularization (principled but the prior would be arbitrary on synthetic data), (c) copy Elo scores into the BTL column (dishonest).
+6. Chose to defer: left `btl_score` as NULL across all 12,217 images. NULL means "not computed" — honest about the data's limitations. When real vote data arrives with denser pairwise coverage, BTL becomes feasible and the column is ready.
+
 ## Design Choice: Defer BTL Until Pairwise Data Reaches ~20K+
 
 ### Key terms

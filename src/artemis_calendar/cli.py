@@ -167,6 +167,19 @@ def cmd_compute_scores(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_optimize(args: argparse.Namespace) -> None:
+    from artemis_calendar.optimize import run_calendar_optimization
+
+    conn = get_connection()
+    apply_migrations(conn)
+    kwargs = {"seed": args.seed}
+    if args.methods:
+        kwargs["methods"] = tuple(args.methods.split(","))
+    result = run_calendar_optimization(conn, **kwargs)
+    logger.info(f"Optimization complete: {result}")
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -254,6 +267,10 @@ def main() -> None:
 
     sub.add_parser("compute-scores", help="Compute preference scores from vote data")
 
+    optimize = sub.add_parser("optimize", help="Run calendar optimization to generate candidate calendars")
+    optimize.add_argument("--methods", default=None, help="Comma-separated methods (method_a,method_b,...)")
+    optimize.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -270,6 +287,7 @@ def main() -> None:
         "extract-embeddings": cmd_extract_embeddings,
         "run-clustering": cmd_run_clustering,
         "compute-scores": cmd_compute_scores,
+        "optimize": cmd_optimize,
         "run-all": cmd_run_all,
     }
 

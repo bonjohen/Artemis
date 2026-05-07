@@ -8,6 +8,17 @@ The scoring pipeline will be re-run as new vote data arrives, as scoring methods
 
 In a data warehouse, analytical outputs are not code — they can't be version-controlled with git. The warehouse equivalent of version control is **run partitioning**: every analytical output is tagged with a run ID, and consumers explicitly choose which run to read. Without this, a re-run silently replaces all downstream data, and nobody can tell whether a score changed because the method improved or because a bug was introduced.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. The scoring pipeline was expected to be re-run multiple times: as scoring methods were tuned, as bugs were found and fixed, and eventually as real vote data replaced synthetic. Each run produces a complete set of 12,217 scores. Needed a way to preserve history without DDL changes.
+2. Considered the simplest approach — overwrite all rows on each run. Rejected because a regression in the scoring formula would silently replace all scores, with no way to compare or roll back.
+3. Chose run-ID partitioning: every row in `mart_image_preference_score` has a composite primary key of `(score_run_id, image_sk)`. Each run generates a UUID via `generate_run_id()` and writes a complete set of rows tagged with that ID.
+4. Implemented an idempotent cleanup pattern: `DELETE WHERE score_run_id = ?` before inserting. This means re-running with the same run_id is safe (crash recovery), but different runs accumulate in the table.
+5. Linked each run to `run_manifest` with the same UUID, closing the audit loop: for any score, trace back to when it was computed, what pipeline produced it, and whether it completed successfully.
+6. Applied the same pattern to `mart_inter_rater_reliability` (keyed by `irr_run_id`) and later to `mart_calendar_candidate` (keyed by `candidate_run_id`). The pattern became the standard for all analytical outputs in the warehouse.
+
 ## Design Choice: Primary Key Includes score_run_id
 
 Every row in `mart_image_preference_score` has a composite primary key of `(score_run_id, image_sk)`. Each scoring run generates a UUID via `generate_run_id()` and writes a complete set of rows tagged with that ID. Previous runs remain in the table untouched.

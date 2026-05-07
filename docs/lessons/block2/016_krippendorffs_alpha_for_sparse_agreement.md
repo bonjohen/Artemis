@@ -8,6 +8,17 @@ We want to measure whether voters agree on which images are good. With 100 voter
 
 Inter-rater reliability tells us whether voter preferences reflect genuine consensus or random noise. Low agreement suggests the vote data is too sparse or too noisy to drive calendar selection with confidence. High agreement means the preference scores are trustworthy. Without a reliability metric, we can't assess the quality of our inputs.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. Needed to measure inter-rater reliability: do voters agree on which images are good, or is the preference data just noise? This determines how much confidence to place in the preference scores driving calendar selection.
+2. Evaluated Fleiss' kappa first as the standard multi-rater agreement metric. Immediately hit a wall: Fleiss' kappa requires every rater to rate every item. With 100 voters and 12,217 images, the matrix is >98% missing — Fleiss' kappa is mathematically undefined.
+3. Evaluated Kendall's W for concordance among rankings. Same problem — requires complete rankings from every rater. Also stored as NULL.
+4. Found Krippendorff's alpha, which handles missing data natively through its coincidence matrix formulation. Instead of requiring a complete rater×item matrix, it builds a coincidence matrix from all available pairwise ratings per item, weighted by 1/(m-1) where m is the number of raters who rated that item.
+5. Implemented from scratch (~50 lines of numpy) rather than adding the `krippendorff` PyPI package. The algorithm is straightforward: for each item with ≥2 raters, accumulate value pairs into the coincidence matrix, compute observed vs. expected disagreement, derive alpha.
+6. Computed nominal alpha for batch voting (binary: selected=1, not=0) and observed low alpha (~0.52) — expected with synthetic voters that include a 10% random profile. Stored Fleiss' kappa and Kendall's W as NULL alongside alpha, honestly documenting which metrics are computable and which are not.
+
 ## Design Choice: Krippendorff's Alpha via Coincidence Matrix
 
 ### Key terms

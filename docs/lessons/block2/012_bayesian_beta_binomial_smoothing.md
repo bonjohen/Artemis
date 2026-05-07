@@ -8,6 +8,17 @@ The Artemis vote system shows 50 random images per ballot and asks voters to pic
 
 If you feed raw selection rates into an optimizer, it will select images that were lucky (shown once, happened to get picked) over images that were genuinely preferred but had the misfortune of being shown to a voter who preferred something else. The calendar would be built on noise, not signal.
 
+## What Happened
+
+<!-- reconstructed from git history (876828a) and lesson context -->
+
+1. Started with raw selection rates (selected / shown) as the preference metric. Images shown once and selected once scored 1.0 — higher than genuinely popular images shown 50 times with a 30% selection rate.
+2. Added Wilson lower-bound confidence intervals as a frequentist correction. This penalized low-exposure images appropriately but produced a single point estimate rather than a full posterior distribution. Couldn't express "how uncertain are we?" beyond the interval width.
+3. Switched to a Beta-Binomial conjugate model. Chose Beta(2, 8) as the prior — encoding "assume an image has about a 20% selection rate until data says otherwise." The 20% is slightly above the 10% base rate (5 of 50) because the vote pool is pre-filtered to usable frames.
+4. Verified the smoothing behavior: images with 1-2 exposures stay near the prior mean of 0.20 regardless of outcome. Images with 10+ exposures have posteriors dominated by data. The crossover happens around n=10, which matches the prior strength (a+b=10).
+5. Kept Wilson lower bound as a secondary metric alongside the Bayesian posterior. Both are stored in `mart_image_preference_score` — Wilson for comparison, posterior_mean as the backbone of the composite score.
+6. The posterior_mean became the primary input to the composite scoring formula, weighted at ~85% of the final score (with Elo and Borda as secondary adjustments).
+
 ## Design Choice: Beta-Binomial Conjugate Prior
 
 We use a **Beta(2, 8) prior** combined with the observed selection data to produce a **posterior Beta distribution** for each image's true selection probability.

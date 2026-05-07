@@ -30,6 +30,7 @@ ml = [
     "scikit-learn>=1.4",
     "hdbscan>=0.8.33",
     "nltk>=3.9",
+    "scipy>=1.12",
 ]
 
 [tool.ruff]

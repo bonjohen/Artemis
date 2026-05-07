@@ -46,18 +46,31 @@ def write_preference_scores(
         )
 
     if rows:
-        conn.executemany(
-            """
-            INSERT INTO mart_image_preference_score (
-                score_run_id, image_sk, shown_count, selected_count,
-                selection_rate, wilson_lower, elo_score, pairwise_wins,
-                pairwise_losses, btl_score, borda_score,
-                posterior_mean, posterior_lower, posterior_upper,
-                uncertainty_score, polarization_score, broad_appeal_score
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            rows,
-        )
+        import pyarrow as pa
+
+        columns = [
+            "score_run_id",
+            "image_sk",
+            "shown_count",
+            "selected_count",
+            "selection_rate",
+            "wilson_lower",
+            "elo_score",
+            "pairwise_wins",
+            "pairwise_losses",
+            "btl_score",
+            "borda_score",
+            "posterior_mean",
+            "posterior_lower",
+            "posterior_upper",
+            "uncertainty_score",
+            "polarization_score",
+            "broad_appeal_score",
+        ]
+        col_data = {col: [row[i] for row in rows] for i, col in enumerate(columns)}
+        tbl = pa.table(col_data)  # noqa: F841 — referenced by DuckDB SQL below
+        col_list = ", ".join(columns)
+        conn.execute(f"INSERT INTO mart_image_preference_score ({col_list}) SELECT * FROM tbl")
 
     logger.info(f"Wrote {len(rows)} preference scores for run {score_run_id}")
     return len(rows)
