@@ -109,6 +109,27 @@ def cmd_extract_visual(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_extract_embeddings(args: argparse.Namespace) -> None:
+    from artemis_calendar.features.embeddings import extract_image_embeddings, extract_text_embeddings
+    from artemis_calendar.features.text_features import extract_text_features
+
+    conn = get_connection()
+    apply_migrations(conn)
+
+    if not args.text_only:
+        img_count = extract_image_embeddings(conn, limit=args.limit, batch_size=args.batch_size)
+        logger.info(f"Image embeddings: {img_count}")
+
+    if not args.image_only:
+        txt_emb_count = extract_text_embeddings(conn, limit=args.limit, batch_size=args.batch_size)
+        logger.info(f"Text embeddings: {txt_emb_count}")
+
+        txt_feat_count = extract_text_features(conn, limit=args.limit)
+        logger.info(f"Text features: {txt_feat_count}")
+
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -161,6 +182,12 @@ def main() -> None:
     extract_vis.add_argument("--limit", type=int, default=None, help="Max images to process")
     extract_vis.add_argument("--batch-size", type=int, default=100, help="Batch size for processing")
 
+    extract_emb = sub.add_parser("extract-embeddings", help="Generate image/text embeddings and text features")
+    extract_emb.add_argument("--limit", type=int, default=None, help="Max images to process")
+    extract_emb.add_argument("--batch-size", type=int, default=32, help="Batch size for embedding generation")
+    extract_emb.add_argument("--image-only", action="store_true", help="Only generate image embeddings")
+    extract_emb.add_argument("--text-only", action="store_true", help="Only generate text embeddings and features")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -174,6 +201,7 @@ def main() -> None:
         "collect-images": cmd_collect_images,
         "generate-votes": cmd_generate_votes,
         "extract-visual": cmd_extract_visual,
+        "extract-embeddings": cmd_extract_embeddings,
         "run-all": cmd_run_all,
     }
 

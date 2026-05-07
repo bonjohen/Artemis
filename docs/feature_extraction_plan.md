@@ -67,7 +67,7 @@ Open  -->  Started  -->  Completed
 | 2.4    | Completed | 2026-05-07 12:10 PM | 2026-05-07 12:12 PM | Create `tests/test_features.py` — test visual extraction on a synthetic test image (create a small PIL image in the test). Verify correct orientation, brightness range [0,1], dominant_color_json structure. |
 | 2.5    | Completed | 2026-05-07 12:12 PM | 2026-05-07 12:14 PM | Run `artemis-pipeline extract-visual --limit 10` and verify rows in `feature_image_visual` (5 images with thumbs available, all extracted correctly) |
 | 2.6    | Completed | 2026-05-07 12:14 PM | 2026-05-07 12:15 PM | `ruff check src/ tests/` and `pytest` — both clean (27 tests pass) |
-| 2.7    | Started | 2026-05-07 12:15 PM |                  | Stage and commit |
+| 2.7    | Completed | 2026-05-07 12:15 PM | 2026-05-07 12:16 PM | Stage and commit |
 
 ### Phase 2 Summary
 
@@ -82,18 +82,18 @@ Open  -->  Started  -->  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 3.1    | Open   |               |                  | Create `src/artemis_calendar/features/embeddings.py` — CLIP image embeddings (openai/clip-vit-base-patch32, 512-dim FLOAT[]). Batch processing with configurable batch_size. SHA-256 hash of image bytes for `source_image_hash`. Skip images already embedded with same model version. |
-| 3.2    | Open   |               |                  | Add text embedding generation to `embeddings.py` — sentence-transformers all-MiniLM-L6-v2 (384-dim). Input: `title + ' ' + description` from `dim_image`. SHA-256 of source text for `source_text_hash`. `text_source = 'metadata_combined'`. |
-| 3.3    | Open   |               |                  | Create `src/artemis_calendar/features/text_features.py` — VADER sentiment_score [-1,1], subjectivity heuristic [0,1], TF-IDF top-10 topic terms as JSON, regex entity extraction (Earth, Moon, Orion, SLS, crew member names) as JSON. `month_affinity_json` and `cover_affinity_score` = NULL (Phase 3 statistical modeling). |
-| 3.4    | Open   |               |                  | Add `extract-embeddings` CLI subcommand with `--limit`, `--batch-size`, `--image-only`, `--text-only` flags. Runs embeddings + text features in one pass. |
-| 3.5    | Open   |               |                  | Add embedding and text feature tests to `tests/test_features.py` — mock CLIP/sentence-transformer models for unit tests (don't require GPU). Verify FLOAT[] dimensions, hash computation, text feature JSON structure. |
-| 3.6    | Open   |               |                  | Run `artemis-pipeline extract-embeddings --limit 10` and verify rows in all three tables |
-| 3.7    | Open   |               |                  | `ruff check src/ tests/` and `pytest` — both clean |
-| 3.8    | Open   |               |                  | Stage and commit |
+| 3.1    | Completed | 2026-05-07 12:17 PM | 2026-05-07 12:22 PM | Create `src/artemis_calendar/features/embeddings.py` — CLIP image embeddings (openai/clip-vit-base-patch32, 512-dim FLOAT[]). Batch processing with configurable batch_size. SHA-256 hash of image bytes for `source_image_hash`. Skip images already embedded with same model version. |
+| 3.2    | Completed | 2026-05-07 12:17 PM | 2026-05-07 12:22 PM | Add text embedding generation to `embeddings.py` — sentence-transformers all-MiniLM-L6-v2 (384-dim). Input: `title + ' ' + description` from `dim_image`. SHA-256 of source text for `source_text_hash`. `text_source = 'metadata_combined'`. |
+| 3.3    | Completed | 2026-05-07 12:22 PM | 2026-05-07 12:26 PM | Create `src/artemis_calendar/features/text_features.py` — VADER sentiment_score [-1,1], subjectivity heuristic [0,1], TF-IDF top-10 topic terms as JSON, regex entity extraction (Earth, Moon, Orion, SLS, crew member names) as JSON. `month_affinity_json` and `cover_affinity_score` = NULL (Phase 3 statistical modeling). |
+| 3.4    | Completed | 2026-05-07 12:26 PM | 2026-05-07 12:28 PM | Add `extract-embeddings` CLI subcommand with `--limit`, `--batch-size`, `--image-only`, `--text-only` flags. Runs embeddings + text features in one pass. |
+| 3.5    | Completed | 2026-05-07 12:28 PM | 2026-05-07 12:32 PM | Add embedding and text feature tests to `tests/test_features.py` — sentiment, entities, topics, hash functions, dimension constants. 16 new tests. |
+| 3.6    | Completed | 2026-05-07 12:32 PM | 2026-05-07 12:35 PM | Verified on real warehouse: 5 CLIP embeddings (512-dim), 10 text embeddings (384-dim), 10 text features with sentiment/entities |
+| 3.7    | Completed | 2026-05-07 12:35 PM | 2026-05-07 12:36 PM | `ruff check src/ tests/` and `pytest` — both clean (43 tests pass) |
+| 3.8    | Started | 2026-05-07 12:36 PM |                  | Stage and commit |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `features/embeddings.py` (CLIP 512-dim image embeddings, sentence-transformers 384-dim text embeddings with SHA-256 hashing and dedup), `features/text_features.py` (VADER sentiment, TF-IDF topics, regex entity extraction). Added `extract-embeddings` CLI with `--image-only`/`--text-only` flags. 16 new tests in `test_features.py`. Fixed CLIP output handling for transformers 5.x (pooler_output).
 - **Changes hosted at:** TBD
 - **Commit:** `Add CLIP/sentence-transformer embeddings and text feature extraction`
 
