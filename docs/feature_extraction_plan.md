@@ -46,7 +46,7 @@ Open  -->  Started  -->  Completed
 | 1.1    | Completed | 2026-05-07 12:00 PM | 2026-05-07 12:02 PM | Create `migrations/005_create_feature_tables.sql` with `feature_image_visual`, `feature_description_text`, `feature_image_embedding`, `feature_description_embedding`, `feature_image_cluster`, `mart_image_cluster_summary`, `mart_cluster_top_images` |
 | 1.2    | Completed | 2026-05-07 12:00 PM | 2026-05-07 12:02 PM | Add `[project.optional-dependencies] ml` to `pyproject.toml` (pillow, torch, transformers, sentence-transformers, scikit-learn, hdbscan, nltk) |
 | 1.3    | Completed | 2026-05-07 12:02 PM | 2026-05-07 12:03 PM | Verify `artemis-pipeline migrate` applies 005 cleanly on a fresh DB |
-| 1.4    | Started | 2026-05-07 12:03 PM |                  | Stage and commit |
+| 1.4    | Completed | 2026-05-07 12:03 PM | 2026-05-07 12:04 PM | Stage and commit |
 
 ### Phase 1 Summary
 
@@ -61,17 +61,17 @@ Open  -->  Started  -->  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 2.1    | Open   |               |                  | Create `src/artemis_calendar/features/__init__.py` |
-| 2.2    | Open   |               |                  | Create `src/artemis_calendar/features/visual.py` — Pillow-based extraction: orientation (landscape/portrait/square from width/height), aspect_ratio, brightness (mean L from LAB), contrast (std L), saturation (mean S from HSV), dominant colors (k-means k=5 on downsampled pixels). All `has_*_flag` = NULL. Reads thumbs from `D:/artemis/raw/images/thumbs/{guid}.jpg`. Skips images without downloaded thumbs. |
-| 2.3    | Open   |               |                  | Add `extract-visual` CLI subcommand with `--limit` and `--batch-size` flags. Wire to `features/visual.py`. Reuse `run_manifest` for `feature_run_id`. |
-| 2.4    | Open   |               |                  | Create `tests/test_features.py` — test visual extraction on a synthetic test image (create a small PIL image in the test). Verify correct orientation, brightness range [0,1], dominant_color_json structure. |
-| 2.5    | Open   |               |                  | Run `artemis-pipeline extract-visual --limit 10` and verify 10 rows in `feature_image_visual` |
-| 2.6    | Open   |               |                  | `ruff check src/ tests/` and `pytest` — both clean |
-| 2.7    | Open   |               |                  | Stage and commit |
+| 2.1    | Completed | 2026-05-07 12:05 PM | 2026-05-07 12:05 PM | Create `src/artemis_calendar/features/__init__.py` |
+| 2.2    | Completed | 2026-05-07 12:05 PM | 2026-05-07 12:08 PM | Create `src/artemis_calendar/features/visual.py` — Pillow-based extraction: orientation (landscape/portrait/square from width/height), aspect_ratio, brightness (mean L from LAB), contrast (std L), saturation (mean S from HSV), dominant colors (k-means k=5 on downsampled pixels). All `has_*_flag` = NULL. Reads thumbs from `D:/artemis/raw/images/thumbs/{guid}.jpg`. Skips images without downloaded thumbs. |
+| 2.3    | Completed | 2026-05-07 12:08 PM | 2026-05-07 12:10 PM | Add `extract-visual` CLI subcommand with `--limit` and `--batch-size` flags. Wire to `features/visual.py`. Reuse `run_manifest` for `feature_run_id`. |
+| 2.4    | Completed | 2026-05-07 12:10 PM | 2026-05-07 12:12 PM | Create `tests/test_features.py` — test visual extraction on a synthetic test image (create a small PIL image in the test). Verify correct orientation, brightness range [0,1], dominant_color_json structure. |
+| 2.5    | Completed | 2026-05-07 12:12 PM | 2026-05-07 12:14 PM | Run `artemis-pipeline extract-visual --limit 10` and verify rows in `feature_image_visual` (5 images with thumbs available, all extracted correctly) |
+| 2.6    | Completed | 2026-05-07 12:14 PM | 2026-05-07 12:15 PM | `ruff check src/ tests/` and `pytest` — both clean (27 tests pass) |
+| 2.7    | Started | 2026-05-07 12:15 PM |                  | Stage and commit |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `src/artemis_calendar/features/__init__.py`, `features/visual.py` (Pillow-based orientation, aspect ratio, brightness, contrast, saturation, dominant colors). Added `extract-visual` CLI subcommand. Created `tests/test_features.py` (17 tests). Verified on real warehouse (5 space thumbnails extracted correctly).
 - **Changes hosted at:** TBD
 - **Commit:** `Add visual feature extraction (Pillow) with extract-visual CLI command`
 

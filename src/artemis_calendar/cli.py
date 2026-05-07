@@ -99,6 +99,16 @@ def cmd_generate_votes(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_extract_visual(args: argparse.Namespace) -> None:
+    from artemis_calendar.features.visual import extract_visual_features
+
+    conn = get_connection()
+    apply_migrations(conn)
+    count = extract_visual_features(conn, limit=args.limit, batch_size=args.batch_size)
+    logger.info(f"Extracted visual features for {count} images")
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -147,6 +157,10 @@ def main() -> None:
     votes.add_argument("--pairs", type=int, default=2000, help="Number of pairwise votes")
     votes.add_argument("--rankings", type=int, default=250, help="Number of category rankings")
 
+    extract_vis = sub.add_parser("extract-visual", help="Extract visual features from thumbnails")
+    extract_vis.add_argument("--limit", type=int, default=None, help="Max images to process")
+    extract_vis.add_argument("--batch-size", type=int, default=100, help="Batch size for processing")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -159,6 +173,7 @@ def main() -> None:
         "load-metadata": cmd_load_metadata,
         "collect-images": cmd_collect_images,
         "generate-votes": cmd_generate_votes,
+        "extract-visual": cmd_extract_visual,
         "run-all": cmd_run_all,
     }
 
