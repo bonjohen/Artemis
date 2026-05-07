@@ -10,19 +10,21 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 
 ## Project Status
 
-**Through Phase 2B.** Data pipeline, synthetic votes, feature extraction, and full-scale clustering are complete. All 12,217 thumbnails downloaded, all features extracted, all clustering done.
+**Through Phase 4.** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, and calendar optimization are all complete. Five candidate calendars generated with 13 images each.
 
 ### What exists
 
 | Layer | Status |
 |---|---|
 | Extract / parse / load pipeline | Working — metadata, images (concurrent downloader), vote manifest |
-| Warehouse (`D:/artemis/warehouse.duckdb`) | `dim_image` 12,736 rows, `dim_category` 8, synthetic voters/votes populated |
+| Warehouse (`D:/artemis/warehouse.duckdb`) | 29 tables, `dim_image` 12,736 rows, full scoring + optimization |
 | Thumbnails | **All 12,217** vote-pool thumbnails downloaded to `D:/artemis/raw/images/thumbs/` |
 | Feature extraction | `features/visual.py` (Pillow, parallel), `features/embeddings.py` (CLIP 512-dim + sentence-transformers 384-dim), `features/text_features.py` (VADER, TF-IDF, entities) |
-| Clustering | `cluster/clustering.py` (k-means, HDBSCAN), `cluster/marts.py` (summary + top images). Full-scale k=25 clustering complete: visual (12,217), text (502), multimodal (12,217) |
-| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `run-all` |
-| Tests | 52 passing (pytest), ruff clean |
+| Clustering | `cluster/clustering.py` (k-means, HDBSCAN), `cluster/marts.py` (summary + top images). Full-scale k=25 clustering complete |
+| Statistical modeling | `models/` — Beta-Binomial, Elo, Borda, composite scoring, inter-rater reliability. All 12,217 images scored |
+| Calendar optimization | `optimize/` — 5 selection methods (top-N, cluster-limited, per-cluster, month-first, MMR greedy), Hungarian month assignment, calendar-level scoring. 5 candidate calendars generated |
+| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `run-all` |
+| Tests | 78 passing (pytest), ruff clean |
 
 ### Current data state
 
@@ -34,8 +36,12 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | `feature_description_embedding` | 502 | Sentence-transformer 384-dim (editorial images with text only) |
 | `feature_description_text` | 502 | VADER sentiment, TF-IDF topics, entity flags |
 | `feature_image_cluster` | 24,936 | 3 cluster types x ~12K/502 images each |
-| `mart_image_cluster_summary` | 75 | 25 clusters x 3 types |
-| `mart_cluster_top_images` | 369 | Top 5 per cluster x 3 types |
+| `mart_image_cluster_summary` | 81 | 25+ clusters x 3 types (preference scores backfilled) |
+| `mart_cluster_top_images` | 384 | Top 5 per cluster x 3 types (scores backfilled) |
+| `mart_image_preference_score` | 12,217 | Composite scores, Elo, Borda, uncertainty, polarization |
+| `mart_inter_rater_reliability` | 2 | Krippendorff's alpha per vote mode |
+| `mart_calendar_candidate` | 5 | One per selection method (A–E) |
+| `mart_calendar_candidate_month_image` | 65 | 13 month-image assignments per candidate |
 
 ### Two image populations in dim_image
 
@@ -54,6 +60,8 @@ Vote-pool images have CLIP embeddings but no text metadata. Editorial images hav
 - `docs/synthetic_vote_pdr.md` — Synthetic voter data generator design for bias detection testing
 - `docs/feature_extraction_plan.md` — Phase 2A plan (all 5 phases completed)
 - `docs/thumbnail_download_plan.md` — Thumbnail download and full-scale feature extraction plan (all 3 phases completed)
+- `docs/statistical_modeling_design.md` — Phase 3 scoring components, composite method, reliability
+- `docs/calendar_optimization_design.md` — Phase 4 optimization: month-fit, cover-fit, 5 selection methods, objective function
 
 ## Architecture
 
@@ -74,9 +82,9 @@ Package layout under `src/artemis_calendar/`:
 | `features/` | Exists | Image/text embeddings, sentiment, visual features (parallel extraction) |
 | `cluster/` | Exists | Visual, text, and multimodal clustering + mart builders |
 | `synthetic/` | Exists | Voter profiles, ground truth, vote generator |
-| `models/` | Not started | Preference scoring (Elo, BTL, Bayesian), reliability models |
-| `optimize/` | Not started | Calendar slate generation and month assignment |
-| `marts/` | Not started | Analytical outputs (beyond cluster marts) |
+| `models/` | Exists | Preference scoring (Elo, Borda, Beta-Binomial), composite scores, reliability |
+| `optimize/` | Exists | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
+| `marts/` | Not started | Analytical outputs (beyond cluster/scoring/calendar marts) |
 | `reports/` | Not started | Review packages |
 
 ## Clustering Analysis
@@ -141,6 +149,9 @@ Three upstream sources serve image data. All permit automated access but require
 - **Visual-dominant clustering**: Multimodal weights 0.80 visual / 0.05 text / 0.15 metadata — voters choose by appearance, text is optional and sparse
 - **Concurrent downloads**: Thumbnail downloader uses `ThreadPoolExecutor` with shared `httpx.Client` (HTTP/2, connection pooling) and batch DB updates
 - **Fast visual features**: Pillow quantize for dominant colors (~0.2ms/image) instead of sklearn KMeans (~147ms/image)
+- **PyArrow bulk insert for DuckDB**: `pa.table()` + `INSERT ... SELECT * FROM tbl` instead of `executemany` which hangs at 12K+ rows
+- **MMR greedy for diversity**: Maximum marginal relevance with CLIP cosine similarity produces 0-overlap vs. naive top-N in <1 second
+- **Hungarian month assignment**: `scipy.optimize.linear_sum_assignment` for provably optimal image-to-month mapping
 
 ## Data Model Conventions
 
@@ -167,11 +178,12 @@ Three upstream sources serve image data. All permit automated access but require
 | **Phase 2** | Done (synthetic) | Voter surrogates, batch/pairwise/category fact tables (100 synthetic voters) |
 | **Phase 2A** | Done | Feature extraction (visual, CLIP, text) + clustering (k-means, HDBSCAN) |
 | **Phase 2B** | Done | Full-scale: all thumbnails downloaded, features extracted, k=25 clustering complete |
-| **Phase 3** | **Next** | Statistical modeling (Elo, BTL, Bayesian scores, reliability) |
-| **Phase 4** | Not started | Calendar optimization (objective function, month/cover scoring, candidate generation) |
-| **Phase 5** | Not started | Learning and publication package |
-| **C1–C5** | Not started | Calendar rendering: selection, month assignment, cover, 8.5x11 PDF/PNG, review |
+| **Phase 3** | Done | Statistical modeling (Elo, Borda, Beta-Binomial, composite, reliability) |
+| **Phase 4** | Done | Calendar optimization (5 methods, month/cover scoring, candidate generation) |
+| **C4** | **Next** | Download full-resolution images from NASA JSC, render 8.5x11 PDF/PNG calendar pages |
+| **C5** | Not started | Review package: candidate comparison, contact sheet, selection report |
 | **S3–S4** | Not started | Synthetic validation: bias detection, optimization validation |
+| **Phase 5** | Not started | Learning and publication package |
 
 ## Documentation Structure
 

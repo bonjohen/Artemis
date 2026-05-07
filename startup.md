@@ -12,7 +12,7 @@ CLAUDE.md has the full project status, architecture, source site rules, clusteri
 
 ## 2. Current State
 
-**Phase 3 is complete.** Data collection, feature extraction, clustering, and statistical modeling are all done.
+**Through Phase 4.** Data collection, feature extraction, clustering, statistical modeling, and calendar optimization are all complete. Five candidate calendars generated.
 
 ### Warehouse: `D:/artemis/warehouse.duckdb`
 
@@ -24,10 +24,12 @@ CLAUDE.md has the full project status, architecture, source site rules, clusteri
 | `feature_description_embedding` | 502 | Sentence-transformer 384-dim (editorial images with text) |
 | `feature_description_text` | 502 | VADER sentiment, TF-IDF topics, entity flags |
 | `feature_image_cluster` | 24,936 | k=25 clusters: visual (12,217) + text (502) + multimodal (12,217) |
-| `mart_image_cluster_summary` | 75 | 25 clusters x 3 types (preference scores backfilled) |
-| `mart_cluster_top_images` | 369 | Top 5 images per cluster x 3 types (scores backfilled) |
-| `mart_image_preference_score` | 12,217+ | Per-image composite scores, Elo, Borda, uncertainty, polarization |
-| `mart_inter_rater_reliability` | 2+ | Krippendorff's alpha per vote mode |
+| `mart_image_cluster_summary` | 81 | 25+ clusters x 3 types (preference scores backfilled) |
+| `mart_cluster_top_images` | 384 | Top 5 images per cluster x 3 types (scores backfilled) |
+| `mart_image_preference_score` | 12,217 | Per-image composite scores, Elo, Borda, uncertainty, polarization |
+| `mart_inter_rater_reliability` | 2 | Krippendorff's alpha per vote mode |
+| `mart_calendar_candidate` | 5 | One candidate per selection method (A–E) |
+| `mart_calendar_candidate_month_image` | 65 | 13 month-image assignments per candidate |
 
 ### Images: `D:/artemis/raw/images/thumbs/{guid}.jpg`
 
@@ -37,24 +39,35 @@ All 12,217 vote-pool thumbnails are on disk. Full-resolution images (`large/`) a
 
 - **Weights:** visual 0.80, text 0.05, metadata 0.15
 - **Visual clusters:** 25 groups from CLIP embeddings, sizes 77–1,411 (median ~400)
-- **Multimodal clusters:** 25 groups from CLIP + metadata (brightness, contrast, saturation, aspect ratio). Text is zero-filled for the 12,217 vote-pool images that lack captions.
-- **Text clusters:** 25 groups from the 502 editorial images only (informational, not used for calendar selection)
+- **Multimodal clusters:** 25 groups from CLIP + metadata. Text zero-filled for vote-pool images.
 
 ### Preference Scores (Phase 3 output)
 
 Every vote-pool image has a composite preference score in `mart_image_preference_score`:
 
 - **Batch scores:** Selection rate, Wilson lower bound, Beta-Binomial posterior (Beta(2,8) prior) for all 12,217 images
-- **Elo scores:** From 2,000 pairwise votes. ~200 images have Elo; rest are NULL (never compared)
-- **Borda scores:** From 250 category rankings. ~150 images have Borda; rest are NULL
+- **Elo scores:** From 2,000 pairwise votes. ~394 images have Elo; rest are NULL
+- **Borda scores:** From 250 category rankings. ~75 images have Borda; rest are NULL
 - **BTL scores:** NULL (deferred — disconnected comparison graph, see lesson 014)
 - **Composite:** `posterior_mean` adjusted by Elo/Borda quantile ranks. All images scored.
 - **Uncertainty:** Credible interval width. Wide = needs more data.
 - **Polarization:** Voter disagreement (std dev of selection outcomes)
 - **Broad appeal:** `posterior_mean * (1 - polarization_quantile)`
-- **Reliability:** Krippendorff's alpha computed for batch and category vote modes
+- **Reliability:** Krippendorff's alpha = 0.52 for batch voting
 
-Score columns in `mart_cluster_top_images` and `mart_image_cluster_summary` are backfilled.
+### Calendar Optimization (Phase 4 output)
+
+Five candidate calendars in `mart_calendar_candidate`, each with 13 month-image assignments:
+
+| Method | Objective | Popularity | Diversity | Description |
+|---|---|---|---|---|
+| **method_b** | **14.259** | 4.316 | 0.846 | Top popularity with max 2 per cluster |
+| method_a | 14.187 | **4.324** | 0.769 | Naive top 13 by posterior_mean |
+| method_c | 13.957 | 4.013 | **1.000** | Best image from top 13 clusters |
+| method_d | 13.219 | 3.113 | 0.615 | Best image per month by month-fit |
+| method_e | 11.885 | 2.791 | 0.769 | MMR greedy (0 overlap with method_a) |
+
+Method B scored highest overall. Method A and E share 0 of 13 images — the optimizer selects genuinely different images.
 
 ### Synthetic votes
 
@@ -62,48 +75,45 @@ Score columns in `mart_cluster_top_images` and `mart_image_cluster_summary` are 
 
 ## 3. What Needs to Happen Next
 
-### Phase 4: Calendar Optimization
+### Phase C4: Calendar Rendering
 
-Multi-objective optimization to select 13 images (1 cover + 12 monthly pages):
+Download full-resolution images and render printable calendar pages:
 
-1. **Month suitability scoring** — score each image's fit for each calendar month using visual features (warmth/coolness, brightness, tone), mission phase timing, and seasonal associations
-2. **Cover suitability scoring** — score images for cover use (composition, broad appeal, visual impact)
-3. **Objective function** — multi-objective balancing:
-   - Maximize voter preference (`posterior_mean` from Phase 3)
-   - Maximize visual diversity (no two images from same cluster)
-   - Cover mission phases (launch, transit, lunar orbit, return)
-   - Maximize month-image fit
-   - Minimize redundancy (pairwise CLIP similarity penalty)
-4. **Candidate generation** — produce ranked calendar slates
-5. **Baseline comparison** — compare optimized slate to naive top-13-by-Elo, top-13-by-posterior, etc.
+1. **Download full images** — 13 selected images from NASA JSC (`https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ART002/{guid}.JPG`). Rate limit: 1.0s per request. Only download the 13 images from the chosen candidate, not all 12,217.
+2. **Calendar page layout** — 8.5x11 portrait: image top half, calendar grid + description bottom half. Description max 25% of bottom half.
+3. **Cover page** — Full-page image with title overlay ("FARTHER — 2027 Calendar", "December 2026 – December 2027").
+4. **Monthly grid rendering** — Correct day-of-week alignment for Dec 2026 through Dec 2027.
+5. **Output package** — Individual page PNGs, individual PDFs, combined printable PDF.
 
-### After Phase 4
+### After C4
 
 | Phase | Description |
 |---|---|
-| C1–C3 | Selection confirmation, month assignment, cover selection |
-| C4 | Download full images from NASA JSC, render 8.5x11 PDF/PNG pages |
+| C5 | Review package: candidate comparison, contact sheet, selection report, layout validation |
 | S3–S4 | Synthetic validation: bias detection, optimization validation |
 | Phase 5 | Learning and publication package |
 
-### Shortest path to calendar
+### Shortest path to printed calendar
 
-1. **Phase 4: Calendar optimization** (implement `optimize/` module) ← **YOU ARE HERE**
-2. C1–C3: Selection, month assignment, cover selection
-3. C4: Download full images from NASA, render 8.5x11 pages
+1. **Phase C4: Calendar rendering** ← **YOU ARE HERE**
+2. C5: Review package and final export
+3. Print
 
 ## 4. Key Implementation Files
 
 ```
-Read src/artemis_calendar/models/__init__.py        # preference scoring orchestrator
-Read src/artemis_calendar/models/composite.py       # composite score computation
-Read src/artemis_calendar/models/marts.py           # score mart writes + cluster backfill
-Read src/artemis_calendar/cluster/clustering.py     # k-means / HDBSCAN, multimodal weights
-Read src/artemis_calendar/cluster/marts.py          # cluster summary + top images mart builders
-Read src/artemis_calendar/features/visual.py        # Pillow-based visual features (parallel)
-Read src/artemis_calendar/features/embeddings.py    # CLIP + sentence-transformer embeddings
-Read src/artemis_calendar/config/settings.py        # paths, rate limits, worker count
-Read src/artemis_calendar/cli.py                    # all CLI commands (including compute-scores)
+Read src/artemis_calendar/optimize/__init__.py    # calendar optimization orchestrator
+Read src/artemis_calendar/optimize/methods.py     # 5 selection methods (A–E)
+Read src/artemis_calendar/optimize/month_fit.py   # month suitability scoring + CALENDAR_MONTHS constant
+Read src/artemis_calendar/optimize/assignment.py  # Hungarian month assignment
+Read src/artemis_calendar/optimize/scoring.py     # calendar-level scoring
+Read src/artemis_calendar/optimize/cover_fit.py   # cover suitability scoring
+Read src/artemis_calendar/optimize/marts.py       # write candidates to warehouse
+Read src/artemis_calendar/models/__init__.py      # preference scoring orchestrator
+Read src/artemis_calendar/models/composite.py     # composite score computation
+Read src/artemis_calendar/models/marts.py         # score mart writes (PyArrow bulk insert)
+Read src/artemis_calendar/config/settings.py      # paths, rate limits, worker count
+Read src/artemis_calendar/cli.py                  # all CLI commands
 ```
 
 ## 5. Quick Data Check
@@ -112,42 +122,40 @@ Read src/artemis_calendar/cli.py                    # all CLI commands (includin
 artemis-pipeline status
 ```
 
-Or for detailed state:
+Or for detailed optimization state:
 
 ```python
 from artemis_calendar.config.database import get_connection, apply_migrations
 conn = get_connection()
 apply_migrations(conn)
 
+# Calendar candidates
+print("=== Calendar Candidates ===")
+rows = conn.execute("""
+    SELECT candidate_name, objective_score, popularity_score, diversity_score,
+           month_fit_score, cover_image_sk
+    FROM mart_calendar_candidate
+    ORDER BY objective_score DESC
+""").fetchall()
+for r in rows:
+    print(f"  {r[0]:<12} obj={r[1]:.3f} pop={r[2]:.3f} div={r[3]:.3f} mfit={r[4]:.3f} cover={r[5]}")
+
+# Best candidate month assignments
+print("\n=== Best Candidate (method_b) Month Assignments ===")
+rows = conn.execute("""
+    SELECT sequence_number, month_label, image_sk,
+           month_fit_score, preference_score
+    FROM mart_calendar_candidate_month_image
+    WHERE candidate_name = 'method_b'
+    ORDER BY sequence_number
+""").fetchall()
+for r in rows:
+    print(f"  Seq {r[0]:>2}: {r[1]:<18} sk={r[2]:>6} mfit={r[3]:.3f} pref={r[4]:.4f}")
+
 # Scoring completeness
 for tbl in ['mart_image_preference_score', 'mart_inter_rater_reliability']:
     count = conn.execute(f"SELECT count(*) FROM {tbl}").fetchone()[0]
-    print(f"{tbl}: {count}")
-
-# Score distribution
-print("\nComposite score distribution:")
-rows = conn.execute("""
-    SELECT
-        count(*) AS n,
-        round(avg(posterior_mean), 4) AS mean,
-        round(min(posterior_mean), 4) AS min,
-        round(max(posterior_mean), 4) AS max,
-        count(elo_score) AS has_elo,
-        count(borda_score) AS has_borda
-    FROM mart_image_preference_score
-    WHERE score_run_id = (
-        SELECT score_run_id FROM mart_image_preference_score
-        ORDER BY created_at DESC LIMIT 1
-    )
-""").fetchone()
-print(f"  images: {rows[0]}, mean: {rows[1]}, range: [{rows[2]}, {rows[3]}]")
-print(f"  with Elo: {rows[4]}, with Borda: {rows[5]}")
-
-# Cluster score backfill check
-backfilled = conn.execute("""
-    SELECT count(*) FROM mart_cluster_top_images WHERE preference_score IS NOT NULL
-""").fetchone()[0]
-print(f"\nCluster top images with scores: {backfilled}")
+    print(f"\n{tbl}: {count}")
 
 conn.close()
 ```
@@ -164,9 +172,10 @@ conn.close()
 - **Multimodal clustering weights:** visual 0.80, text 0.05, metadata 0.15
 - **Cluster count:** k=25 (see CLAUDE.md for rationale)
 - **Scoring:** Beta-Binomial posterior + Elo/Borda quantile adjustments. Run-ID partitioned.
-- **68 tests passing** (pytest), ruff clean
-- **ML deps:** `pip install -e ".[ml]"`
-- **NASA rate limit:** 1.0s. Full images NOT needed yet — defer to Phase C4.
+- **Optimization:** 5 methods, Hungarian month assignment, PyArrow bulk insert for all mart writes
+- **78 tests passing** (pytest), ruff clean
+- **ML deps:** `pip install -e ".[ml]"` (includes scipy>=1.12)
+- **NASA rate limit:** 1.0s per request. Full images needed only for the 13 selected images.
 
 ## 7. Design Documents
 
@@ -179,5 +188,7 @@ conn.close()
 | Feature extraction plan | `docs/feature_extraction_plan.md` | Phase 2A plan (completed) |
 | Thumbnail download plan | `docs/thumbnail_download_plan.md` | Phase 2B plan (completed) |
 | Statistical modeling design | `docs/statistical_modeling_design.md` | Phase 3 scoring components, composite method, reliability |
-| Lessons (block 1) | `docs/lessons/block1/` | 10 lessons from Phases 1–2B |
+| Calendar optimization design | `docs/calendar_optimization_design.md` | Phase 4: month-fit, cover-fit, 5 methods, objective function |
+| Lessons (block 1) | `docs/lessons/block1/` | 10 lessons from Phases 1–2B (infrastructure, scaling, DuckDB) |
 | Lessons (block 2) | `docs/lessons/block2/` | 8 lessons from Phase 3 (statistical methods + patterns) |
+| Lessons (block 3) | `docs/lessons/block3/` | 8 lessons from Phase 4 (optimization, PyArrow, MMR, assignment) |

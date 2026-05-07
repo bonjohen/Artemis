@@ -8,15 +8,16 @@ Imagery and voting data are sourced from [ArtemisTimeline.com](https://artemisti
 
 ## Status
 
-**Phase 2B complete.** The full data pipeline is operational:
+**Phase 4 complete.** The full data pipeline and calendar optimization are operational:
 
 - **12,217 thumbnails** downloaded from Cloudflare R2 CDN (concurrent, ~2.7 min)
 - **Visual features** extracted for all images (brightness, contrast, saturation, dominant colors)
 - **CLIP embeddings** (512-dim) for all 12,217 vote-pool images
-- **Text embeddings** (384-dim) for 502 editorial images with captions
 - **k-means clustering** (k=25) across visual, text, and multimodal views
+- **Statistical modeling** — Beta-Binomial posteriors, Elo ratings, Borda scores, composite scoring, inter-rater reliability
+- **Calendar optimization** — 5 selection methods, Hungarian month assignment, 5 candidate calendars generated
 
-Next: statistical modeling (Elo, Bradley-Terry-Luce, Bayesian scores) and calendar optimization.
+Next: download full-resolution images for the selected calendar and render printable 8.5x11 PDF pages.
 
 ## Architecture
 
@@ -37,6 +38,8 @@ Package layout under `src/artemis_calendar/`:
 | `features/` | Image/text embeddings, visual features (parallel extraction) |
 | `cluster/` | Visual, text, multimodal clustering + mart builders |
 | `synthetic/` | Synthetic voter data generation for bias detection testing |
+| `models/` | Preference scoring (Elo, Borda, Beta-Binomial), composite scores, reliability |
+| `optimize/` | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
 | `cli.py` | CLI entry point |
 
 ## Requirements
@@ -77,6 +80,9 @@ artemis-pipeline generate-votes           # Generate synthetic vote data
 artemis-pipeline extract-visual           # Extract Pillow-based visual features
 artemis-pipeline extract-embeddings       # Generate CLIP + text embeddings
 artemis-pipeline run-clustering --algorithm kmeans --cluster-type all --n-clusters 25 --seed 42
+artemis-pipeline compute-scores            # Compute preference scores (Elo, Borda, composite)
+artemis-pipeline optimize                  # Generate 5 candidate calendars
+artemis-pipeline optimize --methods method_a,method_e  # Run specific methods only
 ```
 
 ## Viewing Clustering Results
@@ -173,6 +179,10 @@ Design documents live in `docs/`:
 - [`docs/pdr_revisions.md`](docs/pdr_revisions.md) — PDR addenda (archive/refresh pipeline, clustering, month/cover scoring)
 - [`docs/synthetic_vote_pdr.md`](docs/synthetic_vote_pdr.md) — Synthetic voter data generator design
 - [`docs/thumbnail_download_plan.md`](docs/thumbnail_download_plan.md) — Thumbnail download and full-scale extraction plan
+- [`docs/statistical_modeling_design.md`](docs/statistical_modeling_design.md) — Phase 3 scoring design
+- [`docs/calendar_optimization_design.md`](docs/calendar_optimization_design.md) — Phase 4 optimization design
+
+Lessons learned: [`docs/lessons/`](docs/lessons/) — 26 lessons across 3 blocks (infrastructure, statistical methods, optimization)
 
 Session startup guide: [`startup.md`](startup.md) (root directory)
 
