@@ -47,9 +47,7 @@ def _get_pending_images(
     return [row[0] for row in conn.execute(query).fetchall()]
 
 
-def _download_one_thumb(
-    client: httpx.Client, guid: str, dest_dir: Path
-) -> tuple[str, bool, str | None]:
+def _download_one_thumb(client: httpx.Client, guid: str, dest_dir: Path) -> tuple[str, bool, str | None]:
     """Download a single thumbnail. Returns (guid, success, error_message)."""
     dest = dest_dir / f"{guid}.jpg"
     if dest.exists():
@@ -125,23 +123,17 @@ def download_thumbnails(
             ) as client,
             ThreadPoolExecutor(max_workers=workers) as executor,
         ):
-                futures = {
-                    executor.submit(_download_one_thumb, client, guid, THUMB_DIR): guid
-                    for guid in guids
-                }
+            futures = {executor.submit(_download_one_thumb, client, guid, THUMB_DIR): guid for guid in guids}
 
-                for i, future in enumerate(as_completed(futures), 1):
-                    guid, ok, err = future.result()
-                    if ok:
-                        succeeded.append(guid)
-                    else:
-                        failed.append((guid, err or "unknown"))
+            for i, future in enumerate(as_completed(futures), 1):
+                guid, ok, err = future.result()
+                if ok:
+                    succeeded.append(guid)
+                else:
+                    failed.append((guid, err or "unknown"))
 
-                    if i % PROGRESS_EVERY == 0:
-                        logger.info(
-                            f"Progress: {i}/{len(guids)} processed, "
-                            f"{len(succeeded)} ok, {len(failed)} failed"
-                        )
+                if i % PROGRESS_EVERY == 0:
+                    logger.info(f"Progress: {i}/{len(guids)} processed, {len(succeeded)} ok, {len(failed)} failed")
     finally:
         # Flush whatever succeeded to DB even on interrupt
         if succeeded:
@@ -228,4 +220,74 @@ def download_full_images(
             time.sleep(rate_limit)
 
     logger.info(f"Full image download complete: {downloaded} new")
+    return downloaded
+
+
+def download_candidate_images(
+    conn: duckdb.DuckDBPyConnection,
+    candidate_name: str,
+    run_id: str | None = None,
+) -> int:
+    """Download full-resolution images for a specific calendar candidate.
+
+    Only downloads the 13 images assigned to the candidate, not all 12,217.
+    Returns count of newly downloaded images.
+    """
+    LARGE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Resolve run_id if not provided
+    if run_id is None:
+        row = conn.execute(
+            "SELECT candidate_run_id FROM mart_calendar_candidate ORDER BY created_at DESC LIMIT 1"
+        ).fetchone()
+        if not row:
+            logger.warning("No calendar candidates found in warehouse")
+            return 0
+        run_id = row[0]
+
+    # Get the 13 GUIDs for this candidate
+    rows = conn.execute(
+        """
+        SELECT DISTINCT d.source_image_id
+        FROM mart_calendar_candidate_month_image m
+        JOIN dim_image d ON d.image_sk = m.image_sk
+        WHERE m.candidate_name = ? AND m.candidate_run_id = ?
+        """,
+        [candidate_name, run_id],
+    ).fetchall()
+
+    guids = [r[0] for r in rows]
+    if not guids:
+        logger.warning(f"No images found for candidate {candidate_name} (run {run_id})")
+        return 0
+
+    logger.info(f"Downloading {len(guids)} full-resolution images for candidate {candidate_name}")
+
+    downloaded = 0
+    for guid in guids:
+        dest = LARGE_DIR / f"{guid}.JPG"
+        if dest.exists():
+            conn.execute(
+                "UPDATE dim_image SET full_downloaded = true, updated_at = now() WHERE source_image_id = ?",
+                [guid],
+            )
+            continue
+
+        url = f"{NASA_BASE}/{guid}.JPG"
+        try:
+            result = download_artifact(url, timeout=60.0)
+            dest.write_bytes(result.content)
+            conn.execute(
+                "UPDATE dim_image SET full_downloaded = true, updated_at = now() WHERE source_image_id = ?",
+                [guid],
+            )
+            downloaded += 1
+            logger.info(f"Downloaded {guid} ({downloaded}/{len(guids)})")
+        except DownloadError as e:
+            logger.warning(f"Failed to download {guid}: {e}")
+
+        if RATE_LIMIT_NASA > 0:
+            time.sleep(RATE_LIMIT_NASA)
+
+    logger.info(f"Candidate image download complete: {downloaded} new, {len(guids) - downloaded} already on disk")
     return downloaded

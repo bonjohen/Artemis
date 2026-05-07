@@ -180,6 +180,24 @@ def cmd_optimize(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_render_calendar(args: argparse.Namespace) -> None:
+    from artemis_calendar.render.pipeline import render_calendar
+
+    conn = get_connection()
+    apply_migrations(conn)
+
+    candidates = [args.candidate]
+    if args.all:
+        rows = conn.execute("SELECT DISTINCT candidate_name FROM mart_calendar_candidate").fetchall()
+        candidates = [r[0] for r in rows]
+
+    for name in candidates:
+        out_dir = render_calendar(conn, name, run_id=args.run_id)
+        logger.info(f"Calendar rendered to {out_dir}")
+
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -271,6 +289,11 @@ def main() -> None:
     optimize.add_argument("--methods", default=None, help="Comma-separated methods (method_a,method_b,...)")
     optimize.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
 
+    render = sub.add_parser("render-calendar", help="Render calendar pages for a candidate")
+    render.add_argument("--candidate", default="method_b", help="Candidate name (default: method_b)")
+    render.add_argument("--run-id", default=None, help="Optimization run ID (default: latest)")
+    render.add_argument("--all", action="store_true", help="Render all candidates")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -288,6 +311,7 @@ def main() -> None:
         "run-clustering": cmd_run_clustering,
         "compute-scores": cmd_compute_scores,
         "optimize": cmd_optimize,
+        "render-calendar": cmd_render_calendar,
         "run-all": cmd_run_all,
     }
 

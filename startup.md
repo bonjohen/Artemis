@@ -12,7 +12,7 @@ CLAUDE.md has the full project status, architecture, source site rules, clusteri
 
 ## 2. Current State
 
-**Through Phase 4.** Data collection, feature extraction, clustering, statistical modeling, and calendar optimization are all complete. Five candidate calendars generated.
+**Through Phase C4.** Data collection, feature extraction, clustering, statistical modeling, calendar optimization, and calendar rendering are all complete. Five candidate calendars generated; rendering pipeline produces printable 8.5x11 PDF calendars.
 
 ### Warehouse: `D:/artemis/warehouse.duckdb`
 
@@ -75,17 +75,18 @@ Method B scored highest overall. Method A and E share 0 of 13 images — the opt
 
 ## 3. What Needs to Happen Next
 
-### Phase C4: Calendar Rendering
+### Phase C4: Calendar Rendering — DONE
 
-Download full-resolution images and render printable calendar pages:
+Rendering pipeline complete. Run `artemis-pipeline render-calendar --candidate method_b` to render.
 
-1. **Download full images** — 13 selected images from NASA JSC (`https://eol.jsc.nasa.gov/DatabaseImages/ESC/large/ART002/{guid}.JPG`). Rate limit: 1.0s per request. Only download the 13 images from the chosen candidate, not all 12,217.
-2. **Calendar page layout** — 8.5x11 portrait: image top half, calendar grid + description bottom half. Description max 25% of bottom half.
-3. **Cover page** — Full-page image with title overlay ("FARTHER — 2027 Calendar", "December 2026 – December 2027").
-4. **Monthly grid rendering** — Correct day-of-week alignment for Dec 2026 through Dec 2027.
-5. **Output package** — Individual page PNGs, individual PDFs, combined printable PDF.
+- `render/layout.py` — Page constants (2550x3300 at 300 DPI), font loading (Segoe UI)
+- `render/grid.py` — Calendar grid with Sunday start, correct day-of-week alignment
+- `render/page.py` — Monthly page (image + grid + optional description) and cover page (full-bleed + title overlay)
+- `render/pipeline.py` — Orchestrator: query candidate data, download 13 full-res images, render pages, combine into PDF
+- `extract/images.py` — `download_candidate_images()` for targeted 13-image download from NASA JSC
+- Output: `D:/artemis/output/calendars/{candidate_name}/` with PNGs, individual PDFs, and combined `calendar.pdf`
 
-### After C4
+### Phase C5: Review Package — NEXT
 
 | Phase | Description |
 |---|---|
@@ -95,8 +96,8 @@ Download full-resolution images and render printable calendar pages:
 
 ### Shortest path to printed calendar
 
-1. **Phase C4: Calendar rendering** ← **YOU ARE HERE**
-2. C5: Review package and final export
+1. ~~Phase C4: Calendar rendering~~ DONE
+2. **C5: Review package and final export** ← **YOU ARE HERE**
 3. Print
 
 ## 4. Key Implementation Files
@@ -112,8 +113,13 @@ Read src/artemis_calendar/optimize/marts.py       # write candidates to warehous
 Read src/artemis_calendar/models/__init__.py      # preference scoring orchestrator
 Read src/artemis_calendar/models/composite.py     # composite score computation
 Read src/artemis_calendar/models/marts.py         # score mart writes (PyArrow bulk insert)
-Read src/artemis_calendar/config/settings.py      # paths, rate limits, worker count
-Read src/artemis_calendar/cli.py                  # all CLI commands
+Read src/artemis_calendar/render/__init__.py       # render_calendar entry point
+Read src/artemis_calendar/render/layout.py         # page constants, font loading
+Read src/artemis_calendar/render/grid.py           # calendar grid renderer
+Read src/artemis_calendar/render/page.py           # month page + cover page composition
+Read src/artemis_calendar/render/pipeline.py       # rendering orchestrator (query, download, render, PDF)
+Read src/artemis_calendar/config/settings.py       # paths, rate limits, OUTPUT_ROOT
+Read src/artemis_calendar/cli.py                   # all CLI commands including render-calendar
 ```
 
 ## 5. Quick Data Check
@@ -173,7 +179,9 @@ conn.close()
 - **Cluster count:** k=25 (see CLAUDE.md for rationale)
 - **Scoring:** Beta-Binomial posterior + Elo/Borda quantile adjustments. Run-ID partitioned.
 - **Optimization:** 5 methods, Hungarian month assignment, PyArrow bulk insert for all mart writes
-- **78 tests passing** (pytest), ruff clean
+- **Rendering:** Pillow-based, 2550x3300 px (300 DPI), Segoe UI fonts, multi-page PDF via `Image.save(save_all=True)`
+- **Output:** `D:/artemis/output/calendars/{candidate_name}/` — PNGs, individual PDFs, combined `calendar.pdf`
+- **96 tests passing** (pytest), ruff clean
 - **ML deps:** `pip install -e ".[ml]"` (includes scipy>=1.12)
 - **NASA rate limit:** 1.0s per request. Full images needed only for the 13 selected images.
 
@@ -189,6 +197,7 @@ conn.close()
 | Thumbnail download plan | `docs/thumbnail_download_plan.md` | Phase 2B plan (completed) |
 | Statistical modeling design | `docs/statistical_modeling_design.md` | Phase 3 scoring components, composite method, reliability |
 | Calendar optimization design | `docs/calendar_optimization_design.md` | Phase 4: month-fit, cover-fit, 5 methods, objective function |
+| Calendar rendering plan | `docs/calendar_rendering_plan.md` | Phase C4: layout, grid, page composition, targeted download, PDF assembly |
 | Lessons (block 1) | `docs/lessons/block1/` | 10 lessons from Phases 1–2B (infrastructure, scaling, DuckDB) |
 | Lessons (block 2) | `docs/lessons/block2/` | 8 lessons from Phase 3 (statistical methods + patterns) |
 | Lessons (block 3) | `docs/lessons/block3/` | 8 lessons from Phase 4 (optimization, PyArrow, MMR, assignment) |
