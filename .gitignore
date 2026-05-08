@@ -26,5 +26,8 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
+# Static site build output
+_site/
+
 # Claude Code
 .claude/*.lock

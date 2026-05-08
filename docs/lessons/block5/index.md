@@ -1,6 +1,6 @@
 # Block 5: Web App & Interactive Tooling Lessons
 
-6 lessons from the web app implementation (FastAPI + vanilla JS SPA for interactive calendar selection).
+7 lessons from the web app implementation (FastAPI + vanilla JS SPA for interactive calendar selection).
 
 | # | Lesson | Core Teaching |
 |---|---|---|
@@ -10,3 +10,4 @@
 | 034 | [Reusing Query Modules Across CLI and Web](034_reusing_query_modules_across_layers.md) | Import query functions directly; wrap with Pydantic at the API boundary, not in the query layer |
 | 035 | [Design System Portability via Tokens](035_design_system_portability_via_tokens.md) | CSS custom properties as a shared asset make visual consistency free across standalone tools |
 | 036 | [Linter Rules vs. Framework Idioms](036_linter_rules_vs_framework_idioms.md) | When a linter rule conflicts with a framework's official pattern, suppress per-line — don't restructure |
+| 037 | [Static Site Generation via Fetch Shim](037_static_site_via_fetch_shim.md) | Intercept fetch() to serve pre-built JSON files — turns any API-backed SPA into a static site without frontend changes |
