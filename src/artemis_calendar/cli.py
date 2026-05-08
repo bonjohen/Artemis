@@ -330,6 +330,22 @@ def cmd_vision_tag(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_vision_label_clusters(args: argparse.Namespace) -> None:
+    from artemis_calendar.vision.cluster_labels import export_cluster_review, label_clusters
+
+    conn = get_connection()
+    apply_migrations(conn)
+
+    count = label_clusters(conn, cluster_run_id=args.run_id, cluster_type=args.cluster_type)
+    print(f"Labeled {count} clusters")
+
+    if args.export_review:
+        result = export_cluster_review(conn, cluster_run_id=args.run_id, cluster_type=args.cluster_type)
+        print(f"Review exported: {result.get('json_path', 'N/A')}")
+
+    conn.close()
+
+
 def cmd_serve(args: argparse.Namespace) -> None:
     try:
         import uvicorn
@@ -461,6 +477,13 @@ def main() -> None:
     )
     vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
 
+    vision_label = sub.add_parser(
+        "vision-label-clusters", help="Generate labels for clusters from dominant attributes"
+    )
+    vision_label.add_argument("--run-id", default=None, help="Cluster run ID (default: latest)")
+    vision_label.add_argument("--cluster-type", default="visual", help="Cluster type (default: visual)")
+    vision_label.add_argument("--export-review", action="store_true", help="Export cluster review JSON and Markdown")
+
     sub.add_parser("validate-bias", help="Run bias detection validation on synthetic vote data (S3)")
     sub.add_parser("validate-calendar", help="Run calendar optimization validation against ground truth (S4)")
 
@@ -488,6 +511,7 @@ def main() -> None:
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
         "vision-tag": cmd_vision_tag,
+        "vision-label-clusters": cmd_vision_label_clusters,
         "validate-bias": cmd_validate_bias,
         "validate-calendar": cmd_validate_calendar,
         "serve": cmd_serve,
