@@ -1,6 +1,6 @@
-# Block 6: Biased Voting Blocks, Vision Tagging & Image Curation Lessons
+# Block 6: Vision, Curation & AI-Assisted Workflow Lessons
 
-15 lessons from biased voting blocks, vision tagging, CLIP classification, image deduplication, and interactive selection tooling.
+19 lessons from biased voting blocks, vision tagging, CLIP classification, image deduplication, interactive selection tooling, and AI-assisted development patterns.
 
 | # | Lesson | Core Teaching |
 |---|---|---|
@@ -19,3 +19,7 @@
 | 051 | [Sigmoid Calibration for Domain-Specific CLIP](051_sigmoid_calibration_for_domain_specific_clip.md) | CLIP logits are domain-specific (16-32 for space photos); sigmoid center and scale must be empirically tuned |
 | 052 | [Incremental Feature Extraction](052_incremental_feature_extraction.md) | Delete-and-rewrite only new attribute codes; label_source and attribute_code columns enable surgical updates |
 | 053 | [Audit-First Design](053_audit_first_design.md) | A 15-minute written audit of existing code prevents hours of reimplementation and identifies extension points |
+| 054 | [Phased Autonomous Execution](054_phased_autonomous_execution.md) | Numbered phases with commit checkpoints turn multi-session projects into a queue of self-contained tasks |
+| 055 | [Session Continuity via Artifacts](055_session_continuity_via_artifacts.md) | CLAUDE.md + startup docs + plan files eliminate ramp-up overhead across session boundaries |
+| 056 | [Environment Self-Interference](056_environment_self_interference.md) | AI assistants fight their own orphan processes — explicit cleanup before each launch is mandatory |
+| 057 | [Test-Gated Commits at Scale](057_test_gated_commits_at_scale.md) | Never commit red tests; run incrementally after each change, not in batch at the end |
