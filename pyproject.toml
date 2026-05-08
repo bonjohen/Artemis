@@ -22,6 +22,9 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
 ]
+web = [
+    "fastapi[standard]>=0.115",
+]
 ml = [
     "pillow>=10.0",
     "torch>=2.0",

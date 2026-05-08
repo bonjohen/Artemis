@@ -39,18 +39,18 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 1.1    | Open   |               |                  | Add `web` optional dep to `pyproject.toml`: `fastapi[standard]>=0.115` |
-| 1.2    | Open   |               |                  | Create `src/artemis_calendar/web/__init__.py` with `create_app()` factory |
-| 1.3    | Open   |               |                  | Create `src/artemis_calendar/web/app.py` — FastAPI app, lifespan (DB connect/close), static mounts (static dir + thumbs), CORS |
-| 1.4    | Open   |               |                  | Create `src/artemis_calendar/web/db.py` — read-only DuckDB connection, startup cache loader, `get_db` dependency |
-| 1.5    | Open   |               |                  | Create `src/artemis_calendar/web/static/` directory with `index.html` SPA shell, copy `tokens.css` and `system.css` from `docs/lessons/system/` |
-| 1.6    | Open   |               |                  | Add `cmd_serve` to `cli.py` with `serve` subcommand (host, port args, default `localhost:8420`) |
-| 1.7    | Open   |               |                  | Verify: `pip install -e ".[web]"` && `artemis-pipeline serve` starts, `GET /` serves index.html, `GET /thumbs/{guid}.jpg` serves a thumbnail |
-| 1.8    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+| 1.1    | Completed | 2026-05-06 10:00 PM | 2026-05-06 10:02 PM | Add `web` optional dep to `pyproject.toml`: `fastapi[standard]>=0.115` |
+| 1.2    | Completed | 2026-05-06 10:00 PM | 2026-05-06 10:02 PM | Create `src/artemis_calendar/web/__init__.py` with `create_app()` factory |
+| 1.3    | Completed | 2026-05-06 10:00 PM | 2026-05-06 10:02 PM | Create `src/artemis_calendar/web/app.py` — FastAPI app, lifespan (DB connect/close), static mounts (static dir + thumbs), CORS |
+| 1.4    | Completed | 2026-05-06 10:00 PM | 2026-05-06 10:02 PM | Create `src/artemis_calendar/web/db.py` — read-only DuckDB connection, startup cache loader, `get_db` dependency |
+| 1.5    | Completed | 2026-05-06 10:00 PM | 2026-05-06 10:02 PM | Create `src/artemis_calendar/web/static/` directory with `index.html` SPA shell, copy `tokens.css` and `system.css` from `docs/lessons/system/` |
+| 1.6    | Completed | 2026-05-06 10:00 PM | 2026-05-06 10:02 PM | Add `cmd_serve` to `cli.py` with `serve` subcommand (host, port args, default `localhost:8420`) |
+| 1.7    | Completed | 2026-05-06 10:02 PM | 2026-05-06 10:03 PM | Verify: `pip install -e ".[web]"` && `artemis-pipeline serve` starts, `GET /` serves index.html, `GET /thumbs/{guid}.jpg` serves a thumbnail |
+| 1.8    | Completed | 2026-05-06 10:03 PM | 2026-05-06 10:03 PM | Run pytest + ruff, fix any issues, stage and commit |
 
 ### Phase 1 Summary
 
-- **Changes:** TBD
+- **Changes:** Added `fastapi[standard]>=0.115` to `pyproject.toml` `[web]` optional dep. Created `src/artemis_calendar/web/` with `__init__.py`, `app.py` (FastAPI factory, lifespan, static/thumb mounts, health endpoint), `db.py` (read-only DuckDB connection), `routes/__init__.py`. Created `static/` with `index.html` SPA shell, `css/tokens.css`, `css/system.css` (copied from Atlas). Added `serve` CLI subcommand to `cli.py`. 149 tests pass, ruff clean.
 - **Commit:** `feat(web): add FastAPI skeleton with static file serving and CLI serve command`
 
 ## Phase 2: API — Images & Candidates

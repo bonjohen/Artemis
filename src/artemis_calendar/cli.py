@@ -290,6 +290,19 @@ def cmd_validate_calendar(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_serve(args: argparse.Namespace) -> None:
+    try:
+        import uvicorn
+    except ImportError:
+        print("Web dependencies not installed. Run: pip install -e '.[web]'")
+        sys.exit(1)
+
+    from artemis_calendar.web import create_app
+
+    app = create_app()
+    uvicorn.run(app, host=args.host, port=args.port)
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -402,6 +415,10 @@ def main() -> None:
     sub.add_parser("validate-bias", help="Run bias detection validation on synthetic vote data (S3)")
     sub.add_parser("validate-calendar", help="Run calendar optimization validation against ground truth (S4)")
 
+    serve = sub.add_parser("serve", help="Start the web application")
+    serve.add_argument("--host", default="localhost", help="Bind host (default: localhost)")
+    serve.add_argument("--port", type=int, default=8420, help="Bind port (default: 8420)")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -423,6 +440,7 @@ def main() -> None:
         "review-package": cmd_review_package,
         "validate-bias": cmd_validate_bias,
         "validate-calendar": cmd_validate_calendar,
+        "serve": cmd_serve,
         "run-all": cmd_run_all,
     }
 
