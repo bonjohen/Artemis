@@ -290,6 +290,46 @@ def cmd_validate_calendar(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_vision_tag(args: argparse.Namespace) -> None:
+    from artemis_calendar.vision.attributes import load_attribute_vocabulary
+    from artemis_calendar.vision.loader import seed_attribute_vocabulary
+    from artemis_calendar.vision.pipeline import run_vision_tagging
+
+    conn = get_connection()
+    apply_migrations(conn)
+
+    vocab = load_attribute_vocabulary()
+    seed_attribute_vocabulary(conn)
+
+    if args.mock:
+        from artemis_calendar.vision.tagger import MockTagger
+
+        tagger = MockTagger(vocab)
+    else:
+        from artemis_calendar.vision.tagger import VisionTagger
+
+        tagger = VisionTagger(
+            vocab,
+            model_name=args.model,
+            model_version=args.model_version,
+        )
+
+    summary = run_vision_tagging(
+        conn,
+        tagger=tagger,
+        vocab=vocab,
+        limit=args.limit,
+        changed_only=args.changed_only,
+    )
+
+    print("\nVision tagging complete:")
+    print(f"  Images processed: {summary['images_processed']}")
+    print(f"  Attributes written: {summary['attributes_written']}")
+    print(f"  Flagged for review: {summary['review_flagged']}")
+    print(f"  Output: {summary.get('output_path', 'N/A')}")
+    conn.close()
+
+
 def cmd_serve(args: argparse.Namespace) -> None:
     try:
         import uvicorn
@@ -412,6 +452,15 @@ def main() -> None:
     review.add_argument("--winner", default="method_b", help="Candidate to export (default: method_b)")
     review.add_argument("--skip-render", action="store_true", help="Skip rendering full calendars")
 
+    vision_tag = sub.add_parser("vision-tag", help="Run vision model to tag images with structured attributes")
+    vision_tag.add_argument("--limit", type=int, default=None, help="Max images to process")
+    vision_tag.add_argument("--changed-only", action="store_true", help="Skip images that already have attributes")
+    vision_tag.add_argument("--model", default="qwen2.5-vl-7b", help="Vision model name (default: qwen2.5-vl-7b)")
+    vision_tag.add_argument(
+        "--model-version", default="Qwen/Qwen2.5-VL-7B-Instruct", help="HuggingFace model ID"
+    )
+    vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
+
     sub.add_parser("validate-bias", help="Run bias detection validation on synthetic vote data (S3)")
     sub.add_parser("validate-calendar", help="Run calendar optimization validation against ground truth (S4)")
 
@@ -438,6 +487,7 @@ def main() -> None:
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
+        "vision-tag": cmd_vision_tag,
         "validate-bias": cmd_validate_bias,
         "validate-calendar": cmd_validate_calendar,
         "serve": cmd_serve,
