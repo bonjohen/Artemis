@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artemis Calendar</title>
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/system.css">
+  <link rel="stylesheet" href="/static/css/app.css">
+<script>
+(function(){
+var F=window.fetch,IC=null,DC=null;
+function LI(b){if(!IC)IC=F(b+'api/images/all.json').then(function(r){return r.json()});return IC;}
+function LD(b){if(!DC)DC=F(b+'api/images/details.json').then(function(r){return r.json()});return DC;}
+window.fetch=function(u,opts){
+  if(typeof u!=='string')return F.apply(this,arguments);
+  var ai=u.indexOf('/api/');
+  if(ai<0)return F.apply(this,arguments);
+  var b=u.substring(0,ai+1);
+  var r=u.substring(ai);
+  var qi=r.indexOf('?'),p=qi>=0?r.substring(0,qi):r;
+  var sp=new URLSearchParams(qi>=0?r.substring(qi+1):'');
+  /* Health */
+  if(p==='/api/health'){
+    return Promise.resolve(new Response('{"status":"ok"}',{headers:{'Content-Type':'application/json'}}));
+  }
+  /* Images list — load all, filter/sort/paginate client-side */
+  if(p==='/api/images'){
+    return LI(b).then(function(all){
+      var items=all.slice();
+      var cid=sp.get('cluster_id'),ms=sp.get('min_score'),sort=sp.get('sort')||'score';
+      if(cid!==null)items=items.filter(function(x){return x.cluster_id===+cid});
+      if(ms!==null)items=items.filter(function(x){return (x.preference_score||0)>=+ms});
+      if(sort==='score')items.sort(function(a,b){return (b.preference_score||0)-(a.preference_score||0)});
+      else if(sort==='brightness')items.sort(function(a,b){return (b.brightness_score||0)-(a.brightness_score||0)});
+      else if(sort==='cluster')items.sort(function(a,b){return (a.cluster_id||999)-(b.cluster_id||999)||(b.preference_score||0)-(a.preference_score||0)});
+      var pg=+(sp.get('page')||1),pp=+(sp.get('per_page')||60);
+      var start=(pg-1)*pp;
+      var body={items:items.slice(start,start+pp),total:items.length,page:pg,pages:Math.max(1,Math.ceil(items.length/pp))};
+      return new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}});
+    });
+  }
+  /* Image detail */
+  var im=p.match(/^\/api\/images\/(\d+)$/);
+  if(im){
+    return LD(b).then(function(d){
+      var detail=d[im[1]];
+      if(!detail)return new Response('{"detail":"Not found"}',{status:404,headers:{'Content-Type':'application/json'}});
+      return new Response(JSON.stringify(detail),{headers:{'Content-Type':'application/json'}});
+    });
+  }
+  /* Clusters list */
+  if(p==='/api/clusters'){return F(b+'api/clusters/index.json');}
+  /* Cluster detail — load members, paginate client-side */
+  var cm=p.match(/^\/api\/clusters\/(\d+)$/);
+  if(cm){
+    return F(b+'api/clusters/'+cm[1]+'.json').then(function(r){return r.json()}).then(function(all){
+      var pg=+(sp.get('page')||1),pp=+(sp.get('per_page')||60);
+      var start=(pg-1)*pp;
+      var body={items:all.slice(start,start+pp),total:all.length,page:pg,pages:Math.max(1,Math.ceil(all.length/pp))};
+      return new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}});
+    });
+  }
+  /* Candidates list */
+  if(p==='/api/candidates'){return F(b+'api/candidates/index.json');}
+  /* Candidate detail */
+  var cn=p.match(/^\/api\/candidates\/(.+)$/);
+  if(cn){return F(b+'api/candidates/'+cn[1]+'.json');}
+  /* Stats */
+  if(p==='/api/stats'){return F(b+'api/stats.json');}
+  /* Lessons */
+  if(p==='/api/lessons'){return F(b+'api/lessons.json');}
+  /* Selection — read-only in static mode */
+  if(p==='/api/selection'&&(!opts||!opts.method||opts.method==='GET')){
+    return Promise.resolve(new Response(JSON.stringify({name:sp.get('name')||'current',assignments:[],notes:'Static site — selection builder is read-only.'}),
+      {headers:{'Content-Type':'application/json'}}));
+  }
+  if(p==='/api/selection'){
+    return Promise.resolve(new Response(JSON.stringify({detail:'Selection save is not available on the static site. Run the local server for interactive selection.'}),
+      {status:501,headers:{'Content-Type':'application/json'}}));
+  }
+  if(p==='/api/selection/score'){
+    return Promise.resolve(new Response(JSON.stringify({detail:'Scoring requires the local server with CLIP embeddings loaded.'}),
+      {status:501,headers:{'Content-Type':'application/json'}}));
+  }
+  /* Fallback — try .json extension */
+  return F(b+p.substring(1)+'.json');
+};
+})();
+</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="#/images" class="brand">
+      <span class="mark"></span> Artemis Calendar
+    </a>
+    <div class="links">
+      <a href="#/images">Images</a>
+      <a href="#/candidates">Candidates</a>
+      <a href="#/clusters">Clusters</a>
+      <a href="#/stats">Stats</a>
+      <a href="#/selection">Selection</a>
+      <a href="#/lessons">Lessons</a>
+    </div>
+  </nav>
+  <main class="shell" id="app">
+    <div class="loading">Loading...</div>
+  </main>
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* ============================================================
+   Artemis — System
+   Typography, layout primitives, components.
+   Depends on tokens.css.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,500;8..60,600&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--atlas-paper);
+  color: var(--atlas-ink);
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--atlas-accent); color: #fff; }
+
+.shell {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--s-7);
+}
+
+a { color: var(--atlas-ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--atlas-rule-soft); }
+a:hover { text-decoration-color: var(--atlas-ink); }
+
+/* ---------- SITE NAV ---------- */
+.site-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--s-4) var(--s-7);
+  border-bottom: 1px solid var(--atlas-rule-soft);
+  background: var(--atlas-paper);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--serif); font-style: italic; font-weight: 500;
+  font-size: 22px; letter-spacing: -.005em;
+  text-decoration: none;
+}
+.brand .mark {
+  width: 22px; height: 22px; border-radius: 5px;
+  background: linear-gradient(135deg, var(--atlas-ink) 0 50%, var(--atlas-accent-2) 50% 100%);
+  display: inline-block;
+}
+.site-nav .links {
+  display: flex; gap: var(--s-5);
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--atlas-muted);
+}
+.site-nav .links a { color: inherit; text-decoration: none; }
+.site-nav .links a:hover, .site-nav .links a[aria-current="page"] { color: var(--atlas-ink); }
+
+/* ---------- THEME TOGGLE ---------- */
+.theme-toggle .sun  { display: none; }
+.theme-toggle .moon { display: block; }
+[data-theme="dark"] .theme-toggle .sun  { display: block; }
+[data-theme="dark"] .theme-toggle .moon { display: none; }
+
+:focus-visible {
+  outline: 2px solid var(--atlas-accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+@media print {
+  body { background: #fff; color: #000; }
+  .no-print { display: none !important; }
+}

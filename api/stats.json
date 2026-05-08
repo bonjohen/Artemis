@@ -1,0 +1,1 @@
+{"reliability":{"batch_pick_5_of_50":0.5158317135870589,"category_top_3":null},"bias":{},"score_distribution":[{"bucket":0.15,"count":2015},{"bucket":0.2,"count":9966},{"bucket":0.25,"count":223},{"bucket":0.3,"count":11},{"bucket":0.35,"count":2}],"vote_counts":{"batch_ballots":50,"pairwise_votes":200,"category_rankings":25},"image_count":12217}

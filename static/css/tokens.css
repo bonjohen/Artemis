@@ -1,0 +1,91 @@
+/* ============================================================
+   Artemis — Design Tokens
+   Adapted from Atlas design system for Artemis lessons.
+   Light + dark. No backend, no accounts.
+   ============================================================ */
+
+:root {
+  --atlas-ink:    #1A1D24;
+  --atlas-ink-2:  #4A4D54;
+  --atlas-muted:  #7A7D84;
+  --atlas-paper:  #F6F4EF;
+  --atlas-paper-2:#EDEAE0;
+  --atlas-rule:   #1A1D24;
+  --atlas-rule-soft: rgba(26,29,36,.12);
+
+  --atlas-accent:   #2F5DA8;
+  --atlas-accent-2: #D97757;
+  --atlas-good:     #3F7D58;
+  --atlas-bad:      #B0463A;
+  --atlas-warn:     #B68C2E;
+
+  --serif: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+  --sans:  'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:  'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+
+  --fs-display: clamp(48px, 6vw, 84px);
+  --fs-h1:      clamp(36px, 4vw, 56px);
+  --fs-h2:      28px;
+  --fs-h3:      22px;
+  --fs-body:    16px;
+  --fs-small:   13px;
+  --fs-meta:    11px;
+
+  --lh-tight:   1.05;
+  --lh-snug:    1.2;
+  --lh-body:    1.55;
+
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px; --s-9: 96px;
+
+  --r-sm: 6px;  --r-md: 10px; --r-lg: 16px; --r-pill: 999px;
+
+  --shadow-1: 0 1px 0 rgba(26,29,36,.04), 0 1px 2px rgba(26,29,36,.06);
+  --shadow-2: 0 4px 12px rgba(26,29,36,.08);
+
+  --t-fast: 120ms;
+  --t-base: 200ms;
+  --t-slow: 320ms;
+  --ease:   cubic-bezier(.2,.7,.2,1);
+
+  --content-max: 1200px;
+  --reading-max: 68ch;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --atlas-ink:    #F2EEE3;
+  --atlas-ink-2:  #B8B5AC;
+  --atlas-muted:  #777874;
+  --atlas-paper:  #0F1014;
+  --atlas-paper-2:#15171C;
+  --atlas-rule:   #F2EEE3;
+  --atlas-rule-soft: rgba(242,238,227,.10);
+
+  --atlas-accent:   #6FA0E8;
+  --atlas-accent-2: #E59478;
+  --atlas-good:     #6BB089;
+  --atlas-bad:      #D87363;
+  --atlas-warn:     #D9B25A;
+
+  --shadow-1: 0 1px 0 rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.5);
+  --shadow-2: 0 4px 12px rgba(0,0,0,.5);
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --atlas-ink:    #F2EEE3;
+    --atlas-ink-2:  #B8B5AC;
+    --atlas-muted:  #777874;
+    --atlas-paper:  #0F1014;
+    --atlas-paper-2:#15171C;
+    --atlas-rule:   #F2EEE3;
+    --atlas-rule-soft: rgba(242,238,227,.10);
+    --atlas-accent:   #6FA0E8;
+    --atlas-accent-2: #E59478;
+    color-scheme: dark;
+  }
+}
