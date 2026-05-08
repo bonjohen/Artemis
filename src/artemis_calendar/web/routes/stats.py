@@ -17,9 +17,9 @@ def get_stats(conn: duckdb.DuckDBPyConnection = Depends(get_db)):  # noqa: B008
 
     # Reliability metrics
     try:
-        rows = conn.execute("SELECT vote_mode, alpha_value FROM mart_inter_rater_reliability").fetchall()
+        rows = conn.execute("SELECT vote_mode, krippendorff_alpha FROM mart_inter_rater_reliability").fetchall()
         result["reliability"] = {r[0]: float(r[1]) if r[1] is not None else None for r in rows}
-    except duckdb.CatalogException:
+    except (duckdb.CatalogException, duckdb.BinderException):
         result["reliability"] = {}
 
     # Bias detection results
@@ -85,7 +85,7 @@ def get_stats(conn: duckdb.DuckDBPyConnection = Depends(get_db)):  # noqa: B008
 
     # Image count
     try:
-        row = conn.execute("SELECT COUNT(*) FROM dim_image WHERE vote_pool = true").fetchone()
+        row = conn.execute("SELECT COUNT(*) FROM dim_image WHERE vote_pool_flag = true").fetchone()
         result["image_count"] = int(row[0])
     except duckdb.CatalogException:
         result["image_count"] = 0

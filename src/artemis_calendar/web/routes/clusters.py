@@ -17,21 +17,18 @@ router = APIRouter(prefix="/api/clusters", tags=["clusters"])
 @router.get("")
 def list_clusters(conn: duckdb.DuckDBPyConnection = Depends(get_db)):  # noqa: B008
     rows = conn.execute(
-        """
+        f"""
         SELECT s.cluster_id, s.image_count, s.mean_preference_score,
-               t.source_image_id AS top_image_guid
+               d.source_image_id AS top_image_guid
         FROM mart_image_cluster_summary s
         LEFT JOIN mart_cluster_top_images t
             ON t.cluster_id = s.cluster_id
             AND t.cluster_type = s.cluster_type
             AND t.cluster_run_id = s.cluster_run_id
-            AND t.rank = 1
+            AND t.rank_in_cluster = 1
+        LEFT JOIN dim_image d ON d.image_sk = t.image_sk
         WHERE s.cluster_type = 'visual'
-          AND s.cluster_run_id = (
-              SELECT cluster_run_id FROM mart_image_cluster_summary
-              WHERE cluster_type = 'visual'
-              ORDER BY created_at DESC LIMIT 1
-          )
+          AND s.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
         ORDER BY s.cluster_id
         """
     ).fetchall()
@@ -62,7 +59,7 @@ def get_cluster(
         WHERE c.cluster_type = 'visual'
           AND c.cluster_id = ?
           AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
-          AND d.vote_pool = true
+          AND d.vote_pool_flag = true
         """,
         [cluster_id],
     ).fetchone()[0]
@@ -84,7 +81,7 @@ def get_cluster(
         WHERE c.cluster_type = 'visual'
           AND c.cluster_id = ?
           AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
-          AND d.vote_pool = true
+          AND d.vote_pool_flag = true
         ORDER BY COALESCE(p.posterior_mean, 0) DESC
         LIMIT ? OFFSET ?
         """,

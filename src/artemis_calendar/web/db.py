@@ -86,7 +86,7 @@ def _load_cache(app: FastAPI) -> None:
             """
         ).fetchall()
         app.state.cover_fit = {int(r[0]): float(r[1]) for r in rows}
-    except duckdb.CatalogException:
+    except (duckdb.CatalogException, duckdb.BinderException):
         app.state.cover_fit = {}
 
     # Month fit — load from optimization data if available

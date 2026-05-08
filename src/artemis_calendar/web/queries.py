@@ -23,7 +23,7 @@ def fetch_images_page(
     }
     order_clause = sort_map.get(sort, sort_map["score"])
 
-    where_parts = ["d.vote_pool = true"]
+    where_parts = ["d.vote_pool_flag = true"]
     params: list = []
 
     if cluster_id is not None:

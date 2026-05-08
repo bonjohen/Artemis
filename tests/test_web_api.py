@@ -19,7 +19,7 @@ def db():
             source_image_id TEXT NOT NULL,
             title TEXT,
             description TEXT,
-            vote_pool BOOLEAN DEFAULT true,
+            vote_pool_flag BOOLEAN DEFAULT true,
             created_at TIMESTAMPTZ DEFAULT now()
         )
     """)
@@ -83,7 +83,7 @@ def db():
     # Seed data
     for i in range(5):
         conn.execute(
-            "INSERT INTO dim_image (image_sk, source_image_id, title, vote_pool) VALUES (?, ?, ?, true)",
+            "INSERT INTO dim_image (image_sk, source_image_id, title, vote_pool_flag) VALUES (?, ?, ?, true)",
             [13775 + i, f"GUID{i:04d}", f"Image {i}"],
         )
         conn.execute(
@@ -135,9 +135,8 @@ def db():
             cluster_id INTEGER,
             cluster_type TEXT,
             cluster_run_id TEXT,
-            rank INTEGER,
-            image_sk INTEGER,
-            source_image_id TEXT
+            rank_in_cluster INTEGER,
+            image_sk INTEGER
         )
     """)
     for cid in range(3):
@@ -146,15 +145,15 @@ def db():
             [cid, 2 if cid < 2 else 1, 0.6 + cid * 0.1],
         )
         conn.execute(
-            "INSERT INTO mart_cluster_top_images VALUES (?, 'visual', 'crun1', 1, ?, ?)",
-            [cid, 13775 + cid, f"GUID{cid:04d}"],
+            "INSERT INTO mart_cluster_top_images VALUES (?, 'visual', 'crun1', 1, ?)",
+            [cid, 13775 + cid],
         )
 
     # Reliability
     conn.execute("""
         CREATE TABLE mart_inter_rater_reliability (
             vote_mode TEXT,
-            alpha_value DOUBLE
+            krippendorff_alpha DOUBLE
         )
     """)
     conn.execute("INSERT INTO mart_inter_rater_reliability VALUES ('batch', 0.42)")
