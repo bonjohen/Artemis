@@ -5,9 +5,10 @@ from __future__ import annotations
 import math
 
 import duckdb
+import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
+from artemis_calendar.config.sql_helpers import ACTIVE_IMAGE_FILTER, LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
 from artemis_calendar.web.db import get_db
 from artemis_calendar.web.models import ImageSummary, PaginatedResponse
 
@@ -43,6 +44,28 @@ def list_clusters(conn: duckdb.DuckDBPyConnection = Depends(get_db)):  # noqa: B
     ]
 
 
+@router.get("/spotlights")
+def all_spotlights(
+    diverse_count: int = Query(5, ge=1, le=20),
+    conn: duckdb.DuckDBPyConnection = Depends(get_db),  # noqa: B008
+):
+    """Return spotlight (representative + diverse) for every cluster."""
+    cluster_ids = conn.execute(
+        f"""
+        SELECT DISTINCT cluster_id FROM feature_image_cluster
+        WHERE cluster_type = 'visual' AND cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
+        ORDER BY cluster_id
+        """
+    ).fetchall()
+
+    results = []
+    for (cid,) in cluster_ids:
+        spot = _compute_spotlight(conn, int(cid), diverse_count, allow_empty=True)
+        if spot is not None:
+            results.append(spot)
+    return results
+
+
 @router.get("/{cluster_id}")
 def get_cluster(
     cluster_id: int,
@@ -60,6 +83,7 @@ def get_cluster(
           AND c.cluster_id = ?
           AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
           AND d.vote_pool_flag = true
+          AND {ACTIVE_IMAGE_FILTER}
         """,
         [cluster_id],
     ).fetchone()[0]
@@ -82,6 +106,7 @@ def get_cluster(
           AND c.cluster_id = ?
           AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
           AND d.vote_pool_flag = true
+          AND {ACTIVE_IMAGE_FILTER}
         ORDER BY COALESCE(p.posterior_mean, 0) DESC
         LIMIT ? OFFSET ?
         """,
@@ -106,3 +131,141 @@ def get_cluster(
         page=page,
         pages=max(1, math.ceil(total / per_page)),
     )
+
+
+@router.get("/{cluster_id}/spotlight")
+def cluster_spotlight(
+    cluster_id: int,
+    diverse_count: int = Query(5, ge=1, le=20),
+    conn: duckdb.DuckDBPyConnection = Depends(get_db),  # noqa: B008
+):
+    """Return 1 representative image + N diverse images for a cluster.
+
+    Representative = closest to centroid.
+    Diverse = greedy max-min distance selection from CLIP embeddings.
+    """
+    return _compute_spotlight(conn, cluster_id, diverse_count)
+
+
+def _compute_spotlight(
+    conn: duckdb.DuckDBPyConnection,
+    cluster_id: int,
+    diverse_count: int,
+    allow_empty: bool = False,
+) -> dict | None:
+    """Compute representative + diverse images for one cluster."""
+    # Get all images in cluster with distance, score, and guid
+    rows = conn.execute(
+        f"""
+        SELECT d.image_sk, d.source_image_id,
+               c.distance_to_centroid,
+               COALESCE(p.posterior_mean, 0) AS score
+        FROM feature_image_cluster c
+        JOIN dim_image d ON d.image_sk = c.image_sk
+        LEFT JOIN mart_image_preference_score p
+            ON p.image_sk = c.image_sk AND p.score_run_id = {LATEST_SCORE_RUN}
+        WHERE c.cluster_type = 'visual'
+          AND c.cluster_id = ?
+          AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
+          AND d.vote_pool_flag = true
+          AND {ACTIVE_IMAGE_FILTER}
+        ORDER BY c.distance_to_centroid ASC
+        """,
+        [cluster_id],
+    ).fetchall()
+
+    if not rows:
+        if allow_empty:
+            return None
+        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
+
+    image_sks = [int(r[0]) for r in rows]
+    guids = {int(r[0]): r[1] for r in rows}
+    scores = {int(r[0]): float(r[3]) for r in rows}
+
+    # Representative = closest to centroid (first row)
+    rep_sk = image_sks[0]
+
+    # Load CLIP embeddings for this cluster to compute diversity
+    emb_rows = conn.execute(
+        """
+        SELECT image_sk, embedding_vector
+        FROM feature_image_embedding
+        WHERE image_sk = ANY(?)
+        """,
+        [image_sks],
+    ).fetchall()
+
+    if len(emb_rows) < 2:
+        # Not enough embeddings — fall back to distance-based diversity
+        diverse_sks = image_sks[-diverse_count:] if len(image_sks) > 1 else []
+    else:
+        # Build embedding matrix
+        emb_map = {}
+        for sk, vec in emb_rows:
+            sk = int(sk)
+            if isinstance(vec, (list, np.ndarray)):
+                emb_map[sk] = np.array(vec, dtype=np.float32)
+            else:
+                emb_map[sk] = np.frombuffer(vec, dtype=np.float32)
+
+        # Greedy max-min diversity selection
+        # Start with representative, then iteratively pick the image
+        # most distant from all already-selected images
+        available = [sk for sk in image_sks if sk != rep_sk and sk in emb_map]
+        if rep_sk not in emb_map:
+            diverse_sks = available[:diverse_count]
+        else:
+            selected = [rep_sk]
+            selected_embs = [emb_map[rep_sk]]
+
+            for _ in range(min(diverse_count, len(available))):
+                best_sk = None
+                best_min_dist = -1.0
+
+                for sk in available:
+                    if sk in selected:
+                        continue
+                    emb = emb_map.get(sk)
+                    if emb is None:
+                        continue
+                    # Min distance to any selected image
+                    min_dist = min(
+                        float(np.linalg.norm(emb - s_emb))
+                        for s_emb in selected_embs
+                    )
+                    if min_dist > best_min_dist:
+                        best_min_dist = min_dist
+                        best_sk = sk
+
+                if best_sk is None:
+                    break
+                selected.append(best_sk)
+                selected_embs.append(emb_map[best_sk])
+
+            diverse_sks = selected[1:]  # exclude representative
+
+    def _img_dict(sk):
+        return {
+            "image_sk": sk,
+            "source_image_id": guids.get(sk, ""),
+            "preference_score": scores.get(sk),
+        }
+
+    # Get cluster label
+    label_row = conn.execute(
+        f"""
+        SELECT cluster_label FROM mart_image_cluster_summary
+        WHERE cluster_type = 'visual' AND cluster_id = ?
+          AND cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
+        """,
+        [cluster_id],
+    ).fetchone()
+
+    return {
+        "cluster_id": cluster_id,
+        "cluster_label": label_row[0] if label_row else None,
+        "image_count": len(rows),
+        "representative": _img_dict(rep_sk),
+        "diverse": [_img_dict(sk) for sk in diverse_sks],
+    }

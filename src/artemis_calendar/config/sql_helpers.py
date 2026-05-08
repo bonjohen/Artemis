@@ -14,3 +14,6 @@ LATEST_VISUAL_CLUSTER_RUN = """(
     WHERE cluster_type = 'visual'
     ORDER BY created_at DESC LIMIT 1
 )"""
+
+# Filter to exclude dedup-suppressed images. Use in queries that join dim_image as 'd'.
+ACTIVE_IMAGE_FILTER = "COALESCE(d.is_suppressed, false) = false"

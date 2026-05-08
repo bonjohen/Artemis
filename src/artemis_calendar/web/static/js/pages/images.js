@@ -1,5 +1,6 @@
 /**
- * Image browser page — paginated grid with sort, filter, and detail overlay.
+ * Image browser page — paginated grid with sort, filter, detail overlay,
+ * and cluster spotlight view.
  */
 
 import { createImageCard } from '../components/image-card.js';
@@ -8,6 +9,7 @@ let currentPage = 1;
 let currentSort = 'score';
 let currentCluster = '';
 let currentMinScore = '';
+let viewMode = 'browse'; // 'browse' or 'spotlights'
 
 async function fetchImages(page, sort, clusterId, minScore) {
   const params = new URLSearchParams({ page, per_page: 60, sort });
@@ -91,14 +93,12 @@ function showDetail(container, image) {
 async function loadPage(container) {
   const data = await fetchImages(currentPage, currentSort, currentCluster, currentMinScore);
 
-  // Build grid
   const grid = container.querySelector('.image-grid');
   grid.innerHTML = '';
   data.items.forEach(img => {
     grid.appendChild(createImageCard(img, () => showDetail(container, img)));
   });
 
-  // Update pagination
   const pageInfo = container.querySelector('.page-info');
   pageInfo.textContent = `Page ${data.page} of ${data.pages} (${data.total} images)`;
 
@@ -108,11 +108,100 @@ async function loadPage(container) {
   nextBtn.disabled = data.page >= data.pages;
 }
 
+async function loadSpotlights(container) {
+  const area = container.querySelector('.spotlights-area');
+  area.innerHTML = '<div class="loading">Loading cluster spotlights...</div>';
+
+  const r = await fetch('/api/clusters/spotlights?diverse_count=5');
+  const spotlights = await r.json();
+
+  area.innerHTML = '';
+
+  for (const spot of spotlights) {
+    const section = document.createElement('div');
+    section.className = 'spotlight-cluster';
+
+    const rep = spot.representative;
+    const label = spot.cluster_label || `Cluster ${spot.cluster_id}`;
+
+    section.innerHTML = `
+      <div class="spotlight-header">
+        <h3 class="spotlight-title">
+          <span class="spotlight-id">C${spot.cluster_id}</span>
+          ${label}
+          <span class="spotlight-count">${spot.image_count} images</span>
+        </h3>
+        <button class="btn spotlight-browse-btn" data-cluster="${spot.cluster_id}">Browse all</button>
+      </div>
+      <div class="spotlight-images">
+        <div class="spotlight-rep" title="Representative (closest to centroid)">
+          <img src="/thumbs/${rep.source_image_id}.jpg" alt="Representative"
+               loading="lazy" data-sk="${rep.image_sk}">
+          <div class="spotlight-badge">REP</div>
+          <div class="spotlight-img-score">${rep.preference_score?.toFixed(2) ?? ''}</div>
+        </div>
+        ${spot.diverse.map((img, i) => `
+          <div class="spotlight-div" title="Diverse sample ${i + 1}">
+            <img src="/thumbs/${img.source_image_id}.jpg" alt="Diverse ${i + 1}"
+                 loading="lazy" data-sk="${img.image_sk}">
+            <div class="spotlight-img-score">${img.preference_score?.toFixed(2) ?? ''}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    // Click image to show detail
+    section.querySelectorAll('img[data-sk]').forEach(img => {
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', () => {
+        showDetail(container, { image_sk: parseInt(img.dataset.sk) });
+      });
+    });
+
+    // Browse all button
+    section.querySelector('.spotlight-browse-btn').addEventListener('click', () => {
+      viewMode = 'browse';
+      currentCluster = spot.cluster_id.toString();
+      currentPage = 1;
+      renderPage(container);
+    });
+
+    area.appendChild(section);
+  }
+}
+
+function renderPage(container) {
+  const browseArea = container.querySelector('.browse-area');
+  const spotlightsArea = container.querySelector('.spotlights-area');
+  const browseBtn = container.querySelector('.view-browse');
+  const spotBtn = container.querySelector('.view-spotlights');
+
+  if (viewMode === 'spotlights') {
+    browseArea.style.display = 'none';
+    spotlightsArea.style.display = '';
+    browseBtn.classList.remove('active');
+    spotBtn.classList.add('active');
+    loadSpotlights(container);
+  } else {
+    browseArea.style.display = '';
+    spotlightsArea.style.display = 'none';
+    browseBtn.classList.add('active');
+    spotBtn.classList.remove('active');
+    container.querySelector('.cluster-input').value = currentCluster;
+    loadPage(container);
+  }
+}
+
 export async function render(el) {
   el.innerHTML = `
+    <div class="dedup-banner" style="display:none"></div>
     <div class="page-header">
       <h1>Images</h1>
       <div class="controls">
+        <div class="view-toggle">
+          <button class="filter-btn view-browse active">Browse</button>
+          <button class="filter-btn view-spotlights">Spotlights</button>
+        </div>
         <label>Sort
           <select class="sort-select">
             <option value="score">Score</option>
@@ -130,36 +219,52 @@ export async function render(el) {
         </label>
       </div>
     </div>
-    <div class="image-grid"></div>
-    <div class="pagination">
-      <button class="prev-btn">Prev</button>
-      <span class="page-info"></span>
-      <button class="next-btn">Next</button>
+    <div class="browse-area">
+      <div class="image-grid"></div>
+      <div class="pagination">
+        <button class="prev-btn">Prev</button>
+        <span class="page-info"></span>
+        <button class="next-btn">Next</button>
+      </div>
     </div>
+    <div class="spotlights-area" style="display:none"></div>
   `;
+
+  // Load dedup banner
+  _loadDedupBanner(el);
 
   // Restore state
   el.querySelector('.sort-select').value = currentSort;
   if (currentCluster) el.querySelector('.cluster-input').value = currentCluster;
   if (currentMinScore) el.querySelector('.score-input').value = currentMinScore;
 
-  // Event handlers
+  // View toggle
+  el.querySelector('.view-browse').addEventListener('click', () => {
+    viewMode = 'browse';
+    renderPage(el);
+  });
+  el.querySelector('.view-spotlights').addEventListener('click', () => {
+    viewMode = 'spotlights';
+    renderPage(el);
+  });
+
+  // Filter handlers
   el.querySelector('.sort-select').addEventListener('change', e => {
     currentSort = e.target.value;
     currentPage = 1;
-    loadPage(el);
+    if (viewMode === 'browse') loadPage(el);
   });
 
   el.querySelector('.cluster-input').addEventListener('change', e => {
     currentCluster = e.target.value;
     currentPage = 1;
-    loadPage(el);
+    if (viewMode === 'browse') loadPage(el);
   });
 
   el.querySelector('.score-input').addEventListener('change', e => {
     currentMinScore = e.target.value;
     currentPage = 1;
-    loadPage(el);
+    if (viewMode === 'browse') loadPage(el);
   });
 
   el.querySelector('.prev-btn').addEventListener('click', () => {
@@ -171,5 +276,26 @@ export async function render(el) {
     loadPage(el);
   });
 
-  await loadPage(el);
+  renderPage(el);
+}
+
+async function _loadDedupBanner(el) {
+  try {
+    const r = await fetch('/api/dedup/summary');
+    const d = await r.json();
+    if (d.suppressed > 0) {
+      const pct = ((d.suppressed / d.total) * 100).toFixed(0);
+      const banner = el.querySelector('.dedup-banner');
+      banner.style.display = '';
+      banner.innerHTML = `
+        <div class="dedup-banner-inner">
+          <strong>${d.active.toLocaleString()}</strong> unique images shown.
+          <strong>${d.suppressed.toLocaleString()}</strong> near-duplicates
+          (${pct}% of ${d.total.toLocaleString()}) removed by deduplication
+          at ${d.threshold} cosine similarity threshold
+          across ${d.groups.toLocaleString()} duplicate groups.
+        </div>
+      `;
+    }
+  } catch { /* dedup not available */ }
 }

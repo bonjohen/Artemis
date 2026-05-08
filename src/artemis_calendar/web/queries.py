@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import duckdb
 
-from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
+from artemis_calendar.config.sql_helpers import ACTIVE_IMAGE_FILTER, LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
 
 
 def fetch_images_page(
@@ -23,7 +23,7 @@ def fetch_images_page(
     }
     order_clause = sort_map.get(sort, sort_map["score"])
 
-    where_parts = ["d.vote_pool_flag = true"]
+    where_parts = ["d.vote_pool_flag = true", ACTIVE_IMAGE_FILTER]
     params: list = []
 
     if cluster_id is not None:

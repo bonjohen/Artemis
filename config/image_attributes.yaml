@@ -1,5 +1,6 @@
 # Controlled image attribute vocabulary for Artemis vision analysis.
 # Used by vision/attributes.py to validate labels and compute derived attributes.
+# CLIP zero-shot classification prompts are derived from the description field.
 
 # Confidence thresholds for attribute classification
 thresholds:
@@ -7,8 +8,9 @@ thresholds:
   tentative: 0.50   # 0.50 to 0.79 = tentative label
   # < 0.50 = rejected label
 
-# Base attributes — assigned by vision model with confidence scores
+# Base attributes — assigned by CLIP zero-shot classification
 base_attributes:
+  # --- Celestial bodies ---
   - code: earth
     label: Earth
     description: Earth visible in the image
@@ -19,40 +21,46 @@ base_attributes:
     description: Moon visible in the image
     type: celestial_body
 
+  - code: crescent_moon
+    label: Crescent Moon
+    description: A crescent-shaped moon, partially lit
+    type: celestial_body
+
+  - code: full_moon
+    label: Full Moon
+    description: A full moon, fully illuminated
+    type: celestial_body
+
+  - code: crescent_earth
+    label: Crescent Earth
+    description: A crescent-shaped Earth, partially lit from space
+    type: celestial_body
+
+  - code: full_earth
+    label: Full Earth
+    description: Full Earth, fully illuminated, seen from space
+    type: celestial_body
+
   - code: sun
     label: Sun
     description: Sun visible in the image
     type: celestial_body
 
+  - code: stars
+    label: Stars
+    description: Visible stars in the background
+    type: celestial_body
+
+  # --- Environment ---
   - code: deep_space
     label: Deep Space
     description: Dark space background with stars or void
     type: environment
 
-  - code: spacecraft
-    label: Spacecraft
-    description: Spacecraft, capsule, or module visible
-    type: hardware
-
-  - code: astronaut
-    label: Astronaut
-    description: Astronaut in suit (EVA or interior)
-    type: crew
-
-  - code: crew
-    label: Crew
-    description: Crew members visible (suited or unsuited)
-    type: crew
-
-  - code: rocket
-    label: Rocket
-    description: Launch vehicle or rocket visible
-    type: hardware
-
-  - code: launch
-    label: Launch
-    description: Launch event with smoke/flame plume
-    type: event
+  - code: orbital
+    label: Orbital View
+    description: View from orbit looking down at a planet or moon
+    type: environment
 
   - code: surface
     label: Surface
@@ -61,18 +69,44 @@ base_attributes:
 
   - code: lunar_surface
     label: Lunar Surface
-    description: Moon surface detail (craters, regolith)
+    description: Moon surface detail with craters and regolith
     type: environment
 
   - code: earth_surface
     label: Earth Surface
-    description: Earth surface detail (continents, oceans, clouds)
+    description: Earth surface detail showing continents, oceans, or clouds
+    type: environment
+
+  - code: horizon
+    label: Horizon
+    description: Curved horizon of Earth or Moon visible
+    type: environment
+
+  - code: atmosphere
+    label: Atmosphere
+    description: Visible atmospheric glow or limb of a planet
     type: environment
 
   - code: interior
     label: Interior
     description: Inside spacecraft, station, or habitat
     type: environment
+
+  - code: porthole
+    label: Porthole
+    description: Spacecraft window or porthole frame visible
+    type: environment
+
+  # --- Hardware ---
+  - code: spacecraft
+    label: Spacecraft
+    description: Spacecraft, capsule, or module visible
+    type: hardware
+
+  - code: rocket
+    label: Rocket
+    description: Launch vehicle or rocket visible
+    type: hardware
 
   - code: vehicle
     label: Vehicle
@@ -84,14 +118,75 @@ base_attributes:
     description: Space habitat or station structure
     type: hardware
 
+  - code: solar_panel
+    label: Solar Panel
+    description: Solar panels or solar arrays visible
+    type: hardware
+
+  # --- Crew ---
+  - code: astronaut
+    label: Astronaut
+    description: Astronaut in spacesuit, EVA or interior
+    type: crew
+
+  - code: crew
+    label: Crew
+    description: Crew members visible, suited or unsuited
+    type: crew
+
+  - code: hand
+    label: Hand
+    description: Human hand visible in the image
+    type: crew
+
+  - code: selfie
+    label: Selfie
+    description: Crew member taking a self-portrait
+    type: crew
+
+  # --- Events ---
+  - code: launch
+    label: Launch
+    description: Launch event with smoke and flame plume
+    type: event
+
+  - code: splashdown
+    label: Splashdown
+    description: Spacecraft splashdown or water recovery
+    type: event
+
+  # --- Facilities ---
   - code: mission_control
     label: Mission Control
-    description: Ground control room or facilities
+    description: Ground control room or mission operations facility
     type: facility
 
+  - code: launch_pad
+    label: Launch Pad
+    description: Launch pad or launch complex
+    type: facility
+
+  # --- Objects ---
+  - code: flag
+    label: Flag
+    description: Flag visible in the image
+    type: object
+
+  # --- Quality ---
+  - code: lens_flare
+    label: Lens Flare
+    description: Lens flare or light artifact visible
+    type: quality
+
+  # --- Media type ---
   - code: diagram
     label: Diagram
     description: Technical diagram, schematic, or infographic
+    type: media
+
+  - code: text_overlay
+    label: Text Overlay
+    description: Significant text overlaid on the image
     type: media
 
   - code: map
@@ -99,25 +194,15 @@ base_attributes:
     description: Map, trajectory plot, or orbital diagram
     type: media
 
-  - code: text_overlay
-    label: Text Overlay
-    description: Significant text overlaid on image
-    type: media
-
   - code: artistic_rendering
     label: Artistic Rendering
-    description: Artist concept or digital illustration (not photograph)
+    description: Artist concept or digital illustration, not a real photograph
     type: media
 
   - code: photograph
     label: Photograph
     description: Real photographic image
     type: media
-
-  - code: low_confidence
-    label: Low Confidence
-    description: Vision model had low confidence overall for this image
-    type: quality
 
 # Derived attributes — computed from base attribute confidences
 derived_attributes:
@@ -146,3 +231,27 @@ derived_attributes:
     rule:
       all_of: [sun]
       none_of: [earth, moon]
+
+  - code: crescent_earthrise
+    label: Crescent Earthrise
+    description: Crescent Earth visible with lunar surface or horizon
+    rule:
+      all_of: [crescent_earth, lunar_surface]
+
+  - code: spacewalk
+    label: Spacewalk
+    description: Astronaut outside spacecraft in space
+    rule:
+      all_of: [astronaut, deep_space]
+
+  - code: earth_through_porthole
+    label: Earth Through Porthole
+    description: Earth visible through a spacecraft window
+    rule:
+      all_of: [earth, porthole]
+
+  - code: crew_selfie
+    label: Crew Selfie
+    description: Crew member self-portrait
+    rule:
+      all_of: [crew, selfie]
