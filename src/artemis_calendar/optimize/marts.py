@@ -28,8 +28,8 @@ def write_calendar_candidates(
     if not candidates:
         return 0
 
-    tbl = pa.table(
-        {  # noqa: F841 — referenced by DuckDB SQL below
+    arrow_tbl = pa.table(
+        {
             "candidate_run_id": [run_id] * len(candidates),
             "candidate_name": [c["candidate_name"] for c in candidates],
             "cover_image_sk": [c["cover_image_sk"] for c in candidates],
@@ -57,7 +57,9 @@ def write_calendar_candidates(
             "uncertainty_penalty",
         ]
     )
-    conn.execute(f"INSERT INTO mart_calendar_candidate ({columns}) SELECT * FROM tbl")
+    conn.register("arrow_tbl", arrow_tbl)
+    conn.execute(f"INSERT INTO mart_calendar_candidate ({columns}) SELECT * FROM arrow_tbl")
+    conn.unregister("arrow_tbl")
 
     logger.info(f"Wrote {len(candidates)} calendar candidates for run {run_id}")
     return len(candidates)
@@ -80,8 +82,8 @@ def write_calendar_month_images(
     if not assignments:
         return 0
 
-    tbl = pa.table(
-        {  # noqa: F841 — referenced by DuckDB SQL below
+    arrow_tbl = pa.table(
+        {
             "candidate_run_id": [run_id] * len(assignments),
             "candidate_name": [candidate_name] * len(assignments),
             "sequence_number": [a[1] for a in assignments],
@@ -103,6 +105,8 @@ def write_calendar_month_images(
             "preference_score",
         ]
     )
-    conn.execute(f"INSERT INTO mart_calendar_candidate_month_image ({columns}) SELECT * FROM tbl")
+    conn.register("arrow_tbl", arrow_tbl)
+    conn.execute(f"INSERT INTO mart_calendar_candidate_month_image ({columns}) SELECT * FROM arrow_tbl")
+    conn.unregister("arrow_tbl")
 
     return len(assignments)
