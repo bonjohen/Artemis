@@ -330,6 +330,22 @@ def cmd_vision_tag(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_stats_block_analysis(args: argparse.Namespace) -> None:
+    from artemis_calendar.models.block_stats import run_block_analysis
+
+    conn = get_connection()
+    apply_migrations(conn)
+    result = run_block_analysis(conn, args.scenario)
+
+    print(f"\nBlock analysis for {args.scenario}:")
+    for key, count in result["counts"].items():
+        print(f"  {key}: {count} rows")
+    print("\nDetection results:")
+    for block_id, det in result["detection"].items():
+        print(f"  {block_id}: {det['status']} (strength={det['strength']}, {det['primary_evidence']})")
+    conn.close()
+
+
 def cmd_votes_generate_blocks(args: argparse.Namespace) -> None:
     from pathlib import Path
 
@@ -534,6 +550,9 @@ def main() -> None:
     )
     vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
 
+    stats_block = sub.add_parser("stats-block-analysis", help="Run block-aware statistical analysis")
+    stats_block.add_argument("--scenario", required=True, help="Scenario ID to analyze")
+
     votes_gen = sub.add_parser("votes-generate-blocks", help="Generate biased synthetic votes from block config")
     votes_gen.add_argument("--config", required=True, help="Path to voting block YAML config")
     votes_gen.add_argument("--seed", type=int, default=None, help="Override random seed")
@@ -576,6 +595,7 @@ def main() -> None:
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
+        "stats-block-analysis": cmd_stats_block_analysis,
         "votes-generate-blocks": cmd_votes_generate_blocks,
         "votes-validate-config": cmd_votes_validate_config,
         "vision-tag": cmd_vision_tag,

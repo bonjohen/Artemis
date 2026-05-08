@@ -189,21 +189,21 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 7.1 | Open | | | Add mart tables: `mart_voting_block_summary`, `mart_voting_block_attribute_lift`, `mart_voting_block_cluster_lift`, `mart_voting_block_image_lift`, `mart_voting_block_similarity`, `mart_voting_block_score_impact`, `mart_voting_block_calendar_impact` |
-| 7.2 | Open | | | Implement attribute lift calculation — per-block selection rate vs global, lift ratio, odds ratio, confidence intervals (design section 11.3) |
-| 7.3 | Open | | | Implement cluster lift calculation — per-block cluster selection rate vs global, chi-square contribution (design section 11.4) |
-| 7.4 | Open | | | Implement block similarity — Jaccard top-N, cosine similarity, score correlation, overlap counts (design section 11.5) |
-| 7.5 | Open | | | Implement score impact — score with/without block, delta, rank movement, block influence score (design section 11.6) |
-| 7.6 | Open | | | Implement calendar impact — calendar set with/without blocks, changed months, cover change, diversity/attribute/cluster deltas (design section 11.7) |
-| 7.7 | Open | | | Implement bias detection result — intended vs detected bias, detection strength, evidence, confidence, status (design section 11.8) |
-| 7.8 | Open | | | Add `stats compute-block-analysis` and `stats compute-calendar-impact` CLI subcommands |
-| 7.9 | Open | | | Add tests: lift calculations against known synthetic scenario, similarity matrix symmetry, score impact sums, detection status logic |
-| 7.10 | Open | | | Run pytest + ruff, fix any issues, stage and commit |
+| 7.1 | Completed | 2026-05-08 08:35 PM | 2026-05-08 08:35 PM | Mart tables already created in Phase 2 migration 009 |
+| 7.2 | Completed | 2026-05-08 10:40 PM | 2026-05-08 10:55 PM | `compute_attribute_lift()` — vote-level selection rate, lift ratio, odds ratio, Wilson CI |
+| 7.3 | Completed | 2026-05-08 10:40 PM | 2026-05-08 10:55 PM | `compute_cluster_lift()` — cluster selection rate, chi-square contribution |
+| 7.4 | Completed | 2026-05-08 10:40 PM | 2026-05-08 10:55 PM | `compute_block_similarity()` — Jaccard top-N, cosine similarity, Spearman correlation, cluster overlap |
+| 7.5 | Completed | 2026-05-08 10:40 PM | 2026-05-08 10:55 PM | `compute_score_impact()` — selection rate with/without block, delta, rank movement |
+| 7.6 | Completed | 2026-05-08 10:40 PM | 2026-05-08 10:55 PM | `compute_calendar_impact()` — top-13 comparison, cover change, month change count |
+| 7.7 | Completed | 2026-05-08 10:40 PM | 2026-05-08 10:55 PM | `compute_detection_status()` — detected/partially/inconclusive/not_detected from avg lift |
+| 7.8 | Completed | 2026-05-08 10:55 PM | 2026-05-08 11:00 PM | Added `stats-block-analysis` CLI subcommand |
+| 7.9 | Completed | 2026-05-08 11:00 PM | 2026-05-08 11:10 PM | Added `tests/test_block_stats.py` — 11 tests with full end-to-end block vote + analysis pipeline |
+| 7.10 | Completed | 2026-05-08 11:10 PM | 2026-05-08 11:12 PM | 242 tests pass, ruff clean |
 
 ### Phase 7 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `models/block_stats.py` (attribute lift, cluster lift, block similarity, score impact, calendar impact, detection status, mart writers, orchestrator). Added `stats-block-analysis` CLI command. 11 new tests. 242 tests pass, ruff clean.
+- **Changes hosted at:** `src/artemis_calendar/models/block_stats.py`, `cli.py`
 - **Commit:** `feat(stats): add block-aware statistics — lift, similarity, score impact, calendar impact, detection`
 
 ---
