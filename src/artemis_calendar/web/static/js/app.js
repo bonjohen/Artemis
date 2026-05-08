@@ -4,6 +4,7 @@
  */
 
 const routes = {
+  '/': () => import('./pages/home.js'),
   '/images': () => import('./pages/images.js'),
   '/candidates': () => import('./pages/candidates.js'),
   '/clusters': () => import('./pages/clusters.js'),
@@ -15,7 +16,7 @@ const routes = {
 const app = document.getElementById('app');
 
 async function navigate() {
-  const hash = location.hash.slice(1) || '/images';
+  const hash = location.hash.slice(1) || '/';
   const path = hash.split('?')[0];
 
   // Update nav highlighting
