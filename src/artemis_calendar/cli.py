@@ -198,6 +198,21 @@ def cmd_render_calendar(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_review_package(args: argparse.Namespace) -> None:
+    from artemis_calendar.review.pipeline import generate_review_package
+
+    conn = get_connection()
+    apply_migrations(conn)
+    out_dir = generate_review_package(
+        conn,
+        run_id=args.run_id,
+        winner=args.winner,
+        skip_render=args.skip_render,
+    )
+    logger.info(f"Review package at {out_dir}")
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -294,6 +309,11 @@ def main() -> None:
     render.add_argument("--run-id", default=None, help="Optimization run ID (default: latest)")
     render.add_argument("--all", action="store_true", help="Render all candidates")
 
+    review = sub.add_parser("review-package", help="Generate review package for candidate comparison")
+    review.add_argument("--run-id", default=None, help="Optimization run ID (default: latest)")
+    review.add_argument("--winner", default="method_b", help="Candidate to export (default: method_b)")
+    review.add_argument("--skip-render", action="store_true", help="Skip rendering full calendars")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -312,6 +332,7 @@ def main() -> None:
         "compute-scores": cmd_compute_scores,
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
+        "review-package": cmd_review_package,
         "run-all": cmd_run_all,
     }
 
