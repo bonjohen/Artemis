@@ -30,12 +30,14 @@ jobs:
       - name: Download warehouse database
         run: |
           gh release download warehouse-v1 -p warehouse.duckdb.gz -D /tmp
-          gunzip -c /tmp/warehouse.duckdb.gz > D:/artemis/warehouse.duckdb
+          gunzip -c /tmp/warehouse.duckdb.gz > /tmp/warehouse.duckdb
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build static site
         run: python scripts/build_static.py --base-path /
+        env:
+          ARTEMIS_DB_PATH: /tmp/warehouse.duckdb
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
