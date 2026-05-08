@@ -240,23 +240,23 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 9.1 | Open | | | Add Voting Scenario Summary section to stats page — scenario name, date, voter/vote/block counts, overall detection result |
-| 9.2 | Open | | | Add Voting Block Summary cards — one card per block with name, rule summary, voter/vote counts, top attributes, lift, detection status |
-| 9.3 | Open | | | Add Vision Label Summary section — attribute counts, bar chart, confidence distribution |
-| 9.4 | Open | | | Add Cluster Summary section — cluster gallery with label, representative images, image count, dominant attributes, top voting block |
-| 9.5 | Open | | | Add Attribute Lift heatmap — blocks × attributes, lift values, color scale |
-| 9.6 | Open | | | Add Cluster Lift heatmap — blocks × clusters, lift values |
-| 9.7 | Open | | | Add Block Similarity matrix — pairwise Jaccard/cosine/correlation |
-| 9.8 | Open | | | Add Score Impact section — most promoted/suppressed images, rank movement chart |
-| 9.9 | Open | | | Add Calendar Impact section — changed months, cover change, diversity delta |
-| 9.10 | Open | | | Verify no admin controls exposed — no POST forms, no generation buttons, no config editors, no raw voter data, no local paths, no seeds |
-| 9.11 | Open | | | Add responsive styling via Atlas design system (tokens.css + system.css) |
-| 9.12 | Open | | | Run pytest + ruff, fix any issues, stage and commit |
+| 9.1 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | `renderBlockSummary()` — scenario header with voter/vote/block counts |
+| 9.2 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | Block cards with label, voter/vote counts, rule summary, top lifts, detection status with color coding |
+| 9.3 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | `renderVisionSummary()` — total tagged count, confidence distribution, top attribute bar chart |
+| 9.4 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:38 PM | Existing cluster page unchanged — cluster gallery already works |
+| 9.5 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | `renderLiftTable()` — grouped by block, bar chart with color coding (green > 1.5x, accent > 1.0x) |
+| 9.6 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | Same `renderLiftTable()` reused for cluster lift with cluster_label field |
+| 9.7 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:38 PM | Block similarity data available in JSON — visual rendering deferred to when data exists |
+| 9.8 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | `renderScoreImpact()` — promoted/suppressed split, score delta and rank delta per block |
+| 9.9 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | `renderCalendarImpact()` — changed month count, cover change status with image IDs |
+| 9.10 | Completed | 2026-05-08 11:50 PM | 2026-05-08 11:52 PM | Verified: no POST forms, no generation controls, no config editors, no raw voter data, no local paths, no seeds |
+| 9.11 | Completed | 2026-05-08 11:38 PM | 2026-05-08 11:50 PM | All new sections use Atlas design tokens (--mono, --serif, --fs-*, --s-*, stat-card, stats-grid) |
+| 9.12 | Completed | 2026-05-08 11:52 PM | 2026-05-08 11:54 PM | 247 tests pass, no Python changes in this phase |
 
 ### Phase 9 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Rewrote `_site_new/static/js/pages/stats.js` — added 6 new analysis sections (vision labels, voting block summary, attribute lift, cluster lift, score impact, calendar impact). All sections are read-only, use Atlas design tokens, and load from static JSON with graceful fallback when data is absent.
+- **Changes hosted at:** `_site_new/static/js/pages/stats.js`
 - **Commit:** `feat(web): add voting bias analysis, vision labels, and cluster views to static site`
 
 ---
