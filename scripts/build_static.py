@@ -265,6 +265,7 @@ def build_static(base_path: str, output_dir: str) -> None:
     print(f"  {len(clusters)} clusters")
 
     # --- GitHub Pages files ---
+    (output / "CNAME").write_text("artemis.johnboen.com", encoding="utf-8")
     (output / ".nojekyll").write_text("", encoding="utf-8")
     # 404 page — redirect to index for SPA
     (output / "404.html").write_text(
