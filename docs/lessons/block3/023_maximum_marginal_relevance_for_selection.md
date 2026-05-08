@@ -61,3 +61,5 @@ Does NOT apply when diversity is irrelevant (e.g., selecting the K best answers 
 
 - [Calendar as Portfolio Optimization](021_calendar_as_portfolio_optimization.md) — the broader framing of collection optimization that MMR implements
 - [Choosing k for Clustering](../block1/choosing_k_for_clustering.md) — the cluster structure that provides hard diversity constraints alongside MMR's soft penalty
+- [Lesson 048: Greedy Max-Min Diversity Selection](../block6/048_greedy_max_min_diversity_selection.md) — max-min is the diversity-only special case of MMR (lambda=0), used for cluster spotlight sampling
+- [Lesson 050: Connected Components for Transitive Dedup](../block6/050_connected_components_for_transitive_dedup.md) — uses the same pairwise embedding distance computation for grouping rather than selection

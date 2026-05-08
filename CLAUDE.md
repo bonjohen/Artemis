@@ -10,7 +10,7 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 
 ## Project Status
 
-**Through Phase S3-S4.** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, calendar optimization, calendar rendering, review package, and synthetic validation are all complete. Five candidate calendars generated with comparison scorecard, contact sheets, selection reports, layout validation diagnostics, and final export package. Bias detection (position bias, cluster bias, voter segmentation, score-truth correlation, reliability under bias) and calendar optimization validation (ground-truth recovery, slate diversity) are implemented and tested.
+**Through Phase S3-S4 + Image Evaluation Overhaul (Phases 1-2 of 4).** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, calendar optimization, calendar rendering, review package, and synthetic validation are all complete. Bias detection and optimization validation implemented and tested. CLIP zero-shot content tagging (37 base + 8 derived attributes), embedding-based deduplication (10,054 of 12,217 images suppressed at 0.98 cosine threshold, 2,163 unique retained), interactive selection builder with drag-and-drop, and cluster spotlight views are complete. Remaining: cluster exclusion, attribute-weighted re-clustering, methodology documentation page.
 
 ### What exists
 
@@ -26,16 +26,18 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | Calendar rendering | `render/` — layout constants, calendar grid renderer, monthly page + cover page composition, targeted image download, multi-page PDF assembly. CLI: `render-calendar` |
 | Review package | `review/` — candidate comparison scorecard, contact sheets (4x4 grid), selection reports (per-image rationale + cluster alternatives), layout validation (aspect ratio, brightness, color, cluster overlap), export assembly. CLI: `review-package` |
 | Synthetic validation | `validate/bias_detection.py` (position bias, cluster bias, voter segments, score-truth correlation, reliability under bias), `validate/calendar_validation.py` (ground-truth recovery, slate diversity, method comparison). CLI: `validate-bias`, `validate-calendar` |
-| Web app | `web/` — FastAPI + vanilla JS SPA. Image browser (paginated, sort, filter), candidate comparison + detail, cluster explorer, stats dashboard, interactive selection builder with live scoring. CLI: `serve` |
-| Lessons viewer | `docs/lessons/lessons.html` — static web viewer with card grid, category filtering, dark mode. `lesson.html` renders markdown via marked.js. Atlas design system (`system/tokens.css`, `system/system.css`) |
+| CLIP content tagging | `vision/clip_tagger.py` — CLIP zero-shot classification (37 base + 8 derived attributes), sigmoid-calibrated confidence scores, incremental tagging for new attributes |
+| Image deduplication | `features/dedup.py` — CLIP cosine similarity → connected components → master selection. 10,054 suppressed, 2,163 unique retained at 0.98 threshold. Reversible via `restore_all()` |
+| Web app | `web/` — FastAPI + vanilla JS SPA. Image browser (paginated, sort, filter, dedup banner), candidate comparison + detail, cluster spotlights (rep + 5 diverse), stats dashboard, drag-and-drop selection builder with cover checkbox and live scoring. CLI: `serve` |
+| Lessons viewer | `docs/lessons/lessons.html` — static web viewer with card grid, 6 category filters, dark mode. 53 lessons across 6 blocks. `lesson.html` renders markdown via marked.js. Atlas design system |
 | CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `review-package`, `validate-bias`, `validate-calendar`, `serve`, `run-all` |
-| Tests | 168 passing (pytest), ruff clean |
+| Tests | 259 passing (pytest), ruff clean |
 
 ### Current data state
 
 | Table | Rows | Notes |
 |---|---|---|
-| `dim_image` | 12,736 | 12,217 vote-pool + 519 editorial |
+| `dim_image` | 12,736 | 12,217 vote-pool + 519 editorial. 10,054 suppressed by dedup (is_suppressed=true), 2,163 active |
 | `feature_image_visual` | 12,217 | Brightness, contrast, saturation, dominant colors |
 | `feature_image_embedding` | 12,217 | CLIP 512-dim vectors |
 | `feature_description_embedding` | 502 | Sentence-transformer 384-dim (editorial images with text only) |
@@ -49,6 +51,9 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | `mart_calendar_candidate_month_image` | 65 | 13 month-image assignments per candidate |
 | `mart_bias_detection` | 0* | Position/cluster/voter bias detection results |
 | `mart_calendar_validation` | 0* | Ground-truth recovery and diversity per method |
+| `feature_image_attribute` | ~451K | 37 base attributes x 12,217 images (CLIP zero-shot) + derived labels |
+| `dedup_image_group` | 450 | Duplicate groups at 0.98 cosine threshold |
+| `dedup_image_member` | ~10,500 | All members of duplicate groups with similarity-to-master |
 
 ### Two image populations in dim_image
 

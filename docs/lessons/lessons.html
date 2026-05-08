@@ -224,9 +224,9 @@
     <h1>Lessons <em>Learned</em></h1>
     <p class="lede">Patterns, mistakes, and decisions from building the Artemis II calendar image selection pipeline. Each lesson is standalone and designed to be useful on any data engineering project.</p>
     <div class="hero-stats">
-      <div class="stat"><b>29</b>Lessons</div>
+      <div class="stat"><b>53</b>Lessons</div>
       <div class="stat"><b>5</b>Categories</div>
-      <div class="stat"><b>4</b>Blocks</div>
+      <div class="stat"><b>6</b>Blocks</div>
     </div>
   </header>
 
@@ -238,6 +238,7 @@
       <button class="filter-btn" data-cat="stats">Statistics</button>
       <button class="filter-btn" data-cat="arch">Architecture</button>
       <button class="filter-btn" data-cat="process">Process</button>
+      <button class="filter-btn" data-cat="ml">ML &amp; Vision</button>
     </div>
 
     <div class="section-head">
@@ -558,6 +559,183 @@
         <div class="lname">Reliability Delta as Noise Measurement</div>
         <div class="ldesc">Alpha(all) vs Alpha(clean) isolates noise from genuine preference diversity</div>
         <div class="lmeta"><span>Reliability</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-head" style="margin-top: var(--s-8);">
+      <h2>Block 5 &mdash; Web App &amp; Interactive Tooling</h2>
+    </div>
+
+    <div class="lgrid">
+
+      <a href="lesson.html?lesson=block5/031_read_only_db_for_web_layers" class="lcard" data-cat="arch">
+        <div class="lcard-top"><span class="lnum">Lesson 031</span><span class="lcategory">Architecture</span></div>
+        <div class="lname">Read-Only DB for Web Layers</div>
+        <div class="ldesc">Open the warehouse read-only in the web tier so the pipeline CLI can still write</div>
+        <div class="lmeta"><span>Concurrency</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/032_startup_cache_for_interactive_scoring" class="lcard" data-cat="arch">
+        <div class="lcard-top"><span class="lnum">Lesson 032</span><span class="lcategory">Architecture</span></div>
+        <div class="lname">Startup Cache for Interactive Scoring</div>
+        <div class="ldesc">Pre-load scoring dicts at startup; query per-request only for browse/search</div>
+        <div class="lmeta"><span>Performance</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/033_vanilla_js_spa_no_build_step" class="lcard" data-cat="eng">
+        <div class="lcard-top"><span class="lnum">Lesson 033</span><span class="lcategory">Engineering</span></div>
+        <div class="lname">Vanilla JS SPA Without a Build Step</div>
+        <div class="ldesc">Hash routing + dynamic import() delivers a functional SPA with zero toolchain</div>
+        <div class="lmeta"><span>Frontend</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/034_reusing_query_modules_across_layers" class="lcard" data-cat="arch">
+        <div class="lcard-top"><span class="lnum">Lesson 034</span><span class="lcategory">Architecture</span></div>
+        <div class="lname">Reusing Query Modules Across Layers</div>
+        <div class="ldesc">Import query functions directly; wrap with Pydantic at the API boundary</div>
+        <div class="lmeta"><span>Layering</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/035_design_system_portability_via_tokens" class="lcard" data-cat="arch">
+        <div class="lcard-top"><span class="lnum">Lesson 035</span><span class="lcategory">Architecture</span></div>
+        <div class="lname">Design System Portability via Tokens</div>
+        <div class="ldesc">CSS custom properties as a shared asset make visual consistency free</div>
+        <div class="lmeta"><span>Design system</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/036_linter_rules_vs_framework_idioms" class="lcard" data-cat="process">
+        <div class="lcard-top"><span class="lnum">Lesson 036</span><span class="lcategory">Process</span></div>
+        <div class="lname">Linter Rules vs. Framework Idioms</div>
+        <div class="ldesc">When a linter rule conflicts with a framework pattern, suppress per-line</div>
+        <div class="lmeta"><span>Tooling</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/037_static_site_via_fetch_shim" class="lcard" data-cat="eng">
+        <div class="lcard-top"><span class="lnum">Lesson 037</span><span class="lcategory">Engineering</span></div>
+        <div class="lname">Static Site via Fetch Shim</div>
+        <div class="ldesc">Intercept fetch() to serve pre-built JSON &mdash; turns any API SPA into a static site</div>
+        <div class="lmeta"><span>Deployment</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block5/038_ci_path_portability_and_release_artifacts" class="lcard" data-cat="process">
+        <div class="lcard-top"><span class="lnum">Lesson 038</span><span class="lcategory">Process</span></div>
+        <div class="lname">CI Path Portability and Release Artifacts</div>
+        <div class="ldesc">Hardcoded dev paths break CI &mdash; use env vars for paths, release artifacts for binaries</div>
+        <div class="lmeta"><span>CI/CD</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-head" style="margin-top: var(--s-8);">
+      <h2>Block 6 &mdash; Vision, Dedup &amp; Image Curation</h2>
+    </div>
+
+    <div class="lgrid">
+
+      <a href="lesson.html?lesson=block6/039_mock_tagger_for_vision_pipeline_testing" class="lcard" data-cat="eng">
+        <div class="lcard-top"><span class="lnum">Lesson 039</span><span class="lcategory">Engineering</span></div>
+        <div class="lname">Mock Tagger for Vision Pipeline Testing</div>
+        <div class="ldesc">Hash-based mock provides deterministic attribute generation for CI without GPU</div>
+        <div class="lmeta"><span>Testing</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/040_controlled_vocabulary_as_schema_contract" class="lcard" data-cat="arch">
+        <div class="lcard-top"><span class="lnum">Lesson 040</span><span class="lcategory">Architecture</span></div>
+        <div class="lname">Controlled Vocabulary as Schema Contract</div>
+        <div class="ldesc">A single YAML vocabulary enforces attribute consistency across prompt, parser, DB, and analysis</div>
+        <div class="lmeta"><span>Schema</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/041_utility_function_for_synthetic_voting_bias" class="lcard" data-cat="stats">
+        <div class="lcard-top"><span class="lnum">Lesson 041</span><span class="lcategory">Statistics</span></div>
+        <div class="lname">Utility Function for Synthetic Voting Bias</div>
+        <div class="ldesc">Additive utility gives orthogonal control over bias strength vs noise</div>
+        <div class="lmeta"><span>Simulation</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/042_lift_as_primary_bias_metric" class="lcard" data-cat="stats">
+        <div class="lcard-top"><span class="lnum">Lesson 042</span><span class="lcategory">Statistics</span></div>
+        <div class="lname">Lift as the Primary Bias Metric</div>
+        <div class="ldesc">Lift (block rate / global rate) is scale-invariant and base-rate-invariant</div>
+        <div class="lmeta"><span>Bias detection</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/043_pii_sanitization_in_static_exports" class="lcard" data-cat="eng">
+        <div class="lcard-top"><span class="lnum">Lesson 043</span><span class="lcategory">Engineering</span></div>
+        <div class="lname">PII Sanitization in Static Exports</div>
+        <div class="ldesc">Defense in depth &mdash; query exclusion, field stripping, content scanning</div>
+        <div class="lmeta"><span>Security</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/044_acceptance_tests_as_executable_specifications" class="lcard" data-cat="process">
+        <div class="lcard-top"><span class="lnum">Lesson 044</span><span class="lcategory">Process</span></div>
+        <div class="lname">Acceptance Tests as Executable Specifications</div>
+        <div class="ldesc">Assert structural properties for statistical outputs, exact values for deterministic</div>
+        <div class="lmeta"><span>Testing</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/045_embedding_deduplication_for_image_curation" class="lcard" data-cat="data">
+        <div class="lcard-top"><span class="lnum">Lesson 045</span><span class="lcategory">Data</span></div>
+        <div class="lname">Embedding Deduplication for Image Curation</div>
+        <div class="ldesc">CLIP cosine similarity + connected components reduced 12K images to 2K unique</div>
+        <div class="lmeta"><span>Curation</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/046_lazy_imports_for_deployment_compatibility" class="lcard" data-cat="eng">
+        <div class="lcard-top"><span class="lnum">Lesson 046</span><span class="lcategory">Engineering</span></div>
+        <div class="lname">Lazy Imports for Deployment Compatibility</div>
+        <div class="ldesc">Move heavy dependencies to function scope so lightweight deployments don't break</div>
+        <div class="lmeta"><span>Deployment</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/047_clip_zero_shot_as_database_column_factory" class="lcard" data-cat="ml">
+        <div class="lcard-top"><span class="lnum">Lesson 047</span><span class="lcategory">ML &amp; Vision</span></div>
+        <div class="lname">CLIP Zero-Shot as a Database Column Factory</div>
+        <div class="ldesc">One CLIP model + descriptive prompts = arbitrarily many structured columns</div>
+        <div class="lmeta"><span>Classification</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/048_greedy_max_min_diversity_selection" class="lcard" data-cat="stats">
+        <div class="lcard-top"><span class="lnum">Lesson 048</span><span class="lcategory">Statistics</span></div>
+        <div class="lname">Greedy Max-Min Diversity Selection</div>
+        <div class="ldesc">Iteratively pick the most distant item &mdash; O(n&times;k), near-optimal, 15 lines</div>
+        <div class="lmeta"><span>Algorithms</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/049_drag_and_drop_as_simplest_viable_interaction" class="lcard" data-cat="eng">
+        <div class="lcard-top"><span class="lnum">Lesson 049</span><span class="lcategory">Engineering</span></div>
+        <div class="lname">Drag-and-Drop as Simplest Viable Interaction</div>
+        <div class="ldesc">Co-visible pool + slots with HTML5 DnD beats modals and search workflows</div>
+        <div class="lmeta"><span>Frontend</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/050_connected_components_for_transitive_dedup" class="lcard" data-cat="stats">
+        <div class="lcard-top"><span class="lnum">Lesson 050</span><span class="lcategory">Statistics</span></div>
+        <div class="lname">Connected Components for Transitive Dedup</div>
+        <div class="ldesc">scipy sparse graph components correctly group transitive chains</div>
+        <div class="lmeta"><span>Algorithms</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/051_sigmoid_calibration_for_domain_specific_clip" class="lcard" data-cat="ml">
+        <div class="lcard-top"><span class="lnum">Lesson 051</span><span class="lcategory">ML &amp; Vision</span></div>
+        <div class="lname">Sigmoid Calibration for Domain-Specific CLIP</div>
+        <div class="ldesc">CLIP logits are domain-specific; sigmoid center and scale must be empirically tuned</div>
+        <div class="lmeta"><span>Calibration</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/052_incremental_feature_extraction" class="lcard" data-cat="data">
+        <div class="lcard-top"><span class="lnum">Lesson 052</span><span class="lcategory">Data</span></div>
+        <div class="lname">Incremental Feature Extraction</div>
+        <div class="ldesc">Delete-and-rewrite only new codes; label_source columns enable surgical updates</div>
+        <div class="lmeta"><span>Pipelines</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block6/053_audit_first_design" class="lcard" data-cat="process">
+        <div class="lcard-top"><span class="lnum">Lesson 053</span><span class="lcategory">Process</span></div>
+        <div class="lname">Audit-First Design</div>
+        <div class="ldesc">A 15-minute written audit prevents hours of reimplementation</div>
+        <div class="lmeta"><span>Design</span><span class="arrow">&#8594;</span></div>
       </a>
 
     </div>
