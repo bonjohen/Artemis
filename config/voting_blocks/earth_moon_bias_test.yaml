@@ -1,0 +1,59 @@
+scenario_id: earth_moon_bias_test
+scenario_name: Earth / Moon / Sun Bias Test
+description: >
+  Synthetic test scenario with three biased voting blocks and a neutral
+  control group. Tests whether attribute-based voting bias is detectable
+  in the statistical analysis pipeline.
+seed: 42
+
+blocks:
+  - block_id: earth_moon_block
+    label: Earth and Moon Preference Block
+    voter_count: 25
+    votes_per_voter: 40
+    preference_rules:
+      all_of:
+        - earth
+        - moon
+      any_of: []
+      none_of: []
+    preference_weight: 2.5
+    randomness_weight: 0.35
+
+  - block_id: earth_only_block
+    label: Earth-Only Preference Block
+    voter_count: 20
+    votes_per_voter: 40
+    preference_rules:
+      all_of:
+        - earth
+      any_of: []
+      none_of:
+        - moon
+        - sun
+    preference_weight: 2.2
+    randomness_weight: 0.40
+
+  - block_id: moon_sun_block
+    label: Moon and Sun Preference Block
+    voter_count: 30
+    votes_per_voter: 40
+    preference_rules:
+      all_of:
+        - moon
+        - sun
+      any_of: []
+      none_of: []
+    preference_weight: 2.6
+    randomness_weight: 0.30
+
+  - block_id: neutral_control
+    label: Neutral Control Voters
+    voter_count: 50
+    votes_per_voter: 40
+    preference_rules:
+      all_of: []
+      any_of: []
+      none_of: []
+    preference_weight: 0.0
+    randomness_weight: 1.0

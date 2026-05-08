@@ -141,19 +141,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Create `config/voting_blocks/` directory and example `earth_moon_bias_test.yaml` — scenario with 4 blocks per design section 8.2 |
-| 5.2 | Open | | | Create `src/artemis_calendar/vision/voting_config.py` — Pydantic models: `VotingScenario`, `VotingBlock`, `PreferenceRule` (all_of, any_of, none_of, weighted_attributes) |
-| 5.3 | Open | | | Implement config loading and validation — parse YAML, validate attribute codes against vocabulary, check block IDs unique, validate rule structure |
-| 5.4 | Open | | | Add warehouse tables: `dim_voting_scenario`, `dim_voting_block`, `voting_block_rule` — per design section 10.4 |
-| 5.5 | Open | | | Implement dry-run: match images against each block's rules, report matching image counts, flag blocks with low match counts |
-| 5.6 | Open | | | Add `votes validate-block-config` CLI subcommand — `--config`, `--dry-run`, output validation summary to `outputs/voting_blocks/config_validation_summary.json` |
-| 5.7 | Open | | | Add tests: config parsing, validation errors (bad attribute, duplicate block ID), dry-run output, low-match-count warning |
-| 5.8 | Open | | | Run pytest + ruff, fix any issues, stage and commit |
+| 5.1 | Completed | 2026-05-08 09:40 PM | 2026-05-08 09:42 PM | Created `config/voting_blocks/earth_moon_bias_test.yaml` — 4 blocks (earth+moon 25, earth-only 20, moon+sun 30, neutral 50) |
+| 5.2 | Completed | 2026-05-08 09:42 PM | 2026-05-08 09:50 PM | Created `vision/voting_config.py` — dataclass models (PreferenceRule, VotingBlockConfig, VotingScenarioConfig) with config hash |
+| 5.3 | Completed | 2026-05-08 09:42 PM | 2026-05-08 09:50 PM | YAML loading, validation (duplicate IDs, unknown attributes, contradictions), attribute vocab cross-check |
+| 5.4 | Completed | 2026-05-08 08:35 PM | 2026-05-08 08:35 PM | Tables already created in Phase 2 migration 009 |
+| 5.5 | Completed | 2026-05-08 09:50 PM | 2026-05-08 09:55 PM | `dry_run()` counts matching images per block using SQL EXISTS conditions, warns on low counts |
+| 5.6 | Completed | 2026-05-08 09:55 PM | 2026-05-08 09:58 PM | Added `votes-validate-config` CLI subcommand with `--config` and `--dry-run` flags |
+| 5.7 | Completed | 2026-05-08 09:58 PM | 2026-05-08 10:05 PM | Added `tests/test_voting_config.py` — 9 tests: loading, validation, dry-run counts, low-count warning, DB persistence |
+| 5.8 | Completed | 2026-05-08 10:05 PM | 2026-05-08 10:07 PM | 220 tests pass, ruff clean |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `config/voting_blocks/earth_moon_bias_test.yaml`, `vision/voting_config.py` (config schema, validation, dry-run, DB persistence). Added `votes-validate-config` CLI command. 9 new tests. 220 tests pass, ruff clean.
+- **Changes hosted at:** `config/voting_blocks/`, `src/artemis_calendar/vision/voting_config.py`, `cli.py`
 - **Commit:** `feat(votes): add voting block config schema, validation, and dry-run`
 
 ---

@@ -330,6 +330,40 @@ def cmd_vision_tag(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_votes_validate_config(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    from artemis_calendar.vision.voting_config import dry_run, load_voting_config, validate_voting_config
+
+    config = load_voting_config(Path(args.config))
+    errors = validate_voting_config(config)
+
+    if errors:
+        print("Validation errors:")
+        for e in errors:
+            print(f"  - {e}")
+        sys.exit(1)
+
+    if args.dry_run:
+        conn = get_connection()
+        apply_migrations(conn)
+        result = dry_run(config, conn)
+        conn.close()
+
+        print(f"\nScenario: {result.scenario_name}")
+        print(f"Total voters: {result.total_voters}")
+        print(f"Total votes: {result.total_votes}")
+        for b in result.blocks:
+            print(f"\nBlock: {b.label}")
+            print(f"  Voters: {b.voter_count}")
+            print(f"  Votes per voter: {b.votes_per_voter}")
+            print(f"  Matching images: {b.matching_images}")
+            for w in b.warnings:
+                print(f"  Warning: {w}")
+    else:
+        print(f"Config valid: {config.scenario_name} ({len(config.blocks)} blocks)")
+
+
 def cmd_vision_label_clusters(args: argparse.Namespace) -> None:
     from artemis_calendar.vision.cluster_labels import export_cluster_review, label_clusters
 
@@ -477,6 +511,10 @@ def main() -> None:
     )
     vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
 
+    votes_validate = sub.add_parser("votes-validate-config", help="Validate a voting block YAML config")
+    votes_validate.add_argument("--config", required=True, help="Path to voting block YAML config")
+    votes_validate.add_argument("--dry-run", action="store_true", help="Count matching images per block")
+
     vision_label = sub.add_parser(
         "vision-label-clusters", help="Generate labels for clusters from dominant attributes"
     )
@@ -510,6 +548,7 @@ def main() -> None:
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
+        "votes-validate-config": cmd_votes_validate_config,
         "vision-tag": cmd_vision_tag,
         "vision-label-clusters": cmd_vision_label_clusters,
         "validate-bias": cmd_validate_bias,
