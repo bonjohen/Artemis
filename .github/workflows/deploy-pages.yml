@@ -34,6 +34,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Apply migrations
+        run: |
+          python -c "
+          import duckdb
+          from pathlib import Path
+          conn = duckdb.connect('/tmp/warehouse.duckdb')
+          for mf in sorted(Path('migrations').glob('*.sql')):
+              try:
+                  conn.execute(mf.read_text())
+              except Exception:
+                  pass
+          conn.close()
+          "
+
       - name: Build static site
         run: python scripts/build_static.py --base-path /
         env:
