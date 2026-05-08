@@ -40,3 +40,7 @@ The Artemis Calendar web app is a vanilla JS SPA backed by a FastAPI server that
 ## Key Takeaway
 
 The fetch shim pattern turns any API-backed SPA into a static site without touching frontend code. The tradeoff is a build step that runs against the database, and client-side data that must fit in memory. For datasets under ~50K records, this is a practical and maintainable approach.
+
+## Related Lessons
+
+- [Lesson 043: PII Sanitization in Static Exports](../block6/043_pii_sanitization_in_static_exports.md) — the static site consumes JSON files produced by the exporter; PII sanitization ensures these files are safe for public serving

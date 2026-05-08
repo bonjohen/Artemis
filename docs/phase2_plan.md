@@ -298,17 +298,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 11.1 | Open | | | Run `/lessons` skill — extract lessons from vision tagging pipeline (model selection, prompt engineering, confidence calibration) |
-| 11.2 | Open | | | Run `/lessons` skill — extract lessons from embedding + clustering (SigLIP vs CLIP, HDBSCAN vs K-Means trade-offs, cluster labeling) |
-| 11.3 | Open | | | Run `/lessons` skill — extract lessons from voting block design (config schema, utility function tuning, edge cases) |
-| 11.4 | Open | | | Run `/lessons` skill — extract lessons from block-aware statistics (lift calculation, similarity metrics, calendar impact measurement) |
-| 11.5 | Open | | | Run `/lessons` skill — extract lessons from static site integration (JSON export sanitization, visualization choices, Atlas design system reuse) |
-| 11.6 | Open | | | Run `/lessons` skill — extract lessons from acceptance testing (synthetic scenario design, end-to-end validation, edge case coverage) |
-| 11.7 | Open | | | Review and consolidate lessons — ensure no duplicates, cross-reference with existing `docs/lessons/`, update lessons index |
-| 11.8 | Open | | | Stage and commit |
+| 11.1 | Completed | 2026-05-08 10:30 PM | 2026-05-08 10:45 PM | Run `/lessons` skill — extract lessons from vision tagging pipeline (model selection, prompt engineering, confidence calibration) |
+| 11.2 | Completed | 2026-05-08 10:30 PM | 2026-05-08 10:45 PM | Run `/lessons` skill — extract lessons from embedding + clustering (SigLIP vs CLIP, HDBSCAN vs K-Means trade-offs, cluster labeling) |
+| 11.3 | Completed | 2026-05-08 10:30 PM | 2026-05-08 10:45 PM | Run `/lessons` skill — extract lessons from voting block design (config schema, utility function tuning, edge cases) |
+| 11.4 | Completed | 2026-05-08 10:30 PM | 2026-05-08 10:45 PM | Run `/lessons` skill — extract lessons from block-aware statistics (lift calculation, similarity metrics, calendar impact measurement) |
+| 11.5 | Completed | 2026-05-08 10:30 PM | 2026-05-08 10:45 PM | Run `/lessons` skill — extract lessons from static site integration (JSON export sanitization, visualization choices, Atlas design system reuse) |
+| 11.6 | Completed | 2026-05-08 10:30 PM | 2026-05-08 10:45 PM | Run `/lessons` skill — extract lessons from acceptance testing (synthetic scenario design, end-to-end validation, edge case coverage) |
+| 11.7 | Completed | 2026-05-08 10:45 PM | 2026-05-08 10:55 PM | Review and consolidate lessons — ensure no duplicates, cross-reference with existing `docs/lessons/`, update lessons index |
+| 11.8 | Completed | 2026-05-08 10:55 PM | 2026-05-08 11:05 PM | Stage and commit |
 
 ### Phase 11 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** 6 new lessons in `docs/lessons/block6/` (039–044) covering vision pipeline testing, controlled vocabulary design, utility function design, lift-based bias detection, PII sanitization, and acceptance test patterns. Block6 index created. Bidirectional cross-references added to 7 existing lessons in blocks 1, 3, 4, and 5.
+- **Changes hosted at:** `docs/lessons/block6/`
 - **Commit:** `docs: add lessons learned from biased voting blocks implementation`

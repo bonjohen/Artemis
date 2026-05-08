@@ -52,3 +52,4 @@ Does NOT apply when:
 - [Lesson 016: Krippendorff's Alpha for Sparse Agreement](../block2/016_krippendorffs_alpha_for_sparse_agreement.md) — the foundation metric reused here with filtered populations
 - [Lesson 028: Chi-Squared for Bias Detection](028_chi_squared_for_bias_detection.md) — detects the biases whose impact on reliability this lesson measures
 - [Lesson 017: Composite Scoring with Heterogeneous Signals](../block2/017_composite_scoring_with_heterogeneous_signals.md) — the scoring pipeline whose reliability we're validating
+- [Lesson 042: Lift as the Primary Bias Detection Metric](../block6/042_lift_as_primary_bias_metric.md) — reliability delta measures noise from biased voters; lift measures their observable effect on attribute selection

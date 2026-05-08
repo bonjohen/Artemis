@@ -27,3 +27,7 @@ The Artemis Calendar project develops on Windows 11 with data stored at `D:/arte
 ## Key Takeaway
 
 The pattern for large binary dependencies in CI is: **publish as a release artifact, download in CI, configure the path via env var.** This keeps the repo lean, makes the dependency version-explicit, and works across any runner OS. Every path in the project that might differ between environments should be configurable — if `settings.py` already has an env var override, the CI workflow just needs to use it.
+
+## Related Lessons
+
+- [Lesson 043: PII Sanitization in Static Exports](../block6/043_pii_sanitization_in_static_exports.md) — hardcoded paths are prevented by CI portability at entry; PII sanitization removes them at exit

@@ -54,3 +54,5 @@ Does NOT apply when:
 - [Lesson 025: Multiple Methods as Baselines](../block3/025_multiple_selection_methods_as_baselines.md) — multiple methods provide the comparison surface; ground-truth recovery provides the evaluation criterion
 - [Lesson 021: Calendar as Portfolio Optimization](../block3/021_calendar_as_portfolio_optimization.md) — the optimization problem being validated here
 - [Lesson 011: Synthetic Data Before Real Data](../block1/synthetic_data_before_real_data.md) — synthetic ground truth is the foundation of this validation approach
+- [Lesson 039: Mock Tagger for Vision Pipeline Testing](../block6/039_mock_tagger_for_vision_pipeline_testing.md) — acceptance tests verify planted signals are recovered, requiring controlled inputs from mocks or direct DB seeding
+- [Lesson 044: Acceptance Tests as Executable Specifications](../block6/044_acceptance_tests_as_executable_specifications.md) — the acceptance test pattern applied to voting block bias detection

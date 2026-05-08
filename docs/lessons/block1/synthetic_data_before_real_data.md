@@ -105,3 +105,9 @@ When real data isn't available, generate synthetic data that:
 5. **Is clearly labeled** — the `synthetic_image_truth` table and `dim_voter.is_synthetic` flag make it impossible to confuse synthetic and real data
 
 The synthetic data should be treated as scaffolding, not as a permanent fixture. When real data arrives, the pipeline should switch seamlessly — if it can't, that reveals assumptions that need fixing.
+
+## Related Lessons
+
+- [Lesson 039: Mock Tagger for Vision Pipeline Testing](../block6/039_mock_tagger_for_vision_pipeline_testing.md) — extends the synthetic-first principle to vision model mocking with hash-based deterministic attributes
+- [Lesson 041: Utility Function for Synthetic Voting Bias](../block6/041_utility_function_for_synthetic_voting_bias.md) — the utility function design for the next generation of synthetic vote generation with attribute-based bias
+- [Lesson 044: Acceptance Tests as Executable Specifications](../block6/044_acceptance_tests_as_executable_specifications.md) — the full-pipeline test fixture is a self-contained synthetic environment that validates end-to-end behavior

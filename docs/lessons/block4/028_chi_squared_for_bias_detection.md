@@ -62,3 +62,5 @@ Does NOT apply when:
 - [Lesson 016: Krippendorff's Alpha for Sparse Agreement](../block2/016_krippendorffs_alpha_for_sparse_agreement.md) — another statistical method chosen specifically for the data's structure (sparsity there, small scale here)
 - [Lesson 025: Multiple Methods as Baselines](../block3/025_multiple_selection_methods_as_baselines.md) — bias detection validates the inputs; multiple methods validate the outputs
 - [Lesson 011: Synthetic Data Before Real Data](../block1/synthetic_data_before_real_data.md) — bias detection only works because the synthetic generator plants known biases with ground truth
+- [Lesson 041: Utility Function for Synthetic Voting Bias](../block6/041_utility_function_for_synthetic_voting_bias.md) — the utility function that plants attribute-based bias detected by chi-squared tests
+- [Lesson 042: Lift as the Primary Bias Detection Metric](../block6/042_lift_as_primary_bias_metric.md) — lift quantifies bias magnitude where chi-squared detects its existence

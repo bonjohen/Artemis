@@ -37,3 +37,7 @@ This applies to any system with schema migrations (Django, Alembic, Flyway, Knex
 - Any deployment where "run migrations" is a separate step from "deploy code"
 
 The pattern is especially treacherous in embedded databases (SQLite, DuckDB) where there's no separate database server with its own migration lifecycle — migrations only run when application code triggers them.
+
+## Related Lessons
+
+- [Lesson 040: Controlled Vocabulary as Schema Contract](../block6/040_controlled_vocabulary_as_schema_contract.md) — migration 009 creates tables that align with the attribute vocabulary; the vocabulary validates at load time what the migration enforces at schema time
