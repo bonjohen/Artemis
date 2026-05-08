@@ -89,3 +89,14 @@ def list_lessons():
             if lesson:
                 lessons.append(lesson)
     return lessons
+
+
+@router.get("/{block}/{file}")
+def get_lesson(block: str, file: str):
+    """Return the raw markdown content for a single lesson."""
+    if not re.match(r"^block\d+$", block) or not re.match(r"^[a-zA-Z0-9_-]+$", file):
+        return {"error": "Invalid lesson path"}
+    path = LESSONS_DIR / block / f"{file}.md"
+    if not path.exists():
+        return {"error": "Lesson not found"}
+    return {"block": block, "file": file, "content": path.read_text(encoding="utf-8")}

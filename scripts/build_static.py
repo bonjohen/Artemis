@@ -99,6 +99,8 @@ window.fetch=function(u,opts){
   if(p==='/api/stats'){return F(b+'api/stats.json');}
   /* Lessons */
   if(p==='/api/lessons'){return F(b+'api/lessons.json');}
+  var lm=p.match(/^\/api\/lessons\/(block\d+)\/(.+)$/);
+  if(lm){return F(b+'api/lessons/'+lm[1]+'/'+lm[2]+'.json');}
   /* Selection — read-only in static mode */
   if(p==='/api/selection'&&(!opts||!opts.method||opts.method==='GET')){
     return Promise.resolve(new Response(JSON.stringify({name:sp.get('name')||'current',assignments:[],notes:'Static site — selection builder is read-only.'}),
@@ -183,7 +185,14 @@ def build_static(base_path: str, output_dir: str) -> None:
     write_json("/api/stats", "api/stats.json")
     write_json("/api/health", "api/health.json")
     write_json("/api/lessons", "api/lessons.json")
-    print("  Stats + health + lessons")
+
+    # --- API: Individual lesson content ---
+    resp = client.get("/api/lessons")
+    lessons = resp.json() if resp.status_code == 200 else []
+    for lesson in lessons:
+        block, file = lesson["block"], lesson["file"]
+        write_json(f"/api/lessons/{block}/{file}", f"api/lessons/{block}/{file}.json")
+    print(f"  Stats + health + {len(lessons)} lessons")
 
     # --- API: Images (all summaries for client-side filtering) ---
     t0 = time.time()

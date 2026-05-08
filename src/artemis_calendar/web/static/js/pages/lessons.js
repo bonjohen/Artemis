@@ -1,5 +1,5 @@
 /**
- * Lessons page — renders lesson cards from /api/lessons index.
+ * Lessons page — card grid listing + detail view with markdown rendering.
  */
 
 const BLOCKS = [
@@ -18,7 +18,17 @@ const CATEGORIES = {
   process: 'Process',
 };
 
-export async function render(el) {
+export async function render(el, hash) {
+  const parts = hash.replace(/\?.*/, '').split('/');
+  // #/lessons/block1/some_file → parts = ['', 'lessons', 'block1', 'some_file']
+  if (parts.length >= 4 && parts[2] && parts[3]) {
+    await renderDetail(el, parts[2], parts[3]);
+  } else {
+    await renderList(el);
+  }
+}
+
+async function renderList(el) {
   const resp = await fetch('/api/lessons');
   const lessons = await resp.json();
 
@@ -73,7 +83,6 @@ export async function render(el) {
 
     el.innerHTML = html;
 
-    // Wire up filter buttons
     el.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         activeFilter = btn.dataset.cat;
@@ -83,4 +92,45 @@ export async function render(el) {
   }
 
   renderCards();
+}
+
+async function renderDetail(el, block, file) {
+  el.innerHTML = '<div class="loading">Loading lesson...</div>';
+
+  try {
+    const resp = await fetch(`/api/lessons/${block}/${file}`);
+    const data = await resp.json();
+
+    if (data.error) {
+      el.innerHTML = `<p>${data.error}. <a href="#/lessons">Back to lessons</a></p>`;
+      return;
+    }
+
+    // Dynamically import marked for markdown rendering
+    const { marked } = await import('https://esm.sh/marked@15.0.4');
+
+    // Rewrite relative .md links to SPA lesson links
+    let md = data.content;
+    md = md.replace(
+      /\[([^\]]+)\]\((\d{2,3}[^)]+)\.md\)/g,
+      (_, text, linkedFile) => `[${text}](#/lessons/${block}/${linkedFile})`
+    );
+
+    const rendered = marked.parse(md);
+
+    el.innerHTML = `
+      <div class="lesson-detail">
+        <div style="margin-bottom:var(--s-5)">
+          <a href="#/lessons" style="font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--atlas-muted);text-decoration:none">&larr; All Lessons</a>
+        </div>
+        <article class="lesson-body">${rendered}</article>
+      </div>
+    `;
+
+    // Update page title
+    const h1 = el.querySelector('.lesson-body h1');
+    if (h1) document.title = h1.textContent + ' — Artemis';
+  } catch (e) {
+    el.textContent = `Error loading lesson: ${e.message}`;
+  }
 }

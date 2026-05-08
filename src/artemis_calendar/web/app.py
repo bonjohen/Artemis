@@ -27,7 +27,8 @@ THUMBS_DIR = RAW_ROOT / "images" / "thumbs"
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response: Response = await call_next(request)
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        csp = "default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://esm.sh"
+        response.headers["Content-Security-Policy"] = csp
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         return response

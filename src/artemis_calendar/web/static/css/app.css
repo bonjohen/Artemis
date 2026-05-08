@@ -510,6 +510,80 @@
   border-color: color-mix(in oklab, var(--atlas-ink) 20%, transparent);
 }
 
+/* ---------- LESSON DETAIL ---------- */
+.lesson-detail { max-width: var(--reading-max); }
+.lesson-body h1 {
+  font-family: var(--serif);
+  font-size: var(--fs-h1);
+  font-weight: 400;
+  letter-spacing: -.02em;
+  line-height: var(--lh-snug);
+  margin: 0 0 var(--s-6);
+}
+.lesson-body h2 {
+  font-family: var(--serif);
+  font-size: var(--fs-h2);
+  font-weight: 400;
+  margin: var(--s-7) 0 var(--s-4);
+}
+.lesson-body h3 {
+  font-family: var(--serif);
+  font-size: var(--fs-h3);
+  font-weight: 500;
+  margin: var(--s-6) 0 var(--s-3);
+}
+.lesson-body p {
+  line-height: var(--lh-body);
+  margin: 0 0 var(--s-4);
+}
+.lesson-body ul, .lesson-body ol {
+  margin: 0 0 var(--s-4);
+  padding-left: var(--s-6);
+  line-height: var(--lh-body);
+}
+.lesson-body li { margin-bottom: var(--s-2); }
+.lesson-body code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--atlas-paper-2);
+  padding: 1px 5px;
+  border-radius: var(--r-sm);
+}
+.lesson-body pre {
+  background: var(--atlas-paper-2);
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  overflow-x: auto;
+  margin: 0 0 var(--s-5);
+  line-height: 1.5;
+}
+.lesson-body pre code {
+  background: none;
+  padding: 0;
+}
+.lesson-body blockquote {
+  border-left: 3px solid var(--atlas-accent-2);
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-5);
+  color: var(--atlas-ink-2);
+}
+.lesson-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 0 var(--s-5);
+  font-size: var(--fs-small);
+}
+.lesson-body th, .lesson-body td {
+  border: 1px solid var(--atlas-rule-soft);
+  padding: var(--s-2) var(--s-3);
+  text-align: left;
+}
+.lesson-body th {
+  background: var(--atlas-paper-2);
+  font-weight: 600;
+}
+
 /* ============================================================
    HOME / LANDING PAGE
    ============================================================ */
