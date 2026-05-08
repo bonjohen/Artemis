@@ -12,7 +12,7 @@ CLAUDE.md has the full project status, architecture, source site rules, clusteri
 
 ## 2. Current State
 
-**Through Phase C4.** Data collection, feature extraction, clustering, statistical modeling, calendar optimization, and calendar rendering are all complete. Five candidate calendars generated; rendering pipeline produces printable 8.5x11 PDF calendars.
+**Through web app.** Data collection, feature extraction, clustering, statistical modeling, calendar optimization, calendar rendering, review package, synthetic validation, and interactive web app are all complete. Five candidate calendars generated; rendering pipeline produces printable 8.5x11 PDF calendars. Web app at `artemis-pipeline serve` (localhost:8420).
 
 ### Warehouse: `D:/artemis/warehouse.duckdb`
 
@@ -181,7 +181,7 @@ conn.close()
 - **Optimization:** 5 methods, Hungarian month assignment, PyArrow bulk insert for all mart writes
 - **Rendering:** Pillow-based, 2550x3300 px (300 DPI), Segoe UI fonts, multi-page PDF via `Image.save(save_all=True)`
 - **Output:** `D:/artemis/output/calendars/{candidate_name}/` — PNGs, individual PDFs, combined `calendar.pdf`
-- **149 tests passing** (pytest), ruff clean
+- **168 tests passing** (pytest), ruff clean
 - **ML deps:** `pip install -e ".[ml]"` (includes scipy>=1.12)
 - **NASA rate limit:** 1.0s per request. Full images needed only for the 13 selected images.
 

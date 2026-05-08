@@ -8,7 +8,7 @@ Imagery and voting data are sourced from [ArtemisTimeline.com](https://artemisti
 
 ## Status
 
-**Phase C4 complete.** The full data pipeline, calendar optimization, and rendering are operational:
+**Through Phase S3-S4.** The full data pipeline, calendar optimization, rendering, review package, synthetic validation, and interactive web app are operational:
 
 - **12,217 thumbnails** downloaded from Cloudflare R2 CDN (concurrent, ~2.7 min)
 - **Visual features** extracted for all images (brightness, contrast, saturation, dominant colors)
@@ -17,8 +17,9 @@ Imagery and voting data are sourced from [ArtemisTimeline.com](https://artemisti
 - **Statistical modeling** — Beta-Binomial posteriors, Elo ratings, Borda scores, composite scoring, inter-rater reliability
 - **Calendar optimization** — 5 selection methods, Hungarian month assignment, 5 candidate calendars generated
 - **Calendar rendering** — targeted full-res download, 8.5x11 page layout, cover + 13 monthly pages, multi-page PDF assembly
-
-Next: review package (candidate comparison, contact sheet, selection report).
+- **Review package** — candidate comparison scorecard, contact sheets, selection reports, layout validation, export assembly
+- **Synthetic validation** — bias detection (position, cluster, voter segments), calendar optimization validation
+- **Web app** — FastAPI + vanilla JS SPA for interactive image browsing, candidate comparison, cluster exploration, stats dashboard, and custom calendar selection with live scoring
 
 ## Architecture
 
@@ -43,6 +44,7 @@ Package layout under `src/artemis_calendar/`:
 | `optimize/` | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
 | `render/` | Calendar page rendering: layout, grid, monthly/cover pages, pipeline, PDF assembly |
 | `review/` | Review package: comparison, contact sheet, selection report, validation, export |
+| `web/` | FastAPI web app: API endpoints, SPA frontend, interactive selection builder |
 | `cli.py` | CLI entry point |
 
 ## Requirements
@@ -62,6 +64,9 @@ pip install -e ".[dev]"
 
 # Install ML dependencies (CLIP, sentence-transformers, sklearn, etc.)
 pip install -e ".[ml]"
+
+# Install web app dependencies (FastAPI + uvicorn)
+pip install -e ".[web]"
 ```
 
 ## Usage
@@ -88,6 +93,8 @@ artemis-pipeline optimize                  # Generate 5 candidate calendars
 artemis-pipeline optimize --methods method_a,method_e  # Run specific methods only
 artemis-pipeline render-calendar --candidate method_b  # Render calendar PDF for best candidate
 artemis-pipeline render-calendar --all                 # Render all 5 candidates
+artemis-pipeline serve                                 # Start web app on localhost:8420
+artemis-pipeline serve --port 9000                     # Custom port
 ```
 
 ## Viewing Clustering Results

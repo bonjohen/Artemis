@@ -26,9 +26,10 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | Calendar rendering | `render/` — layout constants, calendar grid renderer, monthly page + cover page composition, targeted image download, multi-page PDF assembly. CLI: `render-calendar` |
 | Review package | `review/` — candidate comparison scorecard, contact sheets (4x4 grid), selection reports (per-image rationale + cluster alternatives), layout validation (aspect ratio, brightness, color, cluster overlap), export assembly. CLI: `review-package` |
 | Synthetic validation | `validate/bias_detection.py` (position bias, cluster bias, voter segments, score-truth correlation, reliability under bias), `validate/calendar_validation.py` (ground-truth recovery, slate diversity, method comparison). CLI: `validate-bias`, `validate-calendar` |
+| Web app | `web/` — FastAPI + vanilla JS SPA. Image browser (paginated, sort, filter), candidate comparison + detail, cluster explorer, stats dashboard, interactive selection builder with live scoring. CLI: `serve` |
 | Lessons viewer | `docs/lessons/lessons.html` — static web viewer with card grid, category filtering, dark mode. `lesson.html` renders markdown via marked.js. Atlas design system (`system/tokens.css`, `system/system.css`) |
-| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `review-package`, `validate-bias`, `validate-calendar`, `run-all` |
-| Tests | 131 passing (pytest), ruff clean |
+| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `review-package`, `validate-bias`, `validate-calendar`, `serve`, `run-all` |
+| Tests | 168 passing (pytest), ruff clean |
 
 ### Current data state
 
@@ -93,6 +94,7 @@ Package layout under `src/artemis_calendar/`:
 | `optimize/` | Exists | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
 | `render/` | Exists | Calendar page rendering: layout, grid, monthly/cover pages, pipeline, PDF assembly |
 | `review/` | Exists | Review package: comparison, contact sheet, selection report, validation, export |
+| `web/` | Exists | FastAPI web app: API endpoints, SPA frontend, interactive selection builder. CLI: `serve` |
 | `marts/` | Not started | Analytical outputs (beyond cluster/scoring/calendar marts) |
 | `reports/` | Not started | Review packages (superseded by `review/` for C5 deliverables) |
 

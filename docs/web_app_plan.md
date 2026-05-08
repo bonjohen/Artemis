@@ -158,14 +158,14 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 7.1    | Open   |               |                  | Verify dark mode works across all pages (Atlas tokens handle it, but check app.css overrides) |
-| 7.2    | Open   |               |                  | Add responsive breakpoints for image grid (2-col on tablet, 1-col on mobile) |
-| 7.3    | Open   |               |                  | Update `README.md` — add `web` optional dep, `serve` CLI command, web app section |
-| 7.4    | Open   |               |                  | Update `startup.md` — add web app to current state, test count |
-| 7.5    | Open   |               |                  | Update `CLAUDE.md` — add `web/` module to package layout table |
-| 7.6    | Open   |               |                  | Final pytest + ruff pass, stage and commit |
+| 7.1    | Completed | 2026-05-06 10:40 PM | 2026-05-06 10:40 PM | Verify dark mode works across all pages (Atlas tokens handle it, but check app.css overrides) |
+| 7.2    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Add responsive breakpoints for image grid (2-col on tablet, 1-col on mobile) |
+| 7.3    | Completed | 2026-05-06 10:40 PM | 2026-05-06 10:42 PM | Update `README.md` — add `web` optional dep, `serve` CLI command, web app section |
+| 7.4    | Completed | 2026-05-06 10:42 PM | 2026-05-06 10:43 PM | Update `startup.md` — add web app to current state, test count |
+| 7.5    | Completed | 2026-05-06 10:40 PM | 2026-05-06 10:43 PM | Update `CLAUDE.md` — add `web/` module to package layout table |
+| 7.6    | Completed | 2026-05-06 10:43 PM | 2026-05-06 10:44 PM | Final pytest + ruff pass, stage and commit |
 
 ### Phase 7 Summary
 
-- **Changes:** TBD
+- **Changes:** Verified dark mode (Atlas tokens handle it). Responsive breakpoints already in app.css. Updated README.md (status, web optional dep, serve command, web/ module). Updated startup.md (current state, test count). Updated CLAUDE.md (web/ in layer table, package layout, CLI list, test count). 168 tests pass, ruff clean.
 - **Commit:** `docs: update project documentation for web app`
