@@ -132,3 +132,7 @@ DuckDB is the right choice for Artemis because:
 - No concurrent write requirements (pipeline steps run sequentially)
 
 The single-writer constraint was only a friction point during development (wanting to check progress while a download ran). In production operation, each pipeline step opens, writes, and closes before the next step starts.
+
+## Related Lessons
+
+- [Read-Only DB for Web Layers](../block5/031_read_only_db_for_web_layers.md) — the web-tier extension of this constraint: open the DB read-only so the pipeline can still write

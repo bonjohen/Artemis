@@ -68,3 +68,7 @@ Each scoring run is also recorded in `run_manifest` with the same run_id, linkin
 Run-ID partitioning is the simplest pattern that gives you both idempotency and auditability. The cost is modest (table grows linearly with runs) and the benefit is large (any score can be traced, compared, or rolled back). The pattern extends naturally to any analytical output — cluster assignments, optimization results, reliability metrics — and the `run_manifest` table serves as the central registry.
 
 The key discipline is: **never query a partitioned table without filtering by run_id**. An unfiltered `SELECT AVG(posterior_mean) FROM mart_image_preference_score` silently averages across all runs, producing garbage. Downstream code should always accept a run_id parameter or default to the most recent.
+
+## Related Lessons
+
+- [Reusing Query Modules Across CLI and Web](../block5/034_reusing_query_modules_across_layers.md) — `resolve_run_id()` is the shared function both CLI and web use to default to the latest run, enforcing the "always filter by run_id" discipline
