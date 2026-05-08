@@ -1,0 +1,171 @@
+# Artemis Web App — Implementation Plan
+
+**Source document:** `docs/web_app_design.md`
+
+## Work Queue Instructions
+
+### State Transitions
+
+Open  ──>  Started  ──>  Completed
+              │
+              └──>  Blocked  ──>  Started  ──>  Completed
+
+- **Open**: Not yet begun.
+- **Started**: Actively in progress. Record the start datetime (PST).
+- **Completed**: Done and verified. Record the completion datetime (PST).
+- **Blocked**: Cannot proceed; note the blocker in the description.
+
+### Commit Protocol
+
+1. Work through all tasks in a phase.
+2. When every task reaches Completed, write the Phase Summary.
+3. Stage and commit all changes for the phase. Do not push.
+4. Proceed immediately to the next phase.
+
+## Technology Stack (Additive)
+
+| Concern | Choice |
+|---|---|
+| Backend | FastAPI + uvicorn (`fastapi[standard]>=0.115`) |
+| Frontend | Vanilla JS SPA (ES modules, hash routing) |
+| Styling | Atlas design system (tokens.css + system.css) |
+| Database | DuckDB read-only connection (single shared) |
+| Image serving | FastAPI StaticFiles mount |
+
+## Phase 1: Backend Skeleton
+
+**Goal:** FastAPI app starts, serves a health endpoint, mounts static files and thumbnail directory, CLI `serve` command works.
+**Depends on:** Nothing (first phase).
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 1.1    | Open   |               |                  | Add `web` optional dep to `pyproject.toml`: `fastapi[standard]>=0.115` |
+| 1.2    | Open   |               |                  | Create `src/artemis_calendar/web/__init__.py` with `create_app()` factory |
+| 1.3    | Open   |               |                  | Create `src/artemis_calendar/web/app.py` — FastAPI app, lifespan (DB connect/close), static mounts (static dir + thumbs), CORS |
+| 1.4    | Open   |               |                  | Create `src/artemis_calendar/web/db.py` — read-only DuckDB connection, startup cache loader, `get_db` dependency |
+| 1.5    | Open   |               |                  | Create `src/artemis_calendar/web/static/` directory with `index.html` SPA shell, copy `tokens.css` and `system.css` from `docs/lessons/system/` |
+| 1.6    | Open   |               |                  | Add `cmd_serve` to `cli.py` with `serve` subcommand (host, port args, default `localhost:8420`) |
+| 1.7    | Open   |               |                  | Verify: `pip install -e ".[web]"` && `artemis-pipeline serve` starts, `GET /` serves index.html, `GET /thumbs/{guid}.jpg` serves a thumbnail |
+| 1.8    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+
+### Phase 1 Summary
+
+- **Changes:** TBD
+- **Commit:** `feat(web): add FastAPI skeleton with static file serving and CLI serve command`
+
+## Phase 2: API — Images & Candidates
+
+**Goal:** `/api/images` (paginated browse), `/api/images/{sk}` (detail), `/api/candidates`, `/api/candidates/{name}` all return JSON.
+**Depends on:** Phase 1.
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 2.1    | Open   |               |                  | Create `src/artemis_calendar/web/models.py` — Pydantic schemas: `ImageSummary`, `ImageDetail`, `CandidateResponse`, `CandidateDetail`, `MonthImageResponse`, `ClusterAlternativeResponse`, `PaginatedResponse` |
+| 2.2    | Open   |               |                  | Create `src/artemis_calendar/web/queries.py` — `fetch_images_page()` (paginated, sorted, filtered), `fetch_image_detail()` (scores + visual + cluster + candidates) |
+| 2.3    | Open   |               |                  | Create `src/artemis_calendar/web/routes/__init__.py` and `routes/images.py` — `GET /api/images`, `GET /api/images/{sk}` |
+| 2.4    | Open   |               |                  | Create `src/artemis_calendar/web/routes/candidates.py` — `GET /api/candidates`, `GET /api/candidates/{name}` (reuse `review/queries.py`) |
+| 2.5    | Open   |               |                  | Register routers in `app.py` |
+| 2.6    | Open   |               |                  | Add `tests/test_web_api.py` — test image list, image detail, candidate list, candidate detail endpoints with in-memory DB |
+| 2.7    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+
+### Phase 2 Summary
+
+- **Changes:** TBD
+- **Commit:** `feat(web): add images and candidates API endpoints`
+
+## Phase 3: API — Clusters, Stats, Selection
+
+**Goal:** Remaining API endpoints: clusters, stats dashboard, and interactive selection scoring/persistence.
+**Depends on:** Phase 2.
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 3.1    | Open   |               |                  | Create `routes/clusters.py` — `GET /api/clusters`, `GET /api/clusters/{id}` with member images |
+| 3.2    | Open   |               |                  | Create `routes/stats.py` — `GET /api/stats` (reliability, bias, score distributions, vote counts) |
+| 3.3    | Open   |               |                  | Implement startup cache in `db.py` — load preference, month_fit, cover_fit, uncertainty, clusters, broad_appeal, embeddings, ranks into `app.state` |
+| 3.4    | Open   |               |                  | Create `routes/selection.py` — `POST /api/selection/score` (call `score_calendar` with cached data), `GET/PUT /api/selection` (JSON file), `GET /api/selection/history` |
+| 3.5    | Open   |               |                  | Add tests for cluster, stats, and selection endpoints |
+| 3.6    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+
+### Phase 3 Summary
+
+- **Changes:** TBD
+- **Commit:** `feat(web): add clusters, stats, and selection API endpoints`
+
+## Phase 4: Frontend — SPA Shell & Image Browser
+
+**Goal:** Working SPA with hash router, navigation, and image browser page with paginated grid, sort, and filter.
+**Depends on:** Phase 2 (needs image API).
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 4.1    | Open   |               |                  | Create `static/css/app.css` — image grid, cards, filters, scorecard, modal/overlay styles |
+| 4.2    | Open   |               |                  | Create `static/js/app.js` — hash router (`#/images`, `#/candidates`, `#/clusters`, `#/stats`, `#/selection`), page loader, nav highlighting |
+| 4.3    | Open   |               |                  | Create `static/js/components/image-card.js` — reusable thumbnail card (image, score badge, cluster pill) |
+| 4.4    | Open   |               |                  | Create `static/js/pages/images.js` — image browser: 60-per-page grid, sort dropdown, cluster filter, pagination controls, lazy-load thumbnails |
+| 4.5    | Open   |               |                  | Create `static/js/pages/image-detail.js` — modal/overlay: full scores, visual features, cluster, candidates, alternatives |
+| 4.6    | Open   |               |                  | Update `index.html` — wire up nav links, app container, script imports |
+| 4.7    | Open   |               |                  | Manual verify: browse images, sort by score, filter by cluster, click for detail |
+| 4.8    | Open   |               |                  | Run ruff, stage and commit |
+
+### Phase 4 Summary
+
+- **Changes:** TBD
+- **Commit:** `feat(web): add SPA shell with image browser and detail view`
+
+## Phase 5: Frontend — Candidates & Clusters
+
+**Goal:** Candidate comparison page, candidate detail with month assignments, and cluster explorer.
+**Depends on:** Phase 4.
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 5.1    | Open   |               |                  | Create `static/js/components/scorecard.js` — reusable score comparison table (metrics × methods, best highlighted) |
+| 5.2    | Open   |               |                  | Create `static/js/pages/candidates.js` — comparison view: scorecard table, cover thumbnails, click-to-detail |
+| 5.3    | Open   |               |                  | Add candidate detail sub-view: 13 month-image cards with scores, cluster alternatives, "Use as starting point" button |
+| 5.4    | Open   |               |                  | Create `static/js/pages/clusters.js` — 25 cluster cards with top-image, stats; click for member grid |
+| 5.5    | Open   |               |                  | Manual verify: candidate comparison, drill into method_b, see month assignments, browse clusters |
+| 5.6    | Open   |               |                  | Run ruff, stage and commit |
+
+### Phase 5 Summary
+
+- **Changes:** TBD
+- **Commit:** `feat(web): add candidate comparison and cluster explorer pages`
+
+## Phase 6: Frontend — Stats & Selection Builder
+
+**Goal:** Stats dashboard and interactive selection builder with live scoring.
+**Depends on:** Phase 3 (needs selection API) + Phase 5.
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 6.1    | Open   |               |                  | Create `static/js/pages/stats.js` — reliability metrics, bias results, score distribution histogram, vote counts |
+| 6.2    | Open   |               |                  | Create `static/js/components/calendar-grid.js` — 13-slot visual grid (cover + 12 months), click-to-select |
+| 6.3    | Open   |               |                  | Create `static/js/pages/selection.js` — calendar grid, live scorecard, image picker panel (cluster alternatives + search), save/load, diff view |
+| 6.4    | Open   |               |                  | Wire "Use as starting point" from candidates page → selection builder with pre-filled assignments |
+| 6.5    | Open   |               |                  | Manual verify: full flow — candidates → pick starting point → swap images → scores update → save → reload |
+| 6.6    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+
+### Phase 6 Summary
+
+- **Changes:** TBD
+- **Commit:** `feat(web): add stats dashboard and interactive selection builder`
+
+## Phase 7: Polish & Documentation
+
+**Goal:** Dark mode, responsive layout, README update, startup.md update.
+**Depends on:** Phase 6.
+
+| Task   | Status | Started (PST) | Completed (PST) | Description |
+|--------|--------|---------------|------------------|-------------|
+| 7.1    | Open   |               |                  | Verify dark mode works across all pages (Atlas tokens handle it, but check app.css overrides) |
+| 7.2    | Open   |               |                  | Add responsive breakpoints for image grid (2-col on tablet, 1-col on mobile) |
+| 7.3    | Open   |               |                  | Update `README.md` — add `web` optional dep, `serve` CLI command, web app section |
+| 7.4    | Open   |               |                  | Update `startup.md` — add web app to current state, test count |
+| 7.5    | Open   |               |                  | Update `CLAUDE.md` — add `web/` module to package layout table |
+| 7.6    | Open   |               |                  | Final pytest + ruff pass, stage and commit |
+
+### Phase 7 Summary
+
+- **Changes:** TBD
+- **Commit:** `docs: update project documentation for web app`
