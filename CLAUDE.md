@@ -10,7 +10,7 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 
 ## Project Status
 
-**Through Phase C5.** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, calendar optimization, calendar rendering, and review package are all complete. Five candidate calendars generated with comparison scorecard, contact sheets, selection reports, layout validation diagnostics, and final export package.
+**Through Phase S3-S4.** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, calendar optimization, calendar rendering, review package, and synthetic validation are all complete. Five candidate calendars generated with comparison scorecard, contact sheets, selection reports, layout validation diagnostics, and final export package. Bias detection (position bias, cluster bias, voter segmentation, score-truth correlation, reliability under bias) and calendar optimization validation (ground-truth recovery, slate diversity) are implemented and tested.
 
 ### What exists
 
@@ -25,9 +25,10 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | Calendar optimization | `optimize/` — 5 selection methods (top-N, cluster-limited, per-cluster, month-first, MMR greedy), Hungarian month assignment, calendar-level scoring. 5 candidate calendars generated |
 | Calendar rendering | `render/` — layout constants, calendar grid renderer, monthly page + cover page composition, targeted image download, multi-page PDF assembly. CLI: `render-calendar` |
 | Review package | `review/` — candidate comparison scorecard, contact sheets (4x4 grid), selection reports (per-image rationale + cluster alternatives), layout validation (aspect ratio, brightness, color, cluster overlap), export assembly. CLI: `review-package` |
+| Synthetic validation | `validate/bias_detection.py` (position bias, cluster bias, voter segments, score-truth correlation, reliability under bias), `validate/calendar_validation.py` (ground-truth recovery, slate diversity, method comparison). CLI: `validate-bias`, `validate-calendar` |
 | Lessons viewer | `docs/lessons/lessons.html` — static web viewer with card grid, category filtering, dark mode. `lesson.html` renders markdown via marked.js. Atlas design system (`system/tokens.css`, `system/system.css`) |
-| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `review-package`, `run-all` |
-| Tests | 120 passing (pytest), ruff clean |
+| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `review-package`, `validate-bias`, `validate-calendar`, `run-all` |
+| Tests | 131 passing (pytest), ruff clean |
 
 ### Current data state
 
@@ -45,6 +46,8 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | `mart_inter_rater_reliability` | 2 | Krippendorff's alpha per vote mode |
 | `mart_calendar_candidate` | 5 | One per selection method (A–E) |
 | `mart_calendar_candidate_month_image` | 65 | 13 month-image assignments per candidate |
+| `mart_bias_detection` | 0* | Position/cluster/voter bias detection results |
+| `mart_calendar_validation` | 0* | Ground-truth recovery and diversity per method |
 
 ### Two image populations in dim_image
 
@@ -81,7 +84,7 @@ Package layout under `src/artemis_calendar/`:
 | `extract/` | Exists | Download source pages, manifests, images (concurrent), vote data |
 | `parse/` | Exists | Source-specific parsers (timeline, category, leaderboard, vote manifest) |
 | `load/` | Exists | Staging and warehouse loaders |
-| `validate/` | Partial | `checks.py` exists; drift/referential/semantic checks not yet wired |
+| `validate/` | Exists | `checks.py` (row counts, duplicates), `bias_detection.py` (S3), `calendar_validation.py` (S4), `marts.py` |
 | `observe/` | Exists | Run manifests, structured JSON logging |
 | `features/` | Exists | Image/text embeddings, sentiment, visual features (parallel extraction) |
 | `cluster/` | Exists | Visual, text, and multimodal clustering + mart builders |
@@ -188,7 +191,7 @@ Three upstream sources serve image data. All permit automated access but require
 | **Phase 4** | Done | Calendar optimization (5 methods, month/cover scoring, candidate generation) |
 | **C4** | Done | Calendar rendering: targeted image download, 8.5x11 page layout, cover + 13 monthly pages, multi-page PDF assembly, `render-calendar` CLI |
 | **C5** | Done | Review package: comparison scorecard, contact sheets, selection reports, layout validation, export assembly, `review-package` CLI |
-| **S3–S4** | **Next** | Synthetic validation: bias detection, optimization validation |
+| **S3–S4** | Done | Synthetic validation: bias detection, optimization validation |
 | **Phase 5** | Not started | Learning and publication package |
 
 ## Documentation Structure

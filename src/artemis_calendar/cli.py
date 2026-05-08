@@ -213,6 +213,83 @@ def cmd_review_package(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_validate_bias(args: argparse.Namespace) -> None:
+    from artemis_calendar.validate.bias_detection import run_bias_detection
+
+    conn = get_connection()
+    apply_migrations(conn)
+    report = run_bias_detection(conn)
+
+    print("\n=== Bias Detection Report (S3) ===")
+    print(f"Run ID: {report['detection_run_id']}")
+    print(
+        f"\nPosition bias:  coeff={report.get('position_bias_coeff', 'N/A')}, "
+        f"p={report.get('position_bias_pvalue', 'N/A')}, "
+        f"detected={report.get('position_bias_detected', 'N/A')}"
+    )
+    print(
+        f"Pairwise left:  win_rate={report.get('pairwise_left_win_rate', 'N/A')}, "
+        f"p={report.get('pairwise_left_pvalue', 'N/A')}"
+    )
+    print(
+        f"Cluster bias:   chi2={report.get('cluster_bias_chi2', 'N/A')}, p={report.get('cluster_bias_pvalue', 'N/A')}"
+    )
+    print(
+        f"Score vs truth: spearman={report.get('score_vs_truth_spearman', 'N/A')}, "
+        f"p={report.get('score_vs_truth_pvalue', 'N/A')}"
+    )
+    print(
+        f"Reliability:    all={report.get('alpha_all_voters', 'N/A')}, "
+        f"clean={report.get('alpha_excluding_biased', 'N/A')}, "
+        f"delta={report.get('alpha_delta', 'N/A')}"
+    )
+    print(
+        f"Voter segments: {report.get('voter_segment_count', 0)} profiles, "
+        f"consensus_std={report.get('voter_consensus_std', 'N/A')}"
+    )
+
+    if report.get("cluster_details"):
+        print("\nTop over-selected clusters:")
+        for c in report["cluster_details"]:
+            print(f"  Cluster {c['cluster']}: lift={c['lift']:.2f}x (obs={c['observed']}, exp={c['expected']:.0f})")
+
+    if report.get("profile_stats"):
+        print("\nVoter profile agreement:")
+        for profile, s in report["profile_stats"].items():
+            print(
+                f"  {profile:<20} n={s['count']}, "
+                f"mean_agreement={s['mean_agreement']:.4f}, "
+                f"std={s['std_agreement']:.4f}"
+            )
+
+    conn.close()
+
+
+def cmd_validate_calendar(args: argparse.Namespace) -> None:
+    from artemis_calendar.validate.calendar_validation import run_calendar_validation
+
+    conn = get_connection()
+    apply_migrations(conn)
+    report = run_calendar_validation(conn)
+
+    print("\n=== Calendar Optimization Validation (S4) ===")
+    print(f"Run ID: {report['validation_run_id']}")
+
+    if report["methods"]:
+        print(f"\n{'Method':<12} {'Recovery':>10} {'Clusters':>10} {'Max Sim':>10} {'Objective':>10}")
+        print("-" * 56)
+        for name, m in sorted(report["methods"].items()):
+            recovery = f"{m.get('gt_recovery_rate', 0):.1%}" if m.get("gt_recovery_rate") is not None else "N/A"
+            clusters = str(m.get("slate_cluster_count", "N/A"))
+            max_sim = f"{m['slate_max_cosine_sim']:.3f}" if m.get("slate_max_cosine_sim") is not None else "N/A"
+            objective = f"{m['objective_score']:.3f}" if m.get("objective_score") is not None else "N/A"
+            print(f"{name:<12} {recovery:>10} {clusters:>10} {max_sim:>10} {objective:>10}")
+    else:
+        print("No candidate data found.")
+
+    conn.close()
+
+
 def cmd_run_all(args: argparse.Namespace) -> None:
     conn = get_connection()
     applied = apply_migrations(conn)
@@ -251,6 +328,14 @@ def cmd_run_all(args: argparse.Namespace) -> None:
 
     # Statistical modeling
     cmd_compute_scores(fake_args)
+
+    # Optimization
+    fake_args.methods = None
+    cmd_optimize(fake_args)
+
+    # Validation (S3-S4)
+    cmd_validate_bias(fake_args)
+    cmd_validate_calendar(fake_args)
 
 
 def main() -> None:
@@ -314,6 +399,9 @@ def main() -> None:
     review.add_argument("--winner", default="method_b", help="Candidate to export (default: method_b)")
     review.add_argument("--skip-render", action="store_true", help="Skip rendering full calendars")
 
+    sub.add_parser("validate-bias", help="Run bias detection validation on synthetic vote data (S3)")
+    sub.add_parser("validate-calendar", help="Run calendar optimization validation against ground truth (S4)")
+
     run_all = sub.add_parser("run-all", help="Run full pipeline: migrate → collect → load → generate")
     run_all.add_argument("--manifest", default=None, help="Path to source manifest YAML")
     run_all.add_argument("--seed", type=int, default=42, help="Random seed for synthetic votes")
@@ -333,6 +421,8 @@ def main() -> None:
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
+        "validate-bias": cmd_validate_bias,
+        "validate-calendar": cmd_validate_calendar,
         "run-all": cmd_run_all,
     }
 
