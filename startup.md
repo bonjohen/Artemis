@@ -201,3 +201,4 @@ conn.close()
 | Lessons (block 1) | `docs/lessons/block1/` | 10 lessons from Phases 1–2B (infrastructure, scaling, DuckDB) |
 | Lessons (block 2) | `docs/lessons/block2/` | 8 lessons from Phase 3 (statistical methods + patterns) |
 | Lessons (block 3) | `docs/lessons/block3/` | 8 lessons from Phase 4 (optimization, PyArrow, MMR, assignment) |
+| Lessons web viewer | `docs/lessons/lessons.html` | Card grid with category filters, dark mode, marked.js markdown rendering |

@@ -24,6 +24,7 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | Statistical modeling | `models/` — Beta-Binomial, Elo, Borda, composite scoring, inter-rater reliability. All 12,217 images scored |
 | Calendar optimization | `optimize/` — 5 selection methods (top-N, cluster-limited, per-cluster, month-first, MMR greedy), Hungarian month assignment, calendar-level scoring. 5 candidate calendars generated |
 | Calendar rendering | `render/` — layout constants, calendar grid renderer, monthly page + cover page composition, targeted image download, multi-page PDF assembly. CLI: `render-calendar` |
+| Lessons viewer | `docs/lessons/lessons.html` — static web viewer with card grid, category filtering, dark mode. `lesson.html` renders markdown via marked.js. Atlas design system (`system/tokens.css`, `system/system.css`) |
 | CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `run-all` |
 | Tests | 96 passing (pytest), ruff clean |
 

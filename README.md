@@ -8,7 +8,7 @@ Imagery and voting data are sourced from [ArtemisTimeline.com](https://artemisti
 
 ## Status
 
-**Phase 4 complete.** The full data pipeline and calendar optimization are operational:
+**Phase C4 complete.** The full data pipeline, calendar optimization, and rendering are operational:
 
 - **12,217 thumbnails** downloaded from Cloudflare R2 CDN (concurrent, ~2.7 min)
 - **Visual features** extracted for all images (brightness, contrast, saturation, dominant colors)
@@ -16,8 +16,9 @@ Imagery and voting data are sourced from [ArtemisTimeline.com](https://artemisti
 - **k-means clustering** (k=25) across visual, text, and multimodal views
 - **Statistical modeling** — Beta-Binomial posteriors, Elo ratings, Borda scores, composite scoring, inter-rater reliability
 - **Calendar optimization** — 5 selection methods, Hungarian month assignment, 5 candidate calendars generated
+- **Calendar rendering** — targeted full-res download, 8.5x11 page layout, cover + 13 monthly pages, multi-page PDF assembly
 
-Next: download full-resolution images for the selected calendar and render printable 8.5x11 PDF pages.
+Next: review package (candidate comparison, contact sheet, selection report).
 
 ## Architecture
 
@@ -40,6 +41,7 @@ Package layout under `src/artemis_calendar/`:
 | `synthetic/` | Synthetic voter data generation for bias detection testing |
 | `models/` | Preference scoring (Elo, Borda, Beta-Binomial), composite scores, reliability |
 | `optimize/` | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
+| `render/` | Calendar page rendering: layout, grid, monthly/cover pages, pipeline, PDF assembly |
 | `cli.py` | CLI entry point |
 
 ## Requirements
@@ -83,6 +85,8 @@ artemis-pipeline run-clustering --algorithm kmeans --cluster-type all --n-cluste
 artemis-pipeline compute-scores            # Compute preference scores (Elo, Borda, composite)
 artemis-pipeline optimize                  # Generate 5 candidate calendars
 artemis-pipeline optimize --methods method_a,method_e  # Run specific methods only
+artemis-pipeline render-calendar --candidate method_b  # Render calendar PDF for best candidate
+artemis-pipeline render-calendar --all                 # Render all 5 candidates
 ```
 
 ## Viewing Clustering Results
@@ -181,8 +185,9 @@ Design documents live in `docs/`:
 - [`docs/thumbnail_download_plan.md`](docs/thumbnail_download_plan.md) — Thumbnail download and full-scale extraction plan
 - [`docs/statistical_modeling_design.md`](docs/statistical_modeling_design.md) — Phase 3 scoring design
 - [`docs/calendar_optimization_design.md`](docs/calendar_optimization_design.md) — Phase 4 optimization design
+- [`docs/calendar_rendering_plan.md`](docs/calendar_rendering_plan.md) — Phase C4 rendering plan
 
-Lessons learned: [`docs/lessons/`](docs/lessons/) — 26 lessons across 3 blocks (infrastructure, statistical methods, optimization)
+Lessons learned: [`docs/lessons/`](docs/lessons/) — 26 lessons across 3 blocks (infrastructure, statistical methods, optimization). View as a browsable web page: serve `docs/lessons/` and open [`lessons.html`](docs/lessons/lessons.html).
 
 Session startup guide: [`startup.md`](startup.md) (root directory)
 
