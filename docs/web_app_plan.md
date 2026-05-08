@@ -60,17 +60,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 2.1    | Open   |               |                  | Create `src/artemis_calendar/web/models.py` — Pydantic schemas: `ImageSummary`, `ImageDetail`, `CandidateResponse`, `CandidateDetail`, `MonthImageResponse`, `ClusterAlternativeResponse`, `PaginatedResponse` |
-| 2.2    | Open   |               |                  | Create `src/artemis_calendar/web/queries.py` — `fetch_images_page()` (paginated, sorted, filtered), `fetch_image_detail()` (scores + visual + cluster + candidates) |
-| 2.3    | Open   |               |                  | Create `src/artemis_calendar/web/routes/__init__.py` and `routes/images.py` — `GET /api/images`, `GET /api/images/{sk}` |
-| 2.4    | Open   |               |                  | Create `src/artemis_calendar/web/routes/candidates.py` — `GET /api/candidates`, `GET /api/candidates/{name}` (reuse `review/queries.py`) |
-| 2.5    | Open   |               |                  | Register routers in `app.py` |
-| 2.6    | Open   |               |                  | Add `tests/test_web_api.py` — test image list, image detail, candidate list, candidate detail endpoints with in-memory DB |
-| 2.7    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+| 2.1    | Completed | 2026-05-06 10:05 PM | 2026-05-06 10:10 PM | Create `src/artemis_calendar/web/models.py` — Pydantic schemas: `ImageSummary`, `ImageDetail`, `CandidateResponse`, `CandidateDetail`, `MonthImageResponse`, `ClusterAlternativeResponse`, `PaginatedResponse` |
+| 2.2    | Completed | 2026-05-06 10:05 PM | 2026-05-06 10:10 PM | Create `src/artemis_calendar/web/queries.py` — `fetch_images_page()` (paginated, sorted, filtered), `fetch_image_detail()` (scores + visual + cluster + candidates) |
+| 2.3    | Completed | 2026-05-06 10:05 PM | 2026-05-06 10:10 PM | Create `src/artemis_calendar/web/routes/__init__.py` and `routes/images.py` — `GET /api/images`, `GET /api/images/{sk}` |
+| 2.4    | Completed | 2026-05-06 10:05 PM | 2026-05-06 10:10 PM | Create `src/artemis_calendar/web/routes/candidates.py` — `GET /api/candidates`, `GET /api/candidates/{name}` (reuse `review/queries.py`) |
+| 2.5    | Completed | 2026-05-06 10:05 PM | 2026-05-06 10:10 PM | Register routers in `app.py` |
+| 2.6    | Completed | 2026-05-06 10:10 PM | 2026-05-06 10:12 PM | Add `tests/test_web_api.py` — test image list, image detail, candidate list, candidate detail endpoints with in-memory DB |
+| 2.7    | Completed | 2026-05-06 10:12 PM | 2026-05-06 10:13 PM | Run pytest + ruff, fix any issues, stage and commit |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `web/models.py` (7 Pydantic schemas), `web/queries.py` (paginated image browse + detail), `routes/images.py` (GET /api/images, GET /api/images/{sk}), `routes/candidates.py` (GET /api/candidates, GET /api/candidates/{name} reusing review/queries.py). Registered routers in app.py. Added `tests/test_web_api.py` with 11 tests. 160 tests pass, ruff clean.
 - **Commit:** `feat(web): add images and candidates API endpoints`
 
 ## Phase 3: API — Clusters, Stats, Selection

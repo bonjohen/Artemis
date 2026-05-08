@@ -12,6 +12,8 @@ from fastapi.staticfiles import StaticFiles
 
 from artemis_calendar.config.settings import RAW_ROOT
 from artemis_calendar.web.db import close_db, init_db
+from artemis_calendar.web.routes.candidates import router as candidates_router
+from artemis_calendar.web.routes.images import router as images_router
 
 STATIC_DIR = Path(__file__).parent / "static"
 THUMBS_DIR = RAW_ROOT / "images" / "thumbs"
@@ -33,6 +35,10 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Register API routers
+    app.include_router(images_router)
+    app.include_router(candidates_router)
 
     # Mount thumbnail images
     if THUMBS_DIR.exists():
