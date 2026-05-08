@@ -9,12 +9,14 @@ from PIL import Image
 from artemis_calendar.render.layout import PAGE_H, PAGE_W
 from artemis_calendar.review.comparison import render_comparison_page
 from artemis_calendar.review.contact_sheet import render_contact_sheet
+from artemis_calendar.review.export import assemble_export
 from artemis_calendar.review.queries import (
     CandidateScore,
     ClusterAlternative,
     MonthImage,
 )
 from artemis_calendar.review.selection_report import render_selection_report
+from artemis_calendar.review.validation import render_validation_page
 
 
 def _make_candidates(n: int = 5) -> list[CandidateScore]:
@@ -247,3 +249,84 @@ class TestSelectionReport:
             pages[0].save(out, resolution=300)
         assert out.exists()
         assert out.stat().st_size > 0
+
+
+class TestValidationPage:
+    def test_validation_page_dimensions(self, tmp_path):
+        images = _make_month_images(tmp_path)
+        page = render_validation_page("method_b", images, tmp_path)
+        assert page.size == (PAGE_W, PAGE_H)
+
+    def test_validation_page_is_rgb(self, tmp_path):
+        images = _make_month_images(tmp_path)
+        page = render_validation_page("method_a", images, tmp_path)
+        assert page.mode == "RGB"
+
+    def test_validation_page_no_thumbs(self, tmp_path):
+        """Should render with warnings when thumbnails are missing."""
+        images = _make_month_images(tmp_path)
+        empty_dir = tmp_path / "empty"
+        empty_dir.mkdir()
+        page = render_validation_page("method_c", images, empty_dir)
+        assert page.size == (PAGE_W, PAGE_H)
+
+    def test_validation_page_no_dominant_color(self, tmp_path):
+        """Should handle images with no dominant color JSON."""
+        images = _make_month_images(tmp_path)
+        for img in images:
+            img.dominant_color_json = None
+        page = render_validation_page("method_d", images, tmp_path)
+        assert page.size == (PAGE_W, PAGE_H)
+
+    def test_validation_page_save_png(self, tmp_path):
+        images = _make_month_images(tmp_path)
+        page = render_validation_page("method_e", images, tmp_path)
+        out = tmp_path / "validation.png"
+        page.save(out, dpi=(300, 300))
+        assert out.exists()
+        assert out.stat().st_size > 0
+
+
+class TestExportPackage:
+    def test_assemble_export_creates_directory(self, tmp_path, monkeypatch):
+        """Should create export directory and copy available artifacts."""
+        import artemis_calendar.review.export as export_mod
+
+        monkeypatch.setattr(export_mod, "OUTPUT_ROOT", tmp_path)
+
+        # Create mock review directory with artifacts
+        review_dir = tmp_path / "review" / "test_run"
+        review_dir.mkdir(parents=True)
+
+        # Create mock files
+        (review_dir / "comparison.png").write_bytes(b"fake png")
+        (review_dir / "method_b_contact_sheet.png").write_bytes(b"fake contact")
+        (review_dir / "method_b_validation.png").write_bytes(b"fake validation")
+        (review_dir / "review_package.pdf").write_bytes(b"fake pdf")
+
+        # Create mock calendar
+        cal_dir = tmp_path / "calendars" / "method_b"
+        cal_dir.mkdir(parents=True)
+        (cal_dir / "calendar.pdf").write_bytes(b"fake calendar")
+
+        export_dir = assemble_export("test_run", "method_b", review_dir)
+        assert export_dir.exists()
+        assert (export_dir / "calendar.pdf").exists()
+        assert (export_dir / "comparison.png").exists()
+        assert (export_dir / "contact_sheet.png").exists()
+        assert (export_dir / "validation.png").exists()
+        assert (export_dir / "review_package.pdf").exists()
+
+    def test_assemble_export_missing_artifacts(self, tmp_path, monkeypatch):
+        """Should handle missing artifacts gracefully."""
+        import artemis_calendar.review.export as export_mod
+
+        monkeypatch.setattr(export_mod, "OUTPUT_ROOT", tmp_path)
+
+        review_dir = tmp_path / "review" / "test_run"
+        review_dir.mkdir(parents=True)
+
+        export_dir = assemble_export("test_run", "method_b", review_dir)
+        assert export_dir.exists()
+        # No files should have been copied, but directory should exist
+        assert len(list(export_dir.iterdir())) == 0

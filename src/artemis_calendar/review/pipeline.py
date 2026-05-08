@@ -12,6 +12,7 @@ from artemis_calendar.observe.logging import get_logger
 from artemis_calendar.render.layout import DPI
 from artemis_calendar.review.comparison import render_comparison_page
 from artemis_calendar.review.contact_sheet import render_contact_sheet
+from artemis_calendar.review.export import assemble_export
 from artemis_calendar.review.queries import (
     fetch_all_candidates,
     fetch_all_preference_ranks,
@@ -20,6 +21,7 @@ from artemis_calendar.review.queries import (
     resolve_run_id,
 )
 from artemis_calendar.review.selection_report import render_selection_report
+from artemis_calendar.review.validation import render_validation_page
 
 logger = get_logger("artemis.review.pipeline")
 
@@ -105,7 +107,7 @@ def generate_review_package(
     # Collect all pages for combined PDF
     all_pages: list[Image.Image] = [comparison]
 
-    # --- Deliverable 3 & 4: Contact Sheet + Selection Report per candidate ---
+    # --- Deliverables 3, 4, 5: Contact Sheet + Selection Report + Validation per candidate ---
     for cand in candidates:
         images = fetch_candidate_images(conn, run_id, cand.candidate_name)
         if not images:
@@ -140,7 +142,6 @@ def generate_review_package(
             alts,
             THUMB_DIR,
         )
-        # Save first page as preview PNG
         if report_pages:
             report_pages[0].save(
                 review_dir / f"{cand.candidate_name}_selection_report_p1.png",
@@ -148,7 +149,6 @@ def generate_review_package(
             )
             all_pages.extend(report_pages)
 
-            # Save individual report as multi-page PDF
             if len(report_pages) > 1:
                 report_pages[0].save(
                     review_dir / f"{cand.candidate_name}_selection_report.pdf",
@@ -163,6 +163,12 @@ def generate_review_package(
                 )
         logger.info(f"Rendered selection report for {cand.candidate_name} ({len(report_pages)} pages)")
 
+        # Validation page
+        validation = render_validation_page(cand.candidate_name, images, THUMB_DIR)
+        validation.save(review_dir / f"{cand.candidate_name}_validation.png", dpi=(DPI, DPI))
+        all_pages.append(validation)
+        logger.info(f"Rendered validation page for {cand.candidate_name}")
+
     # --- Combine into review package PDF ---
     if len(all_pages) > 1:
         all_pages[0].save(
@@ -174,5 +180,9 @@ def generate_review_package(
     else:
         all_pages[0].save(review_dir / "review_package.pdf", resolution=DPI)
     logger.info(f"Review package saved to {review_dir} ({len(all_pages)} pages)")
+
+    # --- Deliverable 6: Export Package ---
+    export_dir = assemble_export(run_id, winner, review_dir)
+    logger.info(f"Export package at {export_dir}")
 
     return review_dir

@@ -10,7 +10,7 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 
 ## Project Status
 
-**Through Phase C4.** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, calendar optimization, and calendar rendering are all complete. Five candidate calendars generated; rendering pipeline produces printable 8.5x11 PDF calendars.
+**Through Phase C5.** Data pipeline, synthetic votes, feature extraction, clustering, statistical modeling, calendar optimization, calendar rendering, and review package are all complete. Five candidate calendars generated with comparison scorecard, contact sheets, selection reports, layout validation diagnostics, and final export package.
 
 ### What exists
 
@@ -24,9 +24,10 @@ The project sources imagery and voting data from ArtemisTimeline.com, which host
 | Statistical modeling | `models/` — Beta-Binomial, Elo, Borda, composite scoring, inter-rater reliability. All 12,217 images scored |
 | Calendar optimization | `optimize/` — 5 selection methods (top-N, cluster-limited, per-cluster, month-first, MMR greedy), Hungarian month assignment, calendar-level scoring. 5 candidate calendars generated |
 | Calendar rendering | `render/` — layout constants, calendar grid renderer, monthly page + cover page composition, targeted image download, multi-page PDF assembly. CLI: `render-calendar` |
+| Review package | `review/` — candidate comparison scorecard, contact sheets (4x4 grid), selection reports (per-image rationale + cluster alternatives), layout validation (aspect ratio, brightness, color, cluster overlap), export assembly. CLI: `review-package` |
 | Lessons viewer | `docs/lessons/lessons.html` — static web viewer with card grid, category filtering, dark mode. `lesson.html` renders markdown via marked.js. Atlas design system (`system/tokens.css`, `system/system.css`) |
-| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `run-all` |
-| Tests | 96 passing (pytest), ruff clean |
+| CLI commands | `migrate`, `status`, `collect-metadata`, `load-metadata`, `collect-images`, `generate-votes`, `extract-visual`, `extract-embeddings`, `run-clustering`, `compute-scores`, `optimize`, `render-calendar`, `review-package`, `run-all` |
+| Tests | 120 passing (pytest), ruff clean |
 
 ### Current data state
 
@@ -88,8 +89,9 @@ Package layout under `src/artemis_calendar/`:
 | `models/` | Exists | Preference scoring (Elo, Borda, Beta-Binomial), composite scores, reliability |
 | `optimize/` | Exists | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
 | `render/` | Exists | Calendar page rendering: layout, grid, monthly/cover pages, pipeline, PDF assembly |
+| `review/` | Exists | Review package: comparison, contact sheet, selection report, validation, export |
 | `marts/` | Not started | Analytical outputs (beyond cluster/scoring/calendar marts) |
-| `reports/` | Not started | Review packages |
+| `reports/` | Not started | Review packages (superseded by `review/` for C5 deliverables) |
 
 ## Clustering Analysis
 
@@ -185,8 +187,8 @@ Three upstream sources serve image data. All permit automated access but require
 | **Phase 3** | Done | Statistical modeling (Elo, Borda, Beta-Binomial, composite, reliability) |
 | **Phase 4** | Done | Calendar optimization (5 methods, month/cover scoring, candidate generation) |
 | **C4** | Done | Calendar rendering: targeted image download, 8.5x11 page layout, cover + 13 monthly pages, multi-page PDF assembly, `render-calendar` CLI |
-| **C5** | **Next** | Review package: candidate comparison, contact sheet, selection report |
-| **S3–S4** | Not started | Synthetic validation: bias detection, optimization validation |
+| **C5** | Done | Review package: comparison scorecard, contact sheets, selection reports, layout validation, export assembly, `review-package` CLI |
+| **S3–S4** | **Next** | Synthetic validation: bias detection, optimization validation |
 | **Phase 5** | Not started | Learning and publication package |
 
 ## Documentation Structure
