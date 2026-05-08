@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 
 import duckdb
-import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from artemis_calendar.config.sql_helpers import ACTIVE_IMAGE_FILTER, LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
@@ -154,6 +153,8 @@ def _compute_spotlight(
     allow_empty: bool = False,
 ) -> dict | None:
     """Compute representative + diverse images for one cluster."""
+    import numpy as np
+
     # Get all images in cluster with distance, score, and guid
     rows = conn.execute(
         f"""
