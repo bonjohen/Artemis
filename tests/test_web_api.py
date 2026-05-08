@@ -119,6 +119,54 @@ def db():
         "('run1', 'method_a', 2, 'January 2027', 13776, 0.6, 0.85)"
     )
 
+    # Cluster summary and top images
+    conn.execute("""
+        CREATE TABLE mart_image_cluster_summary (
+            cluster_id INTEGER,
+            cluster_type TEXT,
+            cluster_run_id TEXT,
+            image_count INTEGER,
+            mean_preference_score DOUBLE,
+            created_at TIMESTAMPTZ DEFAULT now()
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE mart_cluster_top_images (
+            cluster_id INTEGER,
+            cluster_type TEXT,
+            cluster_run_id TEXT,
+            rank INTEGER,
+            image_sk INTEGER,
+            source_image_id TEXT
+        )
+    """)
+    for cid in range(3):
+        conn.execute(
+            "INSERT INTO mart_image_cluster_summary VALUES (?, 'visual', 'crun1', ?, ?, now())",
+            [cid, 2 if cid < 2 else 1, 0.6 + cid * 0.1],
+        )
+        conn.execute(
+            "INSERT INTO mart_cluster_top_images VALUES (?, 'visual', 'crun1', 1, ?, ?)",
+            [cid, 13775 + cid, f"GUID{cid:04d}"],
+        )
+
+    # Reliability
+    conn.execute("""
+        CREATE TABLE mart_inter_rater_reliability (
+            vote_mode TEXT,
+            alpha_value DOUBLE
+        )
+    """)
+    conn.execute("INSERT INTO mart_inter_rater_reliability VALUES ('batch', 0.42)")
+
+    # Vote fact tables
+    conn.execute("CREATE TABLE fact_batch_ballot (ballot_id INTEGER)")
+    conn.execute("INSERT INTO fact_batch_ballot VALUES (1), (2), (3)")
+    conn.execute("CREATE TABLE fact_pairwise_vote (vote_id INTEGER)")
+    conn.execute("INSERT INTO fact_pairwise_vote VALUES (1), (2)")
+    conn.execute("CREATE TABLE fact_category_ranking (ranking_id INTEGER)")
+    conn.execute("INSERT INTO fact_category_ranking VALUES (1)")
+
     yield conn
     conn.close()
 
@@ -128,6 +176,13 @@ def client(db):
     """TestClient with in-memory DB injected."""
     app = create_app()
     app.state.db = db
+    # Set up cache for selection scoring
+    app.state.preference = {13775 + i: 0.5 + i * 0.1 for i in range(5)}
+    app.state.uncertainty = {13775 + i: 0.1 + i * 0.02 for i in range(5)}
+    app.state.clusters = {13775 + i: i % 3 for i in range(5)}
+    app.state.cover_fit = {13775 + i: 0.6 + i * 0.05 for i in range(5)}
+    app.state.month_fit = {}
+    app.state.embeddings = {}
     return TestClient(app)
 
 
@@ -208,3 +263,101 @@ class TestCandidatesEndpoints:
     def test_get_candidate_not_found(self, client):
         r = client.get("/api/candidates/nonexistent")
         assert r.status_code == 404
+
+
+class TestClustersEndpoints:
+    def test_list_clusters(self, client):
+        r = client.get("/api/clusters")
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data) == 3
+        assert data[0]["cluster_id"] == 0
+        assert data[0]["top_image_guid"] == "GUID0000"
+
+    def test_get_cluster_members(self, client):
+        r = client.get("/api/clusters/0")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["total"] > 0
+        assert all(i["cluster_id"] == 0 for i in data["items"])
+
+    def test_get_cluster_not_found(self, client):
+        r = client.get("/api/clusters/999")
+        assert r.status_code == 404
+
+
+class TestStatsEndpoint:
+    def test_stats(self, client):
+        r = client.get("/api/stats")
+        assert r.status_code == 200
+        data = r.json()
+        assert "reliability" in data
+        assert data["reliability"]["batch"] == pytest.approx(0.42)
+        assert data["vote_counts"]["batch_ballots"] == 3
+        assert data["vote_counts"]["pairwise_votes"] == 2
+        assert data["image_count"] == 5
+        assert len(data["score_distribution"]) > 0
+
+
+class TestSelectionEndpoints:
+    def test_score_selection(self, client):
+        body = {
+            "assignments": [
+                {"image_sk": 13775, "sequence_number": 1},
+                {"image_sk": 13776, "sequence_number": 2},
+            ]
+        }
+        r = client.post("/api/selection/score", json=body)
+        assert r.status_code == 200
+        data = r.json()
+        assert "objective_score" in data
+        assert "popularity_score" in data
+        assert "diversity_score" in data
+
+    def test_save_and_load_selection(self, client, tmp_path, monkeypatch):
+        import artemis_calendar.web.routes.selection as sel_mod
+
+        monkeypatch.setattr(sel_mod, "SELECTIONS_DIR", tmp_path)
+
+        body = {
+            "name": "test_sel",
+            "assignments": [
+                {"image_sk": 13775, "sequence_number": 1},
+            ],
+            "notes": "test notes",
+        }
+        r = client.put("/api/selection", json=body)
+        assert r.status_code == 200
+        assert r.json()["status"] == "saved"
+
+        # Load it back
+        r = client.get("/api/selection?name=test_sel")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["name"] == "test_sel"
+        assert len(data["assignments"]) == 1
+
+    def test_selection_history(self, client, tmp_path, monkeypatch):
+        import artemis_calendar.web.routes.selection as sel_mod
+
+        monkeypatch.setattr(sel_mod, "SELECTIONS_DIR", tmp_path)
+
+        # Save two
+        for name in ["sel_a", "sel_b"]:
+            body = {"name": name, "assignments": [], "notes": ""}
+            client.put("/api/selection", json=body)
+
+        r = client.get("/api/selection/history")
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data) == 2
+
+    def test_get_nonexistent_selection(self, client, tmp_path, monkeypatch):
+        import artemis_calendar.web.routes.selection as sel_mod
+
+        monkeypatch.setattr(sel_mod, "SELECTIONS_DIR", tmp_path)
+
+        r = client.get("/api/selection?name=nope")
+        assert r.status_code == 200
+        data = r.json()
+        assert data["assignments"] == []

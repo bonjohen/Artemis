@@ -80,16 +80,16 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 3.1    | Open   |               |                  | Create `routes/clusters.py` — `GET /api/clusters`, `GET /api/clusters/{id}` with member images |
-| 3.2    | Open   |               |                  | Create `routes/stats.py` — `GET /api/stats` (reliability, bias, score distributions, vote counts) |
-| 3.3    | Open   |               |                  | Implement startup cache in `db.py` — load preference, month_fit, cover_fit, uncertainty, clusters, broad_appeal, embeddings, ranks into `app.state` |
-| 3.4    | Open   |               |                  | Create `routes/selection.py` — `POST /api/selection/score` (call `score_calendar` with cached data), `GET/PUT /api/selection` (JSON file), `GET /api/selection/history` |
-| 3.5    | Open   |               |                  | Add tests for cluster, stats, and selection endpoints |
-| 3.6    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+| 3.1    | Completed | 2026-05-06 10:15 PM | 2026-05-06 10:20 PM | Create `routes/clusters.py` — `GET /api/clusters`, `GET /api/clusters/{id}` with member images |
+| 3.2    | Completed | 2026-05-06 10:15 PM | 2026-05-06 10:20 PM | Create `routes/stats.py` — `GET /api/stats` (reliability, bias, score distributions, vote counts) |
+| 3.3    | Completed | 2026-05-06 10:15 PM | 2026-05-06 10:20 PM | Implement startup cache in `db.py` — load preference, month_fit, cover_fit, uncertainty, clusters, broad_appeal, embeddings, ranks into `app.state` |
+| 3.4    | Completed | 2026-05-06 10:15 PM | 2026-05-06 10:20 PM | Create `routes/selection.py` — `POST /api/selection/score` (call `score_calendar` with cached data), `GET/PUT /api/selection` (JSON file), `GET /api/selection/history` |
+| 3.5    | Completed | 2026-05-06 10:20 PM | 2026-05-06 10:22 PM | Add tests for cluster, stats, and selection endpoints |
+| 3.6    | Completed | 2026-05-06 10:22 PM | 2026-05-06 10:23 PM | Run pytest + ruff, fix any issues, stage and commit |
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `routes/clusters.py` (cluster list + member browse), `routes/stats.py` (reliability, bias, distributions, vote counts), `routes/selection.py` (score, save/load, history). Implemented startup cache in `db.py` for interactive scoring. Updated `app.py` to register all routers. Added 8 new tests (19 total web tests). 168 tests pass, ruff clean.
 - **Commit:** `feat(web): add clusters, stats, and selection API endpoints`
 
 ## Phase 4: Frontend — SPA Shell & Image Browser
