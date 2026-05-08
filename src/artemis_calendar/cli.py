@@ -330,6 +330,29 @@ def cmd_vision_tag(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_votes_generate_blocks(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    from artemis_calendar.synthetic.block_generator import generate_block_votes
+    from artemis_calendar.vision.voting_config import load_voting_config
+
+    config = load_voting_config(Path(args.config))
+    if args.seed is not None:
+        config.seed = args.seed
+
+    conn = get_connection()
+    apply_migrations(conn)
+    summary = generate_block_votes(conn, config, replace_run=args.replace_run)
+    conn.close()
+
+    print("\nBlock vote generation complete:")
+    print(f"  Scenario: {summary.get('scenario_name', 'N/A')}")
+    print(f"  Voters: {summary.get('total_voters', 0)}")
+    print(f"  Ballots: {summary.get('total_ballots', 0)}")
+    print(f"  Ballot images: {summary.get('total_ballot_images', 0)}")
+    print(f"  Output: {summary.get('output_path', 'N/A')}")
+
+
 def cmd_votes_validate_config(args: argparse.Namespace) -> None:
     from pathlib import Path
 
@@ -511,6 +534,11 @@ def main() -> None:
     )
     vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
 
+    votes_gen = sub.add_parser("votes-generate-blocks", help="Generate biased synthetic votes from block config")
+    votes_gen.add_argument("--config", required=True, help="Path to voting block YAML config")
+    votes_gen.add_argument("--seed", type=int, default=None, help="Override random seed")
+    votes_gen.add_argument("--replace-run", action="store_true", help="Delete previous run data")
+
     votes_validate = sub.add_parser("votes-validate-config", help="Validate a voting block YAML config")
     votes_validate.add_argument("--config", required=True, help="Path to voting block YAML config")
     votes_validate.add_argument("--dry-run", action="store_true", help="Count matching images per block")
@@ -548,6 +576,7 @@ def main() -> None:
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
+        "votes-generate-blocks": cmd_votes_generate_blocks,
         "votes-validate-config": cmd_votes_validate_config,
         "vision-tag": cmd_vision_tag,
         "vision-label-clusters": cmd_vision_label_clusters,
