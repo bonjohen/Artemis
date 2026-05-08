@@ -215,20 +215,20 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 8.1 | Open | | | Create `src/artemis_calendar/static/exporter.py` (or extend existing static build) — query mart tables, serialize to JSON, write to `_site_new/api/` |
-| 8.2 | Open | | | Export `api/vision-summary.json` — attribute counts, confidence distributions, review flag counts |
-| 8.3 | Open | | | Export `api/clusters.json` — cluster ID, label, summary, image count, dominant attributes, representative image IDs |
-| 8.4 | Open | | | Export `api/voting-block-summary.json` — scenario metadata, per-block summary cards (voter count, vote count, top attributes, detection status) |
-| 8.5 | Open | | | Export `api/voting-block-attribute-lift.json`, `api/voting-block-cluster-lift.json`, `api/voting-block-score-impact.json`, `api/voting-block-calendar-impact.json` |
-| 8.6 | Open | | | Add `stats export-static-json` CLI subcommand — `--output-dir` (default `_site_new/api/`) |
-| 8.7 | Open | | | Sanitize exports — verify no raw voter records, no local paths, no seeds, no model prompts, no admin metadata leak |
-| 8.8 | Open | | | Add tests: JSON schema validation, no-PII checks, file existence after export |
-| 8.9 | Open | | | Run pytest + ruff, fix any issues, stage and commit |
+| 8.1 | Completed | 2026-05-08 11:15 PM | 2026-05-08 11:25 PM | Created `src/artemis_calendar/static/exporter.py` with 6 export functions |
+| 8.2 | Completed | 2026-05-08 11:15 PM | 2026-05-08 11:25 PM | `export_vision_summary()` — attribute counts, confidence distribution, total tagged |
+| 8.3 | Completed | 2026-05-08 11:15 PM | 2026-05-08 11:15 PM | Existing cluster exports in `_site_new/api/clusters/` remain unchanged |
+| 8.4 | Completed | 2026-05-08 11:15 PM | 2026-05-08 11:25 PM | `export_voting_block_summary()` — scenario metadata, block cards with rule summary and detection status |
+| 8.5 | Completed | 2026-05-08 11:15 PM | 2026-05-08 11:25 PM | All 4 lift/impact exports: attribute-lift, cluster-lift, score-impact, calendar-impact |
+| 8.6 | Completed | 2026-05-08 11:25 PM | 2026-05-08 11:28 PM | Added `stats-export-json` CLI subcommand with `--scenario` and `--output-dir` |
+| 8.7 | Completed | 2026-05-08 11:15 PM | 2026-05-08 11:25 PM | `_sanitize_no_pii()` strips forbidden fields; export verifies no PII in output |
+| 8.8 | Completed | 2026-05-08 11:28 PM | 2026-05-08 11:33 PM | Added `tests/test_static_export.py` — 5 tests: file existence, schema, PII check |
+| 8.9 | Completed | 2026-05-08 11:33 PM | 2026-05-08 11:35 PM | 247 tests pass, ruff clean |
 
 ### Phase 8 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `src/artemis_calendar/static/` module with `exporter.py` (6 JSON export functions, PII sanitization). Added `stats-export-json` CLI command. 5 new tests. 247 tests pass, ruff clean.
+- **Changes hosted at:** `src/artemis_calendar/static/exporter.py`, `cli.py`
 - **Commit:** `feat(static): export block-aware analysis to static JSON for public site`
 
 ---

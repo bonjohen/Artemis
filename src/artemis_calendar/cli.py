@@ -330,6 +330,22 @@ def cmd_vision_tag(args: argparse.Namespace) -> None:
     conn.close()
 
 
+def cmd_stats_export_json(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    from artemis_calendar.static.exporter import export_all_static_json
+
+    conn = get_connection()
+    apply_migrations(conn)
+    output_dir = Path(args.output_dir) if args.output_dir else None
+    paths = export_all_static_json(conn, args.scenario, output_dir=output_dir)
+    conn.close()
+
+    print(f"\nExported {len(paths)} static JSON files:")
+    for name, path in paths.items():
+        print(f"  {name}: {path}")
+
+
 def cmd_stats_block_analysis(args: argparse.Namespace) -> None:
     from artemis_calendar.models.block_stats import run_block_analysis
 
@@ -550,6 +566,10 @@ def main() -> None:
     )
     vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
 
+    stats_export = sub.add_parser("stats-export-json", help="Export analysis to static JSON for public site")
+    stats_export.add_argument("--scenario", required=True, help="Scenario ID to export")
+    stats_export.add_argument("--output-dir", default=None, help="Output dir (default: _site_new/api/)")
+
     stats_block = sub.add_parser("stats-block-analysis", help="Run block-aware statistical analysis")
     stats_block.add_argument("--scenario", required=True, help="Scenario ID to analyze")
 
@@ -595,6 +615,7 @@ def main() -> None:
         "optimize": cmd_optimize,
         "render-calendar": cmd_render_calendar,
         "review-package": cmd_review_package,
+        "stats-export-json": cmd_stats_export_json,
         "stats-block-analysis": cmd_stats_block_analysis,
         "votes-generate-blocks": cmd_votes_generate_blocks,
         "votes-validate-config": cmd_votes_validate_config,
