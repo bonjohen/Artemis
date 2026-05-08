@@ -1,0 +1,148 @@
+# Controlled image attribute vocabulary for Artemis vision analysis.
+# Used by vision/attributes.py to validate labels and compute derived attributes.
+
+# Confidence thresholds for attribute classification
+thresholds:
+  accepted: 0.80    # >= 0.80 = accepted label
+  tentative: 0.50   # 0.50 to 0.79 = tentative label
+  # < 0.50 = rejected label
+
+# Base attributes — assigned by vision model with confidence scores
+base_attributes:
+  - code: earth
+    label: Earth
+    description: Earth visible in the image
+    type: celestial_body
+
+  - code: moon
+    label: Moon
+    description: Moon visible in the image
+    type: celestial_body
+
+  - code: sun
+    label: Sun
+    description: Sun visible in the image
+    type: celestial_body
+
+  - code: deep_space
+    label: Deep Space
+    description: Dark space background with stars or void
+    type: environment
+
+  - code: spacecraft
+    label: Spacecraft
+    description: Spacecraft, capsule, or module visible
+    type: hardware
+
+  - code: astronaut
+    label: Astronaut
+    description: Astronaut in suit (EVA or interior)
+    type: crew
+
+  - code: crew
+    label: Crew
+    description: Crew members visible (suited or unsuited)
+    type: crew
+
+  - code: rocket
+    label: Rocket
+    description: Launch vehicle or rocket visible
+    type: hardware
+
+  - code: launch
+    label: Launch
+    description: Launch event with smoke/flame plume
+    type: event
+
+  - code: surface
+    label: Surface
+    description: Planetary or lunar surface visible
+    type: environment
+
+  - code: lunar_surface
+    label: Lunar Surface
+    description: Moon surface detail (craters, regolith)
+    type: environment
+
+  - code: earth_surface
+    label: Earth Surface
+    description: Earth surface detail (continents, oceans, clouds)
+    type: environment
+
+  - code: interior
+    label: Interior
+    description: Inside spacecraft, station, or habitat
+    type: environment
+
+  - code: vehicle
+    label: Vehicle
+    description: Rover, lander, or ground vehicle
+    type: hardware
+
+  - code: habitat
+    label: Habitat
+    description: Space habitat or station structure
+    type: hardware
+
+  - code: mission_control
+    label: Mission Control
+    description: Ground control room or facilities
+    type: facility
+
+  - code: diagram
+    label: Diagram
+    description: Technical diagram, schematic, or infographic
+    type: media
+
+  - code: map
+    label: Map
+    description: Map, trajectory plot, or orbital diagram
+    type: media
+
+  - code: text_overlay
+    label: Text Overlay
+    description: Significant text overlaid on image
+    type: media
+
+  - code: artistic_rendering
+    label: Artistic Rendering
+    description: Artist concept or digital illustration (not photograph)
+    type: media
+
+  - code: photograph
+    label: Photograph
+    description: Real photographic image
+    type: media
+
+  - code: low_confidence
+    label: Low Confidence
+    description: Vision model had low confidence overall for this image
+    type: quality
+
+# Derived attributes — computed from base attribute confidences
+derived_attributes:
+  - code: earth_and_moon
+    label: Earth and Moon
+    description: Both Earth and Moon visible together
+    rule:
+      all_of: [earth, moon]
+
+  - code: earth_only
+    label: Earth Only
+    description: Earth visible without Moon or Sun
+    rule:
+      all_of: [earth]
+      none_of: [moon, sun]
+
+  - code: moon_and_sun
+    label: Moon and Sun
+    description: Both Moon and Sun visible together
+    rule:
+      all_of: [moon, sun]
+
+  - code: sun_only
+    label: Sun Only
+    description: Sun visible without Earth or Moon
+    rule:
+      all_of: [sun]
+      none_of: [earth, moon]

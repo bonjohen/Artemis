@@ -69,19 +69,19 @@ Open  ──>  Started  ──>  Completed
 
 | Task | Status | Started (PST) | Completed (PST) | Description |
 |------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Create `config/image_attributes.yaml` — base attributes (earth, moon, sun, spacecraft, astronaut, etc.), derived rules (earth_and_moon, earth_only, moon_and_sun, sun_only), confidence thresholds (0.80/0.50) |
-| 2.2 | Open | | | Create `src/artemis_calendar/vision/__init__.py` and `src/artemis_calendar/vision/attributes.py` — load attribute vocab from YAML, validate, compute derived labels from base confidences |
-| 2.3 | Open | | | Add `dim_image_attribute` table to warehouse — `attribute_code`, `attribute_label`, `attribute_description`, `attribute_type`, `is_derived`, timestamps |
-| 2.4 | Open | | | Add `feature_image_attribute` table to warehouse — `image_id`, `attribute_code`, `confidence_score`, `label_source`, `model_name`, `model_version`, `run_id`, `is_accepted`, `is_manual_override`, `created_at` |
-| 2.5 | Open | | | Create loader to seed `dim_image_attribute` from `config/image_attributes.yaml` |
-| 2.6 | Open | | | Add Pydantic models for attribute config validation (AttributeDefinition, DerivedRule, AttributeVocabulary) |
-| 2.7 | Open | | | Add tests: attribute loading, derived label computation, confidence threshold classification, DB schema creation |
-| 2.8 | Open | | | Run pytest + ruff, fix any issues, stage and commit |
+| 2.1 | Completed | 2026-05-08 08:28 PM | 2026-05-08 08:32 PM | Create `config/image_attributes.yaml` — 22 base attributes + 4 derived rules + confidence thresholds |
+| 2.2 | Completed | 2026-05-08 08:28 PM | 2026-05-08 08:35 PM | Create `src/artemis_calendar/vision/__init__.py` and `vision/attributes.py` — dataclass models, YAML loading, derived label computation |
+| 2.3 | Completed | 2026-05-08 08:28 PM | 2026-05-08 08:35 PM | Add `dim_image_attribute` + `feature_image_attribute` + all voting block tables in `migrations/009_create_vision_and_voting_block_tables.sql` |
+| 2.4 | Completed | 2026-05-08 08:28 PM | 2026-05-08 08:35 PM | `feature_image_attribute` includes `classification` column (accepted/tentative/rejected) in addition to raw confidence score |
+| 2.5 | Completed | 2026-05-08 08:35 PM | 2026-05-08 08:38 PM | Create `vision/loader.py` — `seed_attribute_vocabulary()` upserts dim_image_attribute, `write_image_attributes()` stores per-image scores + derived labels |
+| 2.6 | Completed | 2026-05-08 08:28 PM | 2026-05-08 08:35 PM | Used dataclasses (Thresholds, BaseAttribute, DerivedRule, DerivedAttribute, AttributeVocabulary) — lighter than Pydantic for config-only validation |
+| 2.7 | Completed | 2026-05-08 08:38 PM | 2026-05-08 08:42 PM | Added `tests/test_vision_attributes.py` — 17 tests: loading, derived labels, confidence thresholds, DB seed, DB write, edge cases |
+| 2.8 | Completed | 2026-05-08 08:42 PM | 2026-05-08 08:43 PM | 185 tests pass, ruff clean |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
-- **Changes hosted at:** TBD
+- **Changes:** Created `config/image_attributes.yaml` (22 base + 4 derived attributes), `src/artemis_calendar/vision/` module (`__init__.py`, `attributes.py`, `loader.py`), `migrations/009_create_vision_and_voting_block_tables.sql` (13 new tables for attributes, voting blocks, and block-level marts), `tests/test_vision_attributes.py` (17 tests). 185 tests pass, ruff clean.
+- **Changes hosted at:** `src/artemis_calendar/vision/`, `config/image_attributes.yaml`, `migrations/009_*`
 - **Commit:** `feat(vision): add attribute vocabulary schema, config, and warehouse tables`
 
 ---
