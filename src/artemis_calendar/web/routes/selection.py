@@ -10,7 +10,6 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from artemis_calendar.config.settings import OUTPUT_ROOT
-from artemis_calendar.optimize.scoring import score_calendar
 
 router = APIRouter(prefix="/api/selection", tags=["selection"])
 
@@ -55,6 +54,8 @@ def score_selection(body: ScoreRequest, request: Request):
         (a.image_sk, a.sequence_number, MONTH_LABELS[a.sequence_number - 1] if a.sequence_number <= 13 else "")
         for a in body.assignments
     ]
+
+    from artemis_calendar.optimize.scoring import score_calendar
 
     result = score_calendar(
         selected_sks=selected_sks,
