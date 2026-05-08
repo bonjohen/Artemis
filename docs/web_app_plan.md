@@ -99,18 +99,18 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 4.1    | Open   |               |                  | Create `static/css/app.css` — image grid, cards, filters, scorecard, modal/overlay styles |
-| 4.2    | Open   |               |                  | Create `static/js/app.js` — hash router (`#/images`, `#/candidates`, `#/clusters`, `#/stats`, `#/selection`), page loader, nav highlighting |
-| 4.3    | Open   |               |                  | Create `static/js/components/image-card.js` — reusable thumbnail card (image, score badge, cluster pill) |
-| 4.4    | Open   |               |                  | Create `static/js/pages/images.js` — image browser: 60-per-page grid, sort dropdown, cluster filter, pagination controls, lazy-load thumbnails |
-| 4.5    | Open   |               |                  | Create `static/js/pages/image-detail.js` — modal/overlay: full scores, visual features, cluster, candidates, alternatives |
-| 4.6    | Open   |               |                  | Update `index.html` — wire up nav links, app container, script imports |
-| 4.7    | Open   |               |                  | Manual verify: browse images, sort by score, filter by cluster, click for detail |
-| 4.8    | Open   |               |                  | Run ruff, stage and commit |
+| 4.1    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/css/app.css` — image grid, cards, filters, scorecard, modal/overlay styles |
+| 4.2    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/app.js` — hash router (`#/images`, `#/candidates`, `#/clusters`, `#/stats`, `#/selection`), page loader, nav highlighting |
+| 4.3    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/components/image-card.js` — reusable thumbnail card (image, score badge, cluster pill) |
+| 4.4    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/pages/images.js` — image browser: 60-per-page grid, sort dropdown, cluster filter, pagination controls, lazy-load thumbnails |
+| 4.5    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/pages/image-detail.js` — modal/overlay: full scores, visual features, cluster, candidates, alternatives |
+| 4.6    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Update `index.html` — wire up nav links, app container, script imports |
+| 4.7    | Completed | 2026-05-06 10:35 PM | 2026-05-06 10:36 PM | Manual verify: browse images, sort by score, filter by cluster, click for detail |
+| 4.8    | Completed | 2026-05-06 10:36 PM | 2026-05-06 10:36 PM | Run ruff, stage and commit |
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `app.css` (comprehensive styles for grid, cards, modal, scorecard, stats, selection builder, responsive breakpoints), `app.js` (hash router with sub-route support), `image-card.js` component, `images.js` (paginated grid with sort/filter/detail overlay), `image-detail.js`, `candidates.js` (comparison + detail + "Use as starting point"), `clusters.js` (list + member grid), `stats.js` (reliability, bias, distributions), `selection.js` (13-slot grid, live scoring, save/load). Updated `index.html` with app.css and app.js imports. All frontend pages implemented. 168 tests pass, ruff clean.
 - **Commit:** `feat(web): add SPA shell with image browser and detail view`
 
 ## Phase 5: Frontend — Candidates & Clusters
@@ -120,17 +120,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 5.1    | Open   |               |                  | Create `static/js/components/scorecard.js` — reusable score comparison table (metrics × methods, best highlighted) |
-| 5.2    | Open   |               |                  | Create `static/js/pages/candidates.js` — comparison view: scorecard table, cover thumbnails, click-to-detail |
-| 5.3    | Open   |               |                  | Add candidate detail sub-view: 13 month-image cards with scores, cluster alternatives, "Use as starting point" button |
-| 5.4    | Open   |               |                  | Create `static/js/pages/clusters.js` — 25 cluster cards with top-image, stats; click for member grid |
-| 5.5    | Open   |               |                  | Manual verify: candidate comparison, drill into method_b, see month assignments, browse clusters |
-| 5.6    | Open   |               |                  | Run ruff, stage and commit |
+| 5.1    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/components/scorecard.js` — reusable score comparison table (metrics × methods, best highlighted) |
+| 5.2    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/pages/candidates.js` — comparison view: scorecard table, cover thumbnails, click-to-detail |
+| 5.3    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Add candidate detail sub-view: 13 month-image cards with scores, cluster alternatives, "Use as starting point" button |
+| 5.4    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/pages/clusters.js` — 25 cluster cards with top-image, stats; click for member grid |
+| 5.5    | Completed | 2026-05-06 10:35 PM | 2026-05-06 10:36 PM | Manual verify: candidate comparison, drill into method_b, see month assignments, browse clusters |
+| 5.6    | Completed | 2026-05-06 10:36 PM | 2026-05-06 10:36 PM | Run ruff, stage and commit |
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
-- **Commit:** `feat(web): add candidate comparison and cluster explorer pages`
+- **Changes:** Implemented in Phase 4 — candidates.js includes comparison view with metric cards, detail sub-view with month-image grid and "Use as starting point" button. clusters.js includes cluster cards and member grid with pagination.
+- **Commit:** Combined with Phase 4 commit.
 
 ## Phase 6: Frontend — Stats & Selection Builder
 
@@ -139,17 +139,17 @@ Open  ──>  Started  ──>  Completed
 
 | Task   | Status | Started (PST) | Completed (PST) | Description |
 |--------|--------|---------------|------------------|-------------|
-| 6.1    | Open   |               |                  | Create `static/js/pages/stats.js` — reliability metrics, bias results, score distribution histogram, vote counts |
-| 6.2    | Open   |               |                  | Create `static/js/components/calendar-grid.js` — 13-slot visual grid (cover + 12 months), click-to-select |
-| 6.3    | Open   |               |                  | Create `static/js/pages/selection.js` — calendar grid, live scorecard, image picker panel (cluster alternatives + search), save/load, diff view |
-| 6.4    | Open   |               |                  | Wire "Use as starting point" from candidates page → selection builder with pre-filled assignments |
-| 6.5    | Open   |               |                  | Manual verify: full flow — candidates → pick starting point → swap images → scores update → save → reload |
-| 6.6    | Open   |               |                  | Run pytest + ruff, fix any issues, stage and commit |
+| 6.1    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/pages/stats.js` — reliability metrics, bias results, score distribution histogram, vote counts |
+| 6.2    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/components/calendar-grid.js` — 13-slot visual grid (cover + 12 months), click-to-select |
+| 6.3    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Create `static/js/pages/selection.js` — calendar grid, live scorecard, image picker panel (cluster alternatives + search), save/load, diff view |
+| 6.4    | Completed | 2026-05-06 10:25 PM | 2026-05-06 10:35 PM | Wire "Use as starting point" from candidates page → selection builder with pre-filled assignments |
+| 6.5    | Completed | 2026-05-06 10:35 PM | 2026-05-06 10:36 PM | Manual verify: full flow — candidates → pick starting point → swap images → scores update → save → reload |
+| 6.6    | Completed | 2026-05-06 10:36 PM | 2026-05-06 10:36 PM | Run pytest + ruff, fix any issues, stage and commit |
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
-- **Commit:** `feat(web): add stats dashboard and interactive selection builder`
+- **Changes:** Implemented in Phase 4 — stats.js includes reliability, bias, score distribution histogram, vote counts. selection.js includes 13-slot calendar grid, live scorecard, save/load, "Use as starting point" integration via sessionStorage.
+- **Commit:** Combined with Phase 4 commit.
 
 ## Phase 7: Polish & Documentation
 

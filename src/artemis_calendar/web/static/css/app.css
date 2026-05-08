@@ -1,0 +1,481 @@
+/* ============================================================
+   Artemis Calendar — App Styles
+   Image grid, cards, filters, scorecard, modal/overlay.
+   Depends on tokens.css + system.css.
+   ============================================================ */
+
+/* ---------- PAGE LAYOUT ---------- */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin: var(--s-5) 0 var(--s-4);
+}
+
+.page-header h1 {
+  font-family: var(--serif);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ---------- CONTROLS ---------- */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.controls select,
+.controls input {
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-sm);
+  background: var(--atlas-paper);
+  color: var(--atlas-ink);
+}
+
+.controls label {
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--atlas-muted);
+}
+
+/* ---------- IMAGE GRID ---------- */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--s-3);
+  margin: var(--s-4) 0;
+}
+
+/* ---------- IMAGE CARD ---------- */
+.image-card {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--atlas-paper-2);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+  transition: box-shadow var(--t-fast) var(--ease),
+              transform var(--t-fast) var(--ease);
+}
+
+.image-card:hover {
+  box-shadow: var(--shadow-2);
+  transform: translateY(-2px);
+}
+
+.image-card img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+
+.image-card .card-info {
+  padding: var(--s-2) var(--s-3);
+}
+
+.image-card .score-badge {
+  position: absolute;
+  top: var(--s-2);
+  right: var(--s-2);
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+}
+
+.image-card .cluster-pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: var(--atlas-accent);
+  color: #fff;
+}
+
+/* ---------- PAGINATION ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  margin: var(--s-5) 0;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+}
+
+.pagination button {
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-sm);
+  background: var(--atlas-paper);
+  color: var(--atlas-ink);
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--atlas-paper-2);
+}
+
+/* ---------- MODAL / OVERLAY ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-5);
+}
+
+.modal-content {
+  background: var(--atlas-paper);
+  border-radius: var(--r-lg);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--s-6);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--atlas-muted);
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--atlas-ink);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-5);
+  margin-top: var(--s-4);
+}
+
+.detail-grid img {
+  width: 100%;
+  border-radius: var(--r-md);
+}
+
+/* ---------- SCORE TABLE ---------- */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+}
+
+.score-table th,
+.score-table td {
+  text-align: left;
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--atlas-rule-soft);
+}
+
+.score-table th {
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--atlas-muted);
+}
+
+.score-table .best {
+  color: var(--atlas-good);
+  font-weight: 600;
+}
+
+/* ---------- CANDIDATES ---------- */
+.candidate-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--s-4);
+  margin: var(--s-4) 0;
+}
+
+.candidate-card {
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.candidate-card:hover {
+  border-color: var(--atlas-accent);
+}
+
+.candidate-card h3 {
+  font-family: var(--mono);
+  font-size: var(--fs-body);
+  margin: 0 0 var(--s-2);
+}
+
+.candidate-card .metric {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  color: var(--atlas-ink-2);
+}
+
+/* ---------- MONTH GRID (candidate detail) ---------- */
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-3);
+  margin: var(--s-4) 0;
+}
+
+.month-card {
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.month-card img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+.month-card .month-info {
+  padding: var(--s-2) var(--s-3);
+}
+
+.month-card .month-label {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: var(--fs-small);
+}
+
+.month-card .month-score {
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  color: var(--atlas-muted);
+}
+
+/* ---------- CLUSTER CARDS ---------- */
+.cluster-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-4);
+  margin: var(--s-4) 0;
+}
+
+.cluster-card {
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.cluster-card:hover {
+  border-color: var(--atlas-accent);
+}
+
+.cluster-card img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+.cluster-card .cluster-info {
+  padding: var(--s-2) var(--s-3);
+}
+
+.cluster-card .cluster-label {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+
+.cluster-card .cluster-meta {
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  color: var(--atlas-muted);
+}
+
+/* ---------- STATS ---------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--s-4);
+  margin: var(--s-4) 0;
+}
+
+.stat-card {
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+}
+
+.stat-card h3 {
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--atlas-muted);
+  margin: 0 0 var(--s-3);
+}
+
+.stat-value {
+  font-family: var(--mono);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+}
+
+.stat-detail {
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  color: var(--atlas-ink-2);
+  margin-top: var(--s-2);
+}
+
+/* ---------- SELECTION BUILDER ---------- */
+.selection-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--s-5);
+  margin: var(--s-4) 0;
+}
+
+.calendar-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--s-3);
+}
+
+.slot {
+  border: 2px dashed var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.slot.filled {
+  border-style: solid;
+}
+
+.slot:hover {
+  border-color: var(--atlas-accent);
+}
+
+.slot img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+}
+
+.slot .slot-label {
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  color: var(--atlas-muted);
+  padding: var(--s-1) 0;
+}
+
+.selection-sidebar {
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+}
+
+.selection-sidebar h3 {
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--atlas-muted);
+  margin: 0 0 var(--s-3);
+}
+
+.btn {
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-sm);
+  background: var(--atlas-paper);
+  color: var(--atlas-ink);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease);
+}
+
+.btn:hover {
+  background: var(--atlas-paper-2);
+}
+
+.btn-primary {
+  background: var(--atlas-accent);
+  color: #fff;
+  border-color: var(--atlas-accent);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* ---------- LOADING ---------- */
+.loading {
+  text-align: center;
+  padding: var(--s-7);
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  color: var(--atlas-muted);
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .selection-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
