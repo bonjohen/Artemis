@@ -9,6 +9,7 @@ const routes = {
   '/clusters': () => import('./pages/clusters.js'),
   '/stats': () => import('./pages/stats.js'),
   '/selection': () => import('./pages/selection.js'),
+  '/lessons': () => import('./pages/lessons.js'),
 };
 
 const app = document.getElementById('app');

@@ -16,6 +16,7 @@ from artemis_calendar.web.db import close_db, init_db
 from artemis_calendar.web.routes.candidates import router as candidates_router
 from artemis_calendar.web.routes.clusters import router as clusters_router
 from artemis_calendar.web.routes.images import router as images_router
+from artemis_calendar.web.routes.lessons import router as lessons_router
 from artemis_calendar.web.routes.selection import router as selection_router
 from artemis_calendar.web.routes.stats import router as stats_router
 
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
     app.include_router(clusters_router)
     app.include_router(stats_router)
     app.include_router(selection_router)
+    app.include_router(lessons_router)
 
     # Mount thumbnail images
     if THUMBS_DIR.exists():

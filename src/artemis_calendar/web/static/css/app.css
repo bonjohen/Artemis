@@ -479,3 +479,33 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ---------- FILTER BUTTONS ---------- */
+.filter-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--atlas-muted);
+  background: transparent;
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-pill);
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.filter-btn:hover {
+  border-color: var(--atlas-ink);
+  color: var(--atlas-ink);
+}
+.filter-btn.active {
+  background: var(--atlas-ink);
+  color: var(--atlas-paper);
+  border-color: var(--atlas-ink);
+}
+
+/* ---------- LESSON CARDS ---------- */
+.card:hover {
+  background: var(--atlas-paper-2);
+  border-color: color-mix(in oklab, var(--atlas-ink) 20%, transparent);
+}
