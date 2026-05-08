@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lessons Learned — Artemis</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231A1D24'/><text x='50' y='72' font-size='58' font-family='Georgia' fill='%23D97757' text-anchor='middle' font-style='italic'>A</text></svg>" />
+<link rel="stylesheet" href="system/tokens.css" />
+<link rel="stylesheet" href="system/system.css" />
+<style>
+  .hero {
+    padding: var(--s-9) 0 var(--s-7);
+    border-bottom: 1px solid var(--atlas-rule-soft);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(48px, 6vw, 84px);
+    letter-spacing: -.03em;
+    line-height: var(--lh-tight);
+    margin: 0;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--atlas-ink-2);
+  }
+  .hero .lede {
+    margin-top: var(--s-4);
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--atlas-ink-2);
+    max-width: 56ch;
+  }
+  .hero-stats {
+    display: flex;
+    gap: var(--s-7);
+    margin-top: var(--s-6);
+  }
+  .hero-stats .stat {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--atlas-muted);
+  }
+  .hero-stats .stat b {
+    display: block;
+    font-family: var(--sans);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--atlas-ink);
+    letter-spacing: -.01em;
+    text-transform: none;
+  }
+
+  .lessons-section {
+    padding: var(--s-7) 0 var(--s-9);
+  }
+  .lessons-section .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: var(--s-5);
+  }
+  .lessons-section .section-head h2 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+
+  .lgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--s-4);
+  }
+
+  .lcard {
+    display: flex;
+    flex-direction: column;
+    padding: var(--s-5);
+    border: 1px solid var(--atlas-rule-soft);
+    border-radius: var(--r-md);
+    text-decoration: none;
+    color: inherit;
+    transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+    cursor: pointer;
+    min-height: 180px;
+  }
+  .lcard:hover {
+    background: var(--atlas-paper-2);
+    border-color: color-mix(in oklab, var(--atlas-ink) 20%, transparent);
+  }
+
+  .lcard-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--s-3);
+  }
+  .lcard .lnum {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--atlas-accent);
+    font-weight: 600;
+  }
+  .lcard .lcategory {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--atlas-muted);
+    padding: 2px 8px;
+    border: 1px solid var(--atlas-rule-soft);
+    border-radius: var(--r-pill);
+  }
+  .lcard .lname {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -.005em;
+    margin-bottom: 6px;
+  }
+  .lcard .ldesc {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--atlas-ink-2);
+    flex: 1;
+  }
+  .lcard .lmeta {
+    margin-top: var(--s-4);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--atlas-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .lcard .lmeta .arrow {
+    transition: transform var(--t-base) var(--ease);
+  }
+  .lcard:hover .lmeta .arrow {
+    transform: translateX(4px);
+  }
+
+  .filter-bar {
+    display: flex;
+    gap: var(--s-2);
+    margin-bottom: var(--s-5);
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--atlas-muted);
+    background: transparent;
+    border: 1px solid var(--atlas-rule-soft);
+    border-radius: var(--r-pill);
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all var(--t-fast) var(--ease);
+  }
+  .filter-btn:hover {
+    border-color: var(--atlas-ink);
+    color: var(--atlas-ink);
+  }
+  .filter-btn.active {
+    background: var(--atlas-ink);
+    color: var(--atlas-paper);
+    border-color: var(--atlas-ink);
+  }
+
+  .nav-actions { display: flex; gap: 8px; align-items: center; }
+  .theme-toggle {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; color: var(--atlas-ink);
+    border: 1px solid var(--atlas-rule-soft);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .theme-toggle:hover { border-color: var(--atlas-ink); }
+  .theme-toggle svg { width: 16px; height: 16px; }
+
+  @media (max-width: 768px) {
+    .hero-stats { gap: var(--s-5); }
+    .hero-stats .stat b { font-size: 24px; }
+  }
+  @media (max-width: 480px) {
+    .lgrid { grid-template-columns: 1fr; }
+    .hero-stats { flex-wrap: wrap; gap: var(--s-4); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="lessons.html" class="brand"><span class="mark"></span> Artemis</a>
+  <div class="links">
+    <a href="lessons.html" aria-current="page">Lessons</a>
+  </div>
+  <div class="nav-actions">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</nav>
+
+<main class="shell">
+  <header class="hero">
+    <h1>Lessons <em>Learned</em></h1>
+    <p class="lede">Patterns, mistakes, and decisions from building the Artemis II calendar image selection pipeline. Each lesson is standalone and designed to be useful on any data engineering project.</p>
+    <div class="hero-stats">
+      <div class="stat"><b>26</b>Lessons</div>
+      <div class="stat"><b>5</b>Categories</div>
+      <div class="stat"><b>3</b>Blocks</div>
+    </div>
+  </header>
+
+  <section class="lessons-section">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="eng">Engineering</button>
+      <button class="filter-btn" data-cat="data">Data</button>
+      <button class="filter-btn" data-cat="stats">Statistics</button>
+      <button class="filter-btn" data-cat="arch">Architecture</button>
+      <button class="filter-btn" data-cat="process">Process</button>
+    </div>
+
+    <div class="section-head">
+      <h2>Block 1 &mdash; Infrastructure &amp; Scaling</h2>
+    </div>
+
+    <div class="lgrid">
+
+      <a href="lesson.html?lesson=block1/concurrent_http_downloads" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 001</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">Concurrent HTTP Downloads with Connection Pooling</div>
+        <div class="ldesc">Shared client + thread pool + batch DB updates = 5x throughput for 12,217 thumbnails</div>
+        <div class="lmeta"><span>Performance</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/algorithm_selection_dominant_colors" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 002</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">Algorithm Selection: sklearn KMeans vs Pillow Quantize</div>
+        <div class="ldesc">Domain-specific tool (Pillow quantize) is 735x faster than general ML (sklearn KMeans) for dominant colors</div>
+        <div class="lmeta"><span>Algorithm choice</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/disjoint_populations_multimodal" class="lcard" data-cat="data">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 003</span>
+          <span class="lcategory">Data</span>
+        </div>
+        <div class="lname">Disjoint Populations Breaking Multimodal Joins</div>
+        <div class="ldesc">Anti-correlated selection criteria produce empty joins &mdash; design for union, not intersection</div>
+        <div class="lmeta"><span>Data modeling</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/duckdb_single_writer_constraint" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 004</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">DuckDB Single-Writer Constraint</div>
+        <div class="ldesc">Embedded DB = exclusive file lock &mdash; separate I/O from DB writes in concurrent pipelines</div>
+        <div class="lmeta"><span>DuckDB</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/choosing_k_for_clustering" class="lcard" data-cat="data">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 005</span>
+          <span class="lcategory">Data</span>
+        </div>
+        <div class="lname">Choosing k for Clustering in a Constrained Problem</div>
+        <div class="ldesc">For calendar selection, k is driven by the output (13 images) not just the input (12,217 images)</div>
+        <div class="lmeta"><span>Clustering</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/surrogate_key_range_debugging" class="lcard" data-cat="data">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 006</span>
+          <span class="lcategory">Data</span>
+        </div>
+        <div class="lname">Debugging with Surrogate Key Ranges</div>
+        <div class="ldesc">Min/max on surrogate keys instantly reveals disjoint populations in your warehouse</div>
+        <div class="lmeta"><span>Debugging</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/per_record_overhead_at_scale" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 007</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">Per-Record Overhead at Scale</div>
+        <div class="ldesc">1ms overhead &times; 12,000 records = 12 seconds of invisible waste that only appears at production volume</div>
+        <div class="lmeta"><span>Performance</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/batch_db_operations" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 008</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">Batch Database Operations at Scale</div>
+        <div class="ldesc">executemany, unnest, aggregate records &mdash; patterns for DuckDB INSERT/UPDATE at 12K+ rows</div>
+        <div class="lmeta"><span>DuckDB</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/resume_safe_pipeline_design" class="lcard" data-cat="arch">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 009</span>
+          <span class="lcategory">Architecture</span>
+        </div>
+        <div class="lname">Resume-Safe Pipeline Design</div>
+        <div class="ldesc">Three layers: disk dedup, DB flag filtering, and graceful flush on interrupt</div>
+        <div class="lmeta"><span>Resilience</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block1/synthetic_data_before_real_data" class="lcard" data-cat="process">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 010</span>
+          <span class="lcategory">Process</span>
+        </div>
+        <div class="lname">Synthetic Data Before Real Data</div>
+        <div class="ldesc">Build and test the full pipeline with known ground truth before real data arrives</div>
+        <div class="lmeta"><span>Testing strategy</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-head" style="margin-top: var(--s-8);">
+      <h2>Block 2 &mdash; Statistical Methods</h2>
+    </div>
+
+    <div class="lgrid">
+
+      <a href="lesson.html?lesson=block2/012_bayesian_beta_binomial_smoothing" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 012</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Bayesian Beta-Binomial Smoothing</div>
+        <div class="ldesc">Beta(2,8) prior regularizes noisy selection rates from sparse ballot data across 12,217 images</div>
+        <div class="lmeta"><span>Bayesian inference</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/013_elo_rating_for_image_comparison" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 013</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Elo Rating for Image Comparison</div>
+        <div class="ldesc">Adapting chess Elo to pairwise image votes with K-factor tuning for sparse comparisons</div>
+        <div class="lmeta"><span>Ranking</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/014_bradley_terry_luce_and_when_to_skip_it" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 014</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Bradley-Terry-Luce and When to Skip It</div>
+        <div class="ldesc">BTL needs a connected comparison graph &mdash; sparse pairwise data produces disconnected components</div>
+        <div class="lmeta"><span>Model selection</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/015_borda_count_for_ranked_voting" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 015</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Borda Count for Ranked Voting</div>
+        <div class="ldesc">Simple positional scoring for category top-3 rankings, covering ~75 images</div>
+        <div class="lmeta"><span>Voting theory</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/016_krippendorffs_alpha_for_sparse_agreement" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 016</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Krippendorff's Alpha for Sparse Agreement</div>
+        <div class="ldesc">Measuring inter-rater reliability when most voter-image pairs are unobserved</div>
+        <div class="lmeta"><span>Reliability</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/017_composite_scoring_with_heterogeneous_signals" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 017</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Composite Scoring with Heterogeneous Signals</div>
+        <div class="ldesc">Combining posterior means, Elo, and Borda via quantile-rank adjustments</div>
+        <div class="lmeta"><span>Score fusion</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/018_run_id_partitioned_scoring" class="lcard" data-cat="arch">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 018</span>
+          <span class="lcategory">Architecture</span>
+        </div>
+        <div class="lname">Run-ID Partitioned Scoring</div>
+        <div class="ldesc">Partition mart tables by run_id so recomputation doesn't destroy prior results</div>
+        <div class="lmeta"><span>Data architecture</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block2/019_null_as_honest_missing_data" class="lcard" data-cat="data">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 019</span>
+          <span class="lcategory">Data</span>
+        </div>
+        <div class="lname">NULL as Honest Missing Data</div>
+        <div class="ldesc">Store NULL for genuinely absent signals instead of zero-filling &mdash; NULLs propagate correctly through aggregation</div>
+        <div class="lmeta"><span>Data quality</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+    </div>
+
+    <div class="section-head" style="margin-top: var(--s-8);">
+      <h2>Block 3 &mdash; Calendar Optimization</h2>
+    </div>
+
+    <div class="lgrid">
+
+      <a href="lesson.html?lesson=block3/020_duckdb_executemany_hangs_use_pyarrow" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 020</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">DuckDB executemany Hangs &mdash; Use PyArrow</div>
+        <div class="ldesc">executemany hangs at 12K+ rows; PyArrow bulk insert via pa.table() completes in under 1 second</div>
+        <div class="lmeta"><span>DuckDB</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/021_calendar_as_portfolio_optimization" class="lcard" data-cat="arch">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 021</span>
+          <span class="lcategory">Architecture</span>
+        </div>
+        <div class="lname">Calendar as Portfolio Optimization</div>
+        <div class="ldesc">Selecting a collection is constrained set optimization, not top-N ranking</div>
+        <div class="lmeta"><span>Optimization</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/022_heuristic_month_fit_without_text" class="lcard" data-cat="data">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 022</span>
+          <span class="lcategory">Data</span>
+        </div>
+        <div class="lname">Heuristic Month-Fit Without Text Metadata</div>
+        <div class="ldesc">Visual features alone provide coarse but sufficient seasonal signal for month assignment</div>
+        <div class="lmeta"><span>Feature engineering</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/023_maximum_marginal_relevance_for_selection" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 023</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Maximum Marginal Relevance for Selection</div>
+        <div class="ldesc">Greedy MMR with CLIP cosine similarity balances quality and diversity in under 1 second</div>
+        <div class="lmeta"><span>Selection</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/024_hungarian_algorithm_for_optimal_assignment" class="lcard" data-cat="stats">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 024</span>
+          <span class="lcategory">Statistics</span>
+        </div>
+        <div class="lname">Hungarian Algorithm for Optimal Assignment</div>
+        <div class="ldesc">scipy's linear_sum_assignment gives provably optimal 1-to-1 image-to-month mapping</div>
+        <div class="lmeta"><span>Assignment</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/025_multiple_selection_methods_as_baselines" class="lcard" data-cat="process">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 025</span>
+          <span class="lcategory">Process</span>
+        </div>
+        <div class="lname">Multiple Selection Methods as Baselines</div>
+        <div class="ldesc">Naive baseline + alternatives prove the optimizer adds value over simple top-N</div>
+        <div class="lmeta"><span>Validation</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/026_formalizing_de_facto_dependencies" class="lcard" data-cat="process">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 026</span>
+          <span class="lcategory">Process</span>
+        </div>
+        <div class="lname">Formalizing De Facto Dependencies</div>
+        <div class="ldesc">Imported but undeclared dependencies break on fresh installs &mdash; declare everything in pyproject.toml</div>
+        <div class="lmeta"><span>Packaging</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+      <a href="lesson.html?lesson=block3/027_migration_ordering_and_apply_on_use" class="lcard" data-cat="eng">
+        <div class="lcard-top">
+          <span class="lnum">Lesson 027</span>
+          <span class="lcategory">Engineering</span>
+        </div>
+        <div class="lname">Migration Ordering and Apply-on-Use Gaps</div>
+        <div class="ldesc">Migration on disk does not mean migration applied &mdash; test the full write path end-to-end</div>
+        <div class="lmeta"><span>Migrations</span><span class="arrow">&#8594;</span></div>
+      </a>
+
+    </div>
+  </section>
+</main>
+
+<footer style="border-top:1px solid var(--atlas-rule-soft);padding:var(--s-6) var(--s-7);text-align:center;color:var(--atlas-muted);font-size:13px;">
+  Artemis II Calendar &middot; Lessons extracted from real project work.
+</footer>
+
+<script>
+  const THEME_KEY = 'artemis:theme';
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_KEY, next);
+  });
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      document.querySelectorAll('.lcard').forEach(card => {
+        card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+      });
+    });
+  });
+</script>
+</body>
+</html>
