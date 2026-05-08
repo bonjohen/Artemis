@@ -2,6 +2,8 @@
 
 import json
 
+from artemis_calendar.parse.vote_manifest_parser import _require_keys
+
 
 def parse_category_index(content: bytes) -> list[dict]:
     """Parse index.json into a list of category dicts.
@@ -9,4 +11,5 @@ def parse_category_index(content: bytes) -> list[dict]:
     Format: {"version": 1, "buckets": [{key, slug, label, count, showcase}, ...]}
     """
     data = json.loads(content)
-    return data.get("buckets", data if isinstance(data, list) else [])
+    _require_keys(data, ["buckets"], "category index.json")
+    return data["buckets"]

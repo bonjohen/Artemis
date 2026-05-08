@@ -24,3 +24,27 @@ DOWNLOAD_BACKOFF_SECONDS = 2.0
 RATE_LIMIT_NASA = 1.0
 RATE_LIMIT_R2_CDN = 0.0
 THUMB_DOWNLOAD_WORKERS = 3
+
+# --- Calendar objective function weights ---
+# Used by optimize/scoring.py to combine component scores into a single objective.
+# These score a *complete* calendar slate (all 13 images together).
+OBJECTIVE_W_POPULARITY = 2.0
+OBJECTIVE_W_DIVERSITY = 1.5
+OBJECTIVE_W_MONTH_FIT = 0.8
+OBJECTIVE_W_COVER_FIT = 0.5
+OBJECTIVE_W_REDUNDANCY = 1.0
+OBJECTIVE_W_UNCERTAINTY = 0.3
+
+# --- MMR greedy selection weights ---
+# Used by optimize/methods.py method_e to score *individual candidate images*
+# during iterative greedy selection.  Different purpose from the objective weights
+# above: these drive which image to add next, not how to evaluate the final slate.
+MMR_W_POPULARITY = 0.35
+MMR_W_APPEAL = 0.20
+MMR_W_MONTH_FIT = 0.15
+MMR_W_REDUNDANCY = 0.20
+MMR_W_UNCERTAINTY = 0.10
+
+# Beta-Binomial prior for batch voting scores
+BETA_PRIOR_ALPHA = 2.0
+BETA_PRIOR_BETA = 8.0

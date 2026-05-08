@@ -4,6 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
+from artemis_calendar.config.settings import (
+    MMR_W_APPEAL,
+    MMR_W_MONTH_FIT,
+    MMR_W_POPULARITY,
+    MMR_W_REDUNDANCY,
+    MMR_W_UNCERTAINTY,
+)
 from artemis_calendar.observe.logging import get_logger
 
 logger = get_logger("artemis.optimize.methods")
@@ -131,11 +138,11 @@ def method_e_mmr_greedy(
     embeddings: dict[int, np.ndarray],
     clusters: dict[int, int],
     max_per_cluster: int = 2,
-    w_pop: float = 0.35,
-    w_appeal: float = 0.20,
-    w_monthfit: float = 0.15,
-    w_redundancy: float = 0.20,
-    w_uncertainty: float = 0.10,
+    w_pop: float = MMR_W_POPULARITY,
+    w_appeal: float = MMR_W_APPEAL,
+    w_monthfit: float = MMR_W_MONTH_FIT,
+    w_redundancy: float = MMR_W_REDUNDANCY,
+    w_uncertainty: float = MMR_W_UNCERTAINTY,
 ) -> list[int]:
     """Method E: Multi-objective greedy selection via maximum marginal relevance.
 

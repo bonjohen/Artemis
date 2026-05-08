@@ -3,6 +3,8 @@
 import json
 import re
 
+from artemis_calendar.parse.vote_manifest_parser import _require_keys
+
 
 def parse_photos_js(content: bytes) -> list[dict]:
     """Parse PHOTO_DATA from photos.js content into a list of photo dicts.
@@ -17,4 +19,5 @@ def parse_photos_js(content: bytes) -> list[dict]:
     text = text.rstrip(";").strip()
 
     data = json.loads(text)
+    _require_keys(data, ["photos"], "timeline photos.js")
     return data["photos"]

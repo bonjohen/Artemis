@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import platform
+
 from PIL import ImageFont
 
 # 300 DPI on 8.5 x 11 inch page
@@ -35,10 +37,23 @@ DESC_RIGHT = PAGE_W - MARGIN
 DESC_TOP = BOTTOM_BOTTOM - 400  # description block anchored to bottom-right
 DESC_REGION = (DESC_LEFT, DESC_TOP, DESC_RIGHT, BOTTOM_BOTTOM)
 
-# Font paths (Windows system fonts)
-FONT_REGULAR = "C:/Windows/Fonts/segoeui.ttf"
-FONT_BOLD = "C:/Windows/Fonts/segoeuib.ttf"
-FONT_LIGHT = "C:/Windows/Fonts/segoeuil.ttf"
+# Font paths — platform-aware
+if platform.system() == "Windows":
+    FONT_REGULAR = "C:/Windows/Fonts/segoeui.ttf"
+    FONT_BOLD = "C:/Windows/Fonts/segoeuib.ttf"
+    FONT_LIGHT = "C:/Windows/Fonts/segoeuil.ttf"
+else:
+    # Linux / macOS fallback: DejaVu Sans (common on Linux), then Arial
+    import shutil
+
+    if shutil.which("fc-list") and platform.system() == "Linux":
+        FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+        FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+        FONT_LIGHT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf"
+    else:
+        FONT_REGULAR = "/Library/Fonts/Arial.ttf"
+        FONT_BOLD = "/Library/Fonts/Arial Bold.ttf"
+        FONT_LIGHT = "/Library/Fonts/Arial.ttf"
 
 # Background color
 PAGE_BG = (255, 255, 255)

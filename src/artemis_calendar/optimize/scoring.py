@@ -4,6 +4,14 @@ from __future__ import annotations
 
 import numpy as np
 
+from artemis_calendar.config.settings import (
+    OBJECTIVE_W_COVER_FIT,
+    OBJECTIVE_W_DIVERSITY,
+    OBJECTIVE_W_MONTH_FIT,
+    OBJECTIVE_W_POPULARITY,
+    OBJECTIVE_W_REDUNDANCY,
+    OBJECTIVE_W_UNCERTAINTY,
+)
 from artemis_calendar.observe.logging import get_logger
 
 logger = get_logger("artemis.optimize.scoring")
@@ -65,12 +73,12 @@ def score_calendar(
 
     # Objective: weighted combination
     objective = (
-        popularity * 2.0
-        + diversity * 1.5
-        + total_month_fit * 0.8
-        + cover_score * 0.5
-        - max_redundancy * 1.0
-        - total_uncertainty * 0.3
+        popularity * OBJECTIVE_W_POPULARITY
+        + diversity * OBJECTIVE_W_DIVERSITY
+        + total_month_fit * OBJECTIVE_W_MONTH_FIT
+        + cover_score * OBJECTIVE_W_COVER_FIT
+        - max_redundancy * OBJECTIVE_W_REDUNDANCY
+        - total_uncertainty * OBJECTIVE_W_UNCERTAINTY
     )
 
     return {

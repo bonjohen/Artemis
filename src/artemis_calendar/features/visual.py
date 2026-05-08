@@ -69,12 +69,14 @@ def _compute_dominant_colors(img: Image.Image, k: int = 5) -> list[dict]:
     colors = []
     for count, idx in color_counts[:k]:
         r, g, b = palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]
-        colors.append({
-            "r": r,
-            "g": g,
-            "b": b,
-            "proportion": round(count / total, 4),
-        })
+        colors.append(
+            {
+                "r": r,
+                "g": g,
+                "b": b,
+                "proportion": round(count / total, 4),
+            }
+        )
     return colors
 
 
@@ -170,10 +172,7 @@ def extract_visual_features(
     # Extract features in parallel threads
     results: list[tuple] = []
     with ThreadPoolExecutor(max_workers=FEATURE_WORKERS) as executor:
-        futures = {
-            executor.submit(_extract_one, image_sk, sid, run_id, tdir): sid
-            for image_sk, sid in rows
-        }
+        futures = {executor.submit(_extract_one, image_sk, sid, run_id, tdir): sid for image_sk, sid in rows}
         for done, future in enumerate(as_completed(futures), 1):
             row = future.result()
             if row is not None:

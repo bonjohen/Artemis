@@ -42,6 +42,7 @@ Package layout under `src/artemis_calendar/`:
 | `models/` | Preference scoring (Elo, Borda, Beta-Binomial), composite scores, reliability |
 | `optimize/` | Calendar slate generation, month/cover scoring, 5 selection methods, Hungarian assignment |
 | `render/` | Calendar page rendering: layout, grid, monthly/cover pages, pipeline, PDF assembly |
+| `review/` | Review package: comparison, contact sheet, selection report, validation, export |
 | `cli.py` | CLI entry point |
 
 ## Requirements
@@ -187,7 +188,7 @@ Design documents live in `docs/`:
 - [`docs/calendar_optimization_design.md`](docs/calendar_optimization_design.md) — Phase 4 optimization design
 - [`docs/calendar_rendering_plan.md`](docs/calendar_rendering_plan.md) — Phase C4 rendering plan
 
-Lessons learned: [`docs/lessons/`](docs/lessons/) — 26 lessons across 3 blocks (infrastructure, statistical methods, optimization). View as a browsable web page: serve `docs/lessons/` and open [`lessons.html`](docs/lessons/lessons.html).
+Lessons learned: [`docs/lessons/`](docs/lessons/) — 29 lessons across 4 blocks (infrastructure, statistical methods, optimization, synthetic validation). View as a browsable web page: serve `docs/lessons/` and open [`lessons.html`](docs/lessons/lessons.html).
 
 Session startup guide: [`startup.md`](startup.md) (root directory)
 

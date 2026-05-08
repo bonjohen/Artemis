@@ -19,12 +19,17 @@ WEIGHT_TEXT = 0.05
 WEIGHT_METADATA = 0.15
 
 
+ALLOWED_EMBEDDING_TABLES = {"feature_image_embedding", "feature_description_embedding"}
+
+
 def _load_embeddings(
     conn: duckdb.DuckDBPyConnection,
     table: str,
     model_version: str | None = None,
 ) -> tuple[list[int], np.ndarray]:
     """Load embeddings from a feature table. Returns (image_sks, embedding_matrix)."""
+    if table not in ALLOWED_EMBEDDING_TABLES:
+        raise ValueError(f"Table {table!r} is not in the embedding table allowlist: {ALLOWED_EMBEDDING_TABLES}")
     query = f"SELECT image_sk, embedding_vector FROM {table}"
     params = []
     if model_version:
@@ -210,11 +215,13 @@ def run_clustering(
                 f"weights visual={WEIGHT_VISUAL} text={WEIGHT_TEXT} meta={WEIGHT_METADATA}"
             )
 
-            vectors = np.hstack([
-                vis_arr * WEIGHT_VISUAL,
-                txt_arr * WEIGHT_TEXT,
-                meta_arr * WEIGHT_METADATA,
-            ])
+            vectors = np.hstack(
+                [
+                    vis_arr * WEIGHT_VISUAL,
+                    txt_arr * WEIGHT_TEXT,
+                    meta_arr * WEIGHT_METADATA,
+                ]
+            )
         else:
             logger.warning(f"Unknown cluster type: {ctype}")
             continue

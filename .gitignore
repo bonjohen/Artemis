@@ -9,3 +9,22 @@ build/
 *.duckdb.wal
 .pytest_cache/
 .ruff_cache/
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Claude Code
+.claude/*.lock

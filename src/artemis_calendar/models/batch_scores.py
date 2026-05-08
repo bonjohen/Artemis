@@ -6,6 +6,7 @@ import math
 
 import duckdb
 
+from artemis_calendar.config.settings import BETA_PRIOR_ALPHA, BETA_PRIOR_BETA
 from artemis_calendar.observe.logging import get_logger
 
 logger = get_logger("artemis.models.batch")
@@ -33,10 +34,8 @@ def compute_batch_scores(conn: duckdb.DuckDBPyConnection) -> dict[int, dict]:
         logger.warning("No batch ballot data found")
         return {}
 
-    # Beta prior: Beta(2, 8) encodes a prior expectation of ~20% selection rate
-    # (slightly generous vs the 10% base rate of 5/50)
-    prior_alpha = 2.0
-    prior_beta = 8.0
+    prior_alpha = BETA_PRIOR_ALPHA
+    prior_beta = BETA_PRIOR_BETA
 
     from scipy.stats import beta as beta_dist
 
