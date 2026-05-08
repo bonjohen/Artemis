@@ -36,6 +36,8 @@ a:hover { text-decoration-color: var(--atlas-ink); }
   padding: var(--s-4) var(--s-7);
   border-bottom: 1px solid var(--atlas-rule-soft);
   background: var(--atlas-paper);
+  position: relative;
+  z-index: 10;
 }
 .brand {
   display: inline-flex; align-items: center; gap: 10px;
