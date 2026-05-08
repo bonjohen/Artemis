@@ -195,7 +195,7 @@ Design documents live in `docs/`:
 - [`docs/calendar_optimization_design.md`](docs/calendar_optimization_design.md) — Phase 4 optimization design
 - [`docs/calendar_rendering_plan.md`](docs/calendar_rendering_plan.md) — Phase C4 rendering plan
 
-Lessons learned: [`docs/lessons/`](docs/lessons/) — 29 lessons across 4 blocks (infrastructure, statistical methods, optimization, synthetic validation). View as a browsable web page: serve `docs/lessons/` and open [`lessons.html`](docs/lessons/lessons.html).
+Lessons learned: [`docs/lessons/`](docs/lessons/) — 35 lessons across 5 blocks (infrastructure, statistical methods, optimization, validation, web app). View as a browsable web page: serve `docs/lessons/` and open [`lessons.html`](docs/lessons/lessons.html).
 
 Session startup guide: [`startup.md`](startup.md) (root directory)
 

@@ -153,6 +153,6 @@ async function updateScores(el) {
     `;
   } catch (err) {
     const display = el.querySelector('.score-display');
-    display.innerHTML = `<p style="color:var(--atlas-bad)">Scoring error: ${err.message}</p>`;
+    display.textContent = `Scoring error: ${err.message}`;
   }
 }

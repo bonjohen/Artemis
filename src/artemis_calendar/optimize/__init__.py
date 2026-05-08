@@ -5,6 +5,7 @@ from __future__ import annotations
 import duckdb
 import numpy as np
 
+from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
 from artemis_calendar.observe.logging import get_logger
 from artemis_calendar.observe.run_manifest import create_run_record, generate_run_id, update_run_status
 from artemis_calendar.optimize.assignment import assign_months
@@ -57,13 +58,10 @@ def run_calendar_optimization(
     logger.info("Loading optimization inputs...")
 
     # Preference scores (latest run)
-    pref_rows = conn.execute("""
+    pref_rows = conn.execute(f"""
         SELECT image_sk, posterior_mean, broad_appeal_score, uncertainty_score
         FROM mart_image_preference_score
-        WHERE score_run_id = (
-            SELECT score_run_id FROM mart_image_preference_score
-            ORDER BY created_at DESC LIMIT 1
-        )
+        WHERE score_run_id = {LATEST_SCORE_RUN}
     """).fetchall()
 
     preference: dict[int, float] = {}
@@ -82,15 +80,11 @@ def run_calendar_optimization(
     vis_sks, brightness, contrast, saturation, dominant_colors, content_flags = load_visual_data(conn)
 
     # Clusters (visual, latest run)
-    cluster_rows = conn.execute("""
+    cluster_rows = conn.execute(f"""
         SELECT image_sk, cluster_id
         FROM feature_image_cluster
         WHERE cluster_type = 'visual'
-          AND cluster_run_id = (
-              SELECT cluster_run_id FROM feature_image_cluster
-              WHERE cluster_type = 'visual'
-              ORDER BY created_at DESC LIMIT 1
-          )
+          AND cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
           AND cluster_id >= 0
     """).fetchall()
     clusters: dict[int, int] = {int(r[0]): int(r[1]) for r in cluster_rows}

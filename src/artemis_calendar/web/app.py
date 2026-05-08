@@ -5,10 +5,11 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from artemis_calendar.config.settings import RAW_ROOT
 from artemis_calendar.web.db import close_db, init_db
@@ -22,6 +23,15 @@ STATIC_DIR = Path(__file__).parent / "static"
 THUMBS_DIR = RAW_ROOT / "images" / "thumbs"
 
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        return response
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db(app)
@@ -32,9 +42,10 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title="Artemis Calendar", lifespan=lifespan)
 
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=["http://localhost:8420"],
         allow_methods=["*"],
         allow_headers=["*"],
     )

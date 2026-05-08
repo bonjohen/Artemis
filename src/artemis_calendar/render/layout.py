@@ -6,6 +6,8 @@ import platform
 
 from PIL import ImageFont
 
+from artemis_calendar.config import settings as cfg
+
 # 300 DPI on 8.5 x 11 inch page
 DPI = 300
 PAGE_W = 2550  # 8.5 * 300
@@ -37,23 +39,26 @@ DESC_RIGHT = PAGE_W - MARGIN
 DESC_TOP = BOTTOM_BOTTOM - 400  # description block anchored to bottom-right
 DESC_REGION = (DESC_LEFT, DESC_TOP, DESC_RIGHT, BOTTOM_BOTTOM)
 
-# Font paths — platform-aware
-if platform.system() == "Windows":
-    FONT_REGULAR = "C:/Windows/Fonts/segoeui.ttf"
-    FONT_BOLD = "C:/Windows/Fonts/segoeuib.ttf"
-    FONT_LIGHT = "C:/Windows/Fonts/segoeuil.ttf"
-else:
-    # Linux / macOS fallback: DejaVu Sans (common on Linux), then Arial
+
+# Font paths — env-var override > platform defaults
+def _default_fonts() -> tuple[str, str, str]:
+    if platform.system() == "Windows":
+        return ("C:/Windows/Fonts/segoeui.ttf", "C:/Windows/Fonts/segoeuib.ttf", "C:/Windows/Fonts/segoeuil.ttf")
     import shutil
 
     if shutil.which("fc-list") and platform.system() == "Linux":
-        FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-        FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-        FONT_LIGHT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf"
-    else:
-        FONT_REGULAR = "/Library/Fonts/Arial.ttf"
-        FONT_BOLD = "/Library/Fonts/Arial Bold.ttf"
-        FONT_LIGHT = "/Library/Fonts/Arial.ttf"
+        return (
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf",
+        )
+    return ("/Library/Fonts/Arial.ttf", "/Library/Fonts/Arial Bold.ttf", "/Library/Fonts/Arial.ttf")
+
+
+_reg, _bold, _light = _default_fonts()
+FONT_REGULAR = cfg.FONT_REGULAR or _reg
+FONT_BOLD = cfg.FONT_BOLD or _bold
+FONT_LIGHT = cfg.FONT_LIGHT or _light
 
 # Background color
 PAGE_BG = (255, 255, 255)

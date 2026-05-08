@@ -48,3 +48,8 @@ MMR_W_UNCERTAINTY = 0.10
 # Beta-Binomial prior for batch voting scores
 BETA_PRIOR_ALPHA = 2.0
 BETA_PRIOR_BETA = 8.0
+
+# Font path overrides for calendar rendering (render/layout.py)
+FONT_REGULAR = os.environ.get("ARTEMIS_FONT_REGULAR", "")
+FONT_BOLD = os.environ.get("ARTEMIS_FONT_BOLD", "")
+FONT_LIGHT = os.environ.get("ARTEMIS_FONT_LIGHT", "")

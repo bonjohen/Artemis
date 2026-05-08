@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from artemis_calendar.config.settings import OUTPUT_ROOT
@@ -68,8 +69,14 @@ def score_selection(body: ScoreRequest, request: Request):
     return result
 
 
+def _validate_selection_name(name: str) -> None:
+    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
+        raise HTTPException(status_code=400, detail="Invalid selection name")
+
+
 @router.get("")
 def get_selection(name: str = "current"):
+    _validate_selection_name(name)
     path = SELECTIONS_DIR / f"{name}.json"
     if not path.exists():
         return {"name": name, "assignments": [], "notes": ""}
@@ -79,6 +86,7 @@ def get_selection(name: str = "current"):
 
 @router.put("")
 def save_selection(body: SelectionSave):
+    _validate_selection_name(body.name)
     SELECTIONS_DIR.mkdir(parents=True, exist_ok=True)
     path = SELECTIONS_DIR / f"{body.name}.json"
     data = {

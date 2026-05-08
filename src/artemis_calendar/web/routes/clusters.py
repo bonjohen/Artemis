@@ -7,6 +7,7 @@ import math
 import duckdb
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
 from artemis_calendar.web.db import get_db
 from artemis_calendar.web.models import ImageSummary, PaginatedResponse
 
@@ -54,17 +55,13 @@ def get_cluster(
 ):
     # Count
     total = conn.execute(
-        """
+        f"""
         SELECT COUNT(*)
         FROM feature_image_cluster c
         JOIN dim_image d ON d.image_sk = c.image_sk
         WHERE c.cluster_type = 'visual'
           AND c.cluster_id = ?
-          AND c.cluster_run_id = (
-              SELECT cluster_run_id FROM feature_image_cluster
-              WHERE cluster_type = 'visual'
-              ORDER BY created_at DESC LIMIT 1
-          )
+          AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
           AND d.vote_pool = true
         """,
         [cluster_id],
@@ -75,25 +72,18 @@ def get_cluster(
 
     offset = (page - 1) * per_page
     rows = conn.execute(
-        """
+        f"""
         SELECT d.image_sk, d.source_image_id, d.title,
                p.posterior_mean, c.cluster_id, v.brightness_score
         FROM feature_image_cluster c
         JOIN dim_image d ON d.image_sk = c.image_sk
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = c.image_sk
-            AND p.score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND p.score_run_id = {LATEST_SCORE_RUN}
         LEFT JOIN feature_image_visual v ON v.image_sk = c.image_sk
         WHERE c.cluster_type = 'visual'
           AND c.cluster_id = ?
-          AND c.cluster_run_id = (
-              SELECT cluster_run_id FROM feature_image_cluster
-              WHERE cluster_type = 'visual'
-              ORDER BY created_at DESC LIMIT 1
-          )
+          AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
           AND d.vote_pool = true
         ORDER BY COALESCE(p.posterior_mean, 0) DESC
         LIMIT ? OFFSET ?

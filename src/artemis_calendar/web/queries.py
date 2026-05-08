@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import duckdb
 
+from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
+
 
 def fetch_images_page(
     conn: duckdb.DuckDBPyConnection,
@@ -41,18 +43,11 @@ def fetch_images_page(
         FROM dim_image d
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = d.image_sk
-            AND p.score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND p.score_run_id = {LATEST_SCORE_RUN}
         LEFT JOIN feature_image_cluster c
             ON c.image_sk = d.image_sk
             AND c.cluster_type = 'visual'
-            AND c.cluster_run_id = (
-                SELECT cluster_run_id FROM feature_image_cluster
-                WHERE cluster_type = 'visual'
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
         WHERE {where_clause}
         """,
         params,
@@ -67,19 +62,12 @@ def fetch_images_page(
         FROM dim_image d
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = d.image_sk
-            AND p.score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND p.score_run_id = {LATEST_SCORE_RUN}
         LEFT JOIN feature_image_visual v ON v.image_sk = d.image_sk
         LEFT JOIN feature_image_cluster c
             ON c.image_sk = d.image_sk
             AND c.cluster_type = 'visual'
-            AND c.cluster_run_id = (
-                SELECT cluster_run_id FROM feature_image_cluster
-                WHERE cluster_type = 'visual'
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
         WHERE {where_clause}
         ORDER BY {order_clause}
         LIMIT ? OFFSET ?
@@ -104,7 +92,7 @@ def fetch_images_page(
 def fetch_image_detail(conn: duckdb.DuckDBPyConnection, image_sk: int) -> dict | None:
     """Fetch full detail for a single image."""
     row = conn.execute(
-        """
+        f"""
         SELECT d.image_sk, d.source_image_id, d.title, d.description,
                p.posterior_mean, p.broad_appeal_score, p.uncertainty_score,
                p.elo_score, p.borda_score,
@@ -114,19 +102,12 @@ def fetch_image_detail(conn: duckdb.DuckDBPyConnection, image_sk: int) -> dict |
         FROM dim_image d
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = d.image_sk
-            AND p.score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND p.score_run_id = {LATEST_SCORE_RUN}
         LEFT JOIN feature_image_visual v ON v.image_sk = d.image_sk
         LEFT JOIN feature_image_cluster c
             ON c.image_sk = d.image_sk
             AND c.cluster_type = 'visual'
-            AND c.cluster_run_id = (
-                SELECT cluster_run_id FROM feature_image_cluster
-                WHERE cluster_type = 'visual'
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
         WHERE d.image_sk = ?
         """,
         [image_sk],
@@ -137,15 +118,12 @@ def fetch_image_detail(conn: duckdb.DuckDBPyConnection, image_sk: int) -> dict |
 
     # Get rank
     rank_row = conn.execute(
-        """
+        f"""
         SELECT rank FROM (
             SELECT image_sk,
                    ROW_NUMBER() OVER (ORDER BY posterior_mean DESC) as rank
             FROM mart_image_preference_score
-            WHERE score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            WHERE score_run_id = {LATEST_SCORE_RUN}
         ) ranked
         WHERE image_sk = ?
         """,

@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 import duckdb
 
+from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN, LATEST_VISUAL_CLUSTER_RUN
+
 
 @dataclass
 class CandidateScore:
@@ -98,7 +100,7 @@ def fetch_all_candidates(conn: duckdb.DuckDBPyConnection, run_id: str) -> list[C
 def fetch_candidate_images(conn: duckdb.DuckDBPyConnection, run_id: str, candidate_name: str) -> list[MonthImage]:
     """Fetch the 13 month-image assignments with visual features and scores."""
     rows = conn.execute(
-        """
+        f"""
         SELECT m.sequence_number, m.month_label, m.image_sk,
                d.source_image_id, d.title, d.description,
                m.month_fit_score, m.preference_score,
@@ -112,17 +114,10 @@ def fetch_candidate_images(conn: duckdb.DuckDBPyConnection, run_id: str, candida
         LEFT JOIN feature_image_cluster c
             ON c.image_sk = m.image_sk
             AND c.cluster_type = 'visual'
-            AND c.cluster_run_id = (
-                SELECT cluster_run_id FROM feature_image_cluster
-                WHERE cluster_type = 'visual'
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = m.image_sk
-            AND p.score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND p.score_run_id = {LATEST_SCORE_RUN}
         WHERE m.candidate_run_id = ? AND m.candidate_name = ?
         ORDER BY m.sequence_number
         """,
@@ -161,7 +156,7 @@ def fetch_cluster_alternatives(
     """Fetch top images in the same cluster that were NOT selected by this candidate."""
     # Get the set of selected image_sks for this candidate
     rows = conn.execute(
-        """
+        f"""
         SELECT p.image_sk, d.source_image_id,
                p.posterior_mean, p.broad_appeal_score
         FROM mart_image_preference_score p
@@ -169,21 +164,14 @@ def fetch_cluster_alternatives(
         JOIN feature_image_cluster c
             ON c.image_sk = p.image_sk
             AND c.cluster_type = 'visual'
-            AND c.cluster_run_id = (
-                SELECT cluster_run_id FROM feature_image_cluster
-                WHERE cluster_type = 'visual'
-                ORDER BY created_at DESC LIMIT 1
-            )
+            AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
         WHERE c.cluster_id = ?
           AND p.image_sk != ?
           AND p.image_sk NOT IN (
               SELECT image_sk FROM mart_calendar_candidate_month_image
               WHERE candidate_run_id = ? AND candidate_name = ?
           )
-          AND p.score_run_id = (
-              SELECT score_run_id FROM mart_image_preference_score
-              ORDER BY created_at DESC LIMIT 1
-          )
+          AND p.score_run_id = {LATEST_SCORE_RUN}
         ORDER BY p.posterior_mean DESC
         LIMIT ?
         """,
@@ -203,15 +191,12 @@ def fetch_cluster_alternatives(
 def fetch_preference_rank(conn: duckdb.DuckDBPyConnection, image_sk: int) -> int | None:
     """Fetch the popularity rank (1-based) for an image among all scored images."""
     row = conn.execute(
-        """
+        f"""
         SELECT rank FROM (
             SELECT image_sk,
                    ROW_NUMBER() OVER (ORDER BY posterior_mean DESC) as rank
             FROM mart_image_preference_score
-            WHERE score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            WHERE score_run_id = {LATEST_SCORE_RUN}
         ) ranked
         WHERE image_sk = ?
         """,
@@ -225,14 +210,11 @@ def fetch_all_preference_ranks(
 ) -> dict[int, int]:
     """Fetch popularity ranks for all scored images. Returns {image_sk: rank}."""
     rows = conn.execute(
-        """
+        f"""
         SELECT image_sk,
                ROW_NUMBER() OVER (ORDER BY posterior_mean DESC) as rank
         FROM mart_image_preference_score
-        WHERE score_run_id = (
-            SELECT score_run_id FROM mart_image_preference_score
-            ORDER BY created_at DESC LIMIT 1
-        )
+        WHERE score_run_id = {LATEST_SCORE_RUN}
         """
     ).fetchall()
     return {int(r[0]): int(r[1]) for r in rows}

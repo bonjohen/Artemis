@@ -34,7 +34,7 @@ async function navigate() {
       const mod = await loader();
       await mod.render(app, hash);
     } catch (err) {
-      app.innerHTML = `<p>Error loading page: ${err.message}</p>`;
+      app.textContent = `Error loading page: ${err.message}`;
       console.error(err);
     }
   } else {
@@ -47,7 +47,7 @@ async function navigate() {
         const mod = await subLoader();
         await mod.render(app, hash);
       } catch (err) {
-        app.innerHTML = `<p>Error loading page: ${err.message}</p>`;
+        app.textContent = `Error loading page: ${err.message}`;
         console.error(err);
       }
     } else {

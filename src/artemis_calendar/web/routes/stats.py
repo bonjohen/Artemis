@@ -5,6 +5,7 @@ from __future__ import annotations
 import duckdb
 from fastapi import APIRouter, Depends
 
+from artemis_calendar.config.sql_helpers import LATEST_SCORE_RUN
 from artemis_calendar.web.db import get_db
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
@@ -51,15 +52,12 @@ def get_stats(conn: duckdb.DuckDBPyConnection = Depends(get_db)):  # noqa: B008
     # Score distribution (histogram buckets)
     try:
         rows = conn.execute(
-            """
+            f"""
             SELECT
                 FLOOR(posterior_mean * 20) / 20 AS bucket,
                 COUNT(*) AS count
             FROM mart_image_preference_score
-            WHERE score_run_id = (
-                SELECT score_run_id FROM mart_image_preference_score
-                ORDER BY created_at DESC LIMIT 1
-            )
+            WHERE score_run_id = {LATEST_SCORE_RUN}
             GROUP BY bucket
             ORDER BY bucket
             """
