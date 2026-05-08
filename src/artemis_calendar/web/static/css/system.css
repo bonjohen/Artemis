@@ -71,6 +71,25 @@ a:hover { text-decoration-color: var(--atlas-ink); }
   border-radius: var(--r-sm);
 }
 
+/* ---------- MOBILE NAV ---------- */
+@media (max-width: 768px) {
+  .site-nav {
+    flex-wrap: wrap;
+    padding: var(--s-3) var(--s-4);
+    gap: var(--s-2);
+  }
+  .site-nav .links {
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    order: 3;
+    width: 100%;
+    padding-top: var(--s-2);
+    border-top: 1px solid var(--atlas-rule-soft);
+    font-size: 10px;
+  }
+  .brand { font-size: 18px; }
+}
+
 @media print {
   body { background: #fff; color: #000; }
   .no-print { display: none !important; }

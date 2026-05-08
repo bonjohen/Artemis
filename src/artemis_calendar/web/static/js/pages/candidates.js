@@ -109,7 +109,7 @@ async function renderDetail(el, name) {
     <div style="background:var(--atlas-paper-2);border:1px solid var(--atlas-rule-soft);border-radius:var(--r-md);padding:var(--s-5);margin-bottom:var(--s-6);max-width:72ch">
       <h3 style="font-family:var(--serif);font-size:var(--fs-h3);margin:0 0 var(--s-3)">How this method works</h3>
       <p style="line-height:var(--lh-body);margin:0 0 var(--s-4)">${info.desc}</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4)">
+      <div class="methods-grid">
         <div>
           <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--atlas-good);margin:0 0 var(--s-2)">Strengths</h4>
           <p style="font-size:var(--fs-small);color:var(--atlas-ink-2);line-height:1.5;margin:0">${info.strengths || ''}</p>
