@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 
 import duckdb
-import numpy as np
 from fastapi import FastAPI, Request
 
 from artemis_calendar.config.settings import DB_PATH
@@ -92,8 +91,10 @@ def _load_cache(app: FastAPI) -> None:
     # Month fit — load from optimization data if available
     app.state.month_fit = {}
 
-    # Embeddings — CLIP 512-dim vectors
+    # Embeddings — CLIP 512-dim vectors (requires numpy)
     try:
+        import numpy as np
+
         rows = conn.execute(
             """
             SELECT image_sk, embedding_vector
@@ -107,7 +108,7 @@ def _load_cache(app: FastAPI) -> None:
             """
         ).fetchall()
         app.state.embeddings = {int(r[0]): np.frombuffer(r[1], dtype=np.float32) for r in rows}
-    except (duckdb.CatalogException, Exception):
+    except Exception:
         app.state.embeddings = {}
 
     logger.info(
