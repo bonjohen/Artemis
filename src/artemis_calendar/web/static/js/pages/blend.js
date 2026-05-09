@@ -14,11 +14,29 @@ const SCENARIO_PRESETS = {
   neutral_only:   { label: 'Neutral Only',       values: { earth_moon: 0, earth_only: 0, moon_only: 0, sun_only: 0, crescent: 0, eclipse: 0, crew: 0, equipment: 0, moon_sun: 0, neutral: 100 } },
 };
 
+// Embedded presets — renders without API so GitHub Pages shows the UI
+const DEFAULT_BLOCKS = [
+  { block_id: 'earth_moon', label: 'Earth+Moon Fans', description: 'Prefer images showing both Earth and Moon together', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: ['earth', 'moon'], any_of: [], none_of: [] } },
+  { block_id: 'earth_only', label: 'Earth Only', description: 'Prefer Earth views without Moon or Sun', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: ['earth'], any_of: [], none_of: ['moon', 'sun'] } },
+  { block_id: 'moon_only', label: 'Moon Only', description: 'Prefer Moon views without Earth or Sun', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: ['moon'], any_of: [], none_of: ['earth', 'sun'] } },
+  { block_id: 'sun_only', label: 'Sun Only', description: 'Prefer images featuring the Sun without Earth or Moon', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: ['sun'], any_of: [], none_of: ['earth', 'moon'] } },
+  { block_id: 'crescent', label: 'Crescent Fans', description: 'Prefer crescent shapes — crescent Moon or crescent Earth', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: [], any_of: ['crescent_moon', 'crescent_earth'], none_of: [] } },
+  { block_id: 'eclipse', label: 'Eclipse / Sun+Moon', description: 'Prefer images with Sun and Moon together, or Sun with lens flare', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: [], any_of: ['sun', 'lens_flare'], none_of: [] } },
+  { block_id: 'crew', label: 'Crew / People', description: 'Prefer images showing astronauts, crew, hands, or selfies', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: [], any_of: ['astronaut', 'crew', 'hand', 'selfie'], none_of: [] } },
+  { block_id: 'equipment', label: 'Equipment / Hardware', description: 'Prefer images of spacecraft, vehicles, habitat, or interior views', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: [], any_of: ['spacecraft', 'vehicle', 'habitat', 'interior', 'porthole'], none_of: [] } },
+  { block_id: 'moon_sun', label: 'Moon+Sun Fans', description: 'Prefer images showing Moon and Sun together', voter_count: 10, votes_per_voter: 10, preference_weight: 3.0, randomness_weight: 0.5, preference_rules: { all_of: ['moon', 'sun'], any_of: [], none_of: [] } },
+  { block_id: 'neutral', label: 'Neutral', description: 'No attribute preference — votes by general appeal + noise', voter_count: 10, votes_per_voter: 10, preference_weight: 0.0, randomness_weight: 1.0, preference_rules: { all_of: [], any_of: [], none_of: [] } },
+];
+
 let presets = null;
 let lastResult = null;
 
 export async function render(el) {
-  presets = await fetch('/api/blend/presets').then(r => r.json()).catch(() => ({ blocks: [], attributes: [] }));
+  // Try API first, fall back to embedded defaults
+  presets = await fetch('/api/blend/presets').then(r => {
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }).catch(() => ({ blocks: DEFAULT_BLOCKS, attributes: [] }));
 
   el.innerHTML = `
     <div class="page-header">
@@ -160,7 +178,14 @@ async function runSimulation(el) {
     renderResults(resultsEl, lastResult);
     renderSampleBallots(ballotsEl, lastResult);
   } catch (err) {
-    resultsEl.innerHTML = `<p class="error">Simulation failed: ${err.message}</p>`;
+    const isOffline = err.message.includes('Failed to fetch') || err.message.includes('404') || err.message.includes('Internal Server Error');
+    resultsEl.innerHTML = isOffline
+      ? `<div class="blend-offline-msg">
+           <strong>Simulation requires the local server</strong>
+           <p>The vote simulator runs in-memory on the backend and is only available when the Artemis server is running locally on port 8070.</p>
+           <p>The block configuration UI above shows the available voter types and their attribute bias rules.</p>
+         </div>`
+      : `<p class="error">Simulation failed: ${err.message}</p>`;
   } finally {
     btn.disabled = false;
     btn.textContent = 'Run Simulation';
