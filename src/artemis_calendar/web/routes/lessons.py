@@ -20,7 +20,10 @@ CATEGORY_KEYWORDS = {
               "reliability", "mmr", "hungarian", "bradley-terry", "scoring", "bias"],
     "arch": ["architecture", "portfolio", "run-id", "resume-safe", "read-only", "cache", "design system",
              "reusing query", "fetch shim"],
-    "process": ["synthetic data", "baseline", "formalizing", "multiple selection"],
+    "process": ["synthetic data", "baseline", "formalizing", "multiple selection", "phased", "session continuity",
+                "audit-first", "test-gated", "acceptance test"],
+    "ml": ["clip", "sigmoid", "zero-shot", "embedding", "vision", "tagger", "dedup", "cosine similarity",
+           "connected component"],
 }
 
 
@@ -83,7 +86,7 @@ def list_lessons():
             continue
         block = block_dir.name
         for md_file in sorted(block_dir.glob("*.md")):
-            if md_file.name == "index.md":
+            if md_file.name in ("index.md", "PLANNED.md"):
                 continue
             lesson = _parse_lesson(md_file, block)
             if lesson:

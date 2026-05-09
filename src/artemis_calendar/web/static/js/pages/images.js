@@ -4,12 +4,13 @@
  */
 
 import { createImageCard } from '../components/image-card.js';
+import { showImageDetail } from '../components/image-detail.js';
 
 let currentPage = 1;
 let currentSort = 'score';
 let currentCluster = '';
 let currentMinScore = '';
-let viewMode = 'browse'; // 'browse' or 'spotlights'
+let viewMode = 'browse'; // 'browse', 'spotlights', or 'timeline'
 
 async function fetchImages(page, sort, clusterId, minScore) {
   const params = new URLSearchParams({ page, per_page: 60, sort });
@@ -19,76 +20,6 @@ async function fetchImages(page, sort, clusterId, minScore) {
   return r.json();
 }
 
-async function fetchDetail(sk) {
-  const r = await fetch(`/api/images/${sk}`);
-  return r.json();
-}
-
-function showDetail(container, image) {
-  fetchDetail(image.image_sk).then(detail => {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) overlay.remove();
-    });
-
-    const scoreRows = [
-      ['Preference', detail.preference_score],
-      ['Elo', detail.elo_score],
-      ['Borda', detail.borda_score],
-      ['Broad Appeal', detail.broad_appeal_score],
-      ['Uncertainty', detail.uncertainty_score],
-      ['Brightness', detail.brightness_score],
-      ['Contrast', detail.contrast_score],
-      ['Saturation', detail.saturation_score],
-    ].filter(([, v]) => v != null)
-      .map(([k, v]) => `<tr><td>${k}</td><td>${v.toFixed(4)}</td></tr>`)
-      .join('');
-
-    const candidateList = detail.candidates.length
-      ? detail.candidates.map(c =>
-          `<a href="#/candidates/${c}">${c}</a>`
-        ).join(', ')
-      : 'None';
-
-    overlay.innerHTML = `
-      <div class="modal-content">
-        <button class="modal-close" aria-label="Close">&times;</button>
-        <div class="detail-grid">
-          <div>
-            <img src="/thumbs/${detail.source_image_id}.jpg"
-                 alt="Image ${detail.image_sk}">
-          </div>
-          <div>
-            <h2 style="font-family:var(--mono);font-size:var(--fs-body);margin:0 0 var(--s-2)">
-              #${detail.rank || '—'} &middot; ${detail.source_image_id}
-            </h2>
-            ${detail.cluster_id != null
-              ? `<span class="cluster-pill">Cluster ${detail.cluster_id}</span>`
-              : ''}
-            <table class="score-table" style="margin-top:var(--s-3)">
-              <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-              <tbody>${scoreRows}</tbody>
-            </table>
-            <p style="margin-top:var(--s-3);font-size:var(--fs-small);color:var(--atlas-muted)">
-              Candidates: ${candidateList}
-            </p>
-          </div>
-        </div>
-      </div>
-    `;
-
-    overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
-    document.addEventListener('keydown', function handler(e) {
-      if (e.key === 'Escape') {
-        overlay.remove();
-        document.removeEventListener('keydown', handler);
-      }
-    });
-
-    document.body.appendChild(overlay);
-  });
-}
 
 async function loadPage(container) {
   const data = await fetchImages(currentPage, currentSort, currentCluster, currentMinScore);
@@ -96,7 +27,7 @@ async function loadPage(container) {
   const grid = container.querySelector('.image-grid');
   grid.innerHTML = '';
   data.items.forEach(img => {
-    grid.appendChild(createImageCard(img, () => showDetail(container, img)));
+    grid.appendChild(createImageCard(img, () => showImageDetail(img.image_sk)));
   });
 
   const pageInfo = container.querySelector('.page-info');
@@ -154,7 +85,7 @@ async function loadSpotlights(container) {
     section.querySelectorAll('img[data-sk]').forEach(img => {
       img.style.cursor = 'pointer';
       img.addEventListener('click', () => {
-        showDetail(container, { image_sk: parseInt(img.dataset.sk) });
+        showImageDetail(parseInt(img.dataset.sk));
       });
     });
 
@@ -173,20 +104,30 @@ async function loadSpotlights(container) {
 function renderPage(container) {
   const browseArea = container.querySelector('.browse-area');
   const spotlightsArea = container.querySelector('.spotlights-area');
+  const timelineArea = container.querySelector('.timeline-area');
   const browseBtn = container.querySelector('.view-browse');
   const spotBtn = container.querySelector('.view-spotlights');
+  const timeBtn = container.querySelector('.view-timeline');
+
+  // Hide all
+  browseArea.style.display = 'none';
+  spotlightsArea.style.display = 'none';
+  timelineArea.style.display = 'none';
+  browseBtn.classList.remove('active');
+  spotBtn.classList.remove('active');
+  timeBtn.classList.remove('active');
 
   if (viewMode === 'spotlights') {
-    browseArea.style.display = 'none';
     spotlightsArea.style.display = '';
-    browseBtn.classList.remove('active');
     spotBtn.classList.add('active');
     loadSpotlights(container);
+  } else if (viewMode === 'timeline') {
+    timelineArea.style.display = '';
+    timeBtn.classList.add('active');
+    loadTimeline(container);
   } else {
     browseArea.style.display = '';
-    spotlightsArea.style.display = 'none';
     browseBtn.classList.add('active');
-    spotBtn.classList.remove('active');
     container.querySelector('.cluster-input').value = currentCluster;
     loadPage(container);
   }
@@ -201,6 +142,7 @@ export async function render(el) {
         <div class="view-toggle">
           <button class="filter-btn view-browse active">Browse</button>
           <button class="filter-btn view-spotlights">Spotlights</button>
+          <button class="filter-btn view-timeline">Timeline</button>
         </div>
         <label>Sort
           <select class="sort-select">
@@ -228,6 +170,7 @@ export async function render(el) {
       </div>
     </div>
     <div class="spotlights-area" style="display:none"></div>
+    <div class="timeline-area" style="display:none"></div>
   `;
 
   // Load dedup banner
@@ -245,6 +188,10 @@ export async function render(el) {
   });
   el.querySelector('.view-spotlights').addEventListener('click', () => {
     viewMode = 'spotlights';
+    renderPage(el);
+  });
+  el.querySelector('.view-timeline').addEventListener('click', () => {
+    viewMode = 'timeline';
     renderPage(el);
   });
 
@@ -279,21 +226,107 @@ export async function render(el) {
   renderPage(el);
 }
 
+async function loadTimeline(container) {
+  const area = container.querySelector('.timeline-area');
+  area.innerHTML = '<div class="loading">Loading timeline...</div>';
+
+  const r = await fetch('/api/images/timeline/segments?segment_size=2000');
+  const data = await r.json();
+
+  if (!data.segments?.length) {
+    area.innerHTML = '<p style="color:var(--atlas-muted)">No timeline data available.</p>';
+    return;
+  }
+
+  // Build the overview bar
+  const maxCount = Math.max(...data.segments.map(s => s.image_count));
+
+  area.innerHTML = `
+    <div class="tl-header">
+      <h3 class="sb-section-title">Mission Timeline</h3>
+      <p style="font-size:var(--fs-small);color:var(--atlas-muted);margin-bottom:var(--s-4)">
+        ${data.total_images.toLocaleString()} unique images across frames
+        E-${data.frame_range[0]} to E-${data.frame_range[1]}.
+        Each segment shows the top-scoring images and dominant content attributes.
+      </p>
+    </div>
+    <div class="tl-bar">
+      ${data.segments.map(seg => {
+        const pct = (seg.image_count / maxCount) * 100;
+        return `<div class="tl-bar-seg" style="flex:${seg.image_count}" title="${seg.label}: ${seg.image_count} images">
+          <div class="tl-bar-fill" style="height:${Math.max(pct, 8)}%"></div>
+          <span class="tl-bar-label">${seg.image_count}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="tl-segments"></div>
+  `;
+
+  const segContainer = area.querySelector('.tl-segments');
+
+  for (const seg of data.segments) {
+    const section = document.createElement('div');
+    section.className = 'tl-segment';
+
+    const attrTags = seg.top_attributes.map(a =>
+      `<span class="tl-attr-tag">${a.code.replace(/_/g, ' ')} <em>${a.count}</em></span>`
+    ).join('');
+
+    section.innerHTML = `
+      <div class="tl-segment-header">
+        <div>
+          <h4 class="tl-segment-title">${seg.label}</h4>
+          <span class="tl-segment-count">${seg.image_count} images</span>
+        </div>
+        <div class="tl-attrs">${attrTags}</div>
+      </div>
+      <div class="tl-thumbs">
+        ${seg.thumbnails.map(t => `
+          <div class="tl-thumb" data-sk="${t.image_sk}">
+            <img src="/thumbs/${t.source_image_id}.jpg" alt="${t.source_image_id}" loading="lazy">
+            <div class="tl-thumb-id">${t.source_image_id.replace('ART002-E-', 'E-')}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    // Click thumbnails to show detail
+    section.querySelectorAll('.tl-thumb').forEach(thumb => {
+      thumb.style.cursor = 'pointer';
+      thumb.addEventListener('click', () => {
+        showImageDetail(parseInt(thumb.dataset.sk));
+      });
+    });
+
+    segContainer.appendChild(section);
+  }
+}
+
 async function _loadDedupBanner(el) {
   try {
-    const r = await fetch('/api/dedup/summary');
+    const r = await fetch('/api/dedup/summary?top_groups=6');
     const d = await r.json();
     if (d.suppressed > 0) {
       const pct = ((d.suppressed / d.total) * 100).toFixed(0);
+      const thumbs = (d.top_groups || []).map(g =>
+        `<div class="dedup-thumb" title="${g.member_count} near-identical images consolidated">
+          <img src="/thumbs/${g.source_image_id}.jpg" alt="${g.source_image_id}" loading="lazy">
+          <span class="dedup-thumb-count">${g.member_count}</span>
+        </div>`
+      ).join('');
+
       const banner = el.querySelector('.dedup-banner');
       banner.style.display = '';
       banner.innerHTML = `
         <div class="dedup-banner-inner">
-          <strong>${d.active.toLocaleString()}</strong> unique images shown.
-          <strong>${d.suppressed.toLocaleString()}</strong> near-duplicates
-          (${pct}% of ${d.total.toLocaleString()}) removed by deduplication
-          at ${d.threshold} cosine similarity threshold
-          across ${d.groups.toLocaleString()} duplicate groups.
+          <div class="dedup-banner-text">
+            <strong>${d.active.toLocaleString()}</strong> unique images shown.
+            <strong>${d.suppressed.toLocaleString()}</strong> near-duplicates
+            (${pct}% of ${d.total.toLocaleString()}) removed at
+            ${d.threshold} cosine similarity
+            across ${d.groups.toLocaleString()} groups.
+          </div>
+          ${thumbs ? `<div class="dedup-banner-thumbs">${thumbs}</div>` : ''}
         </div>
       `;
     }

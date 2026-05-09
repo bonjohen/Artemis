@@ -8,6 +8,7 @@ const BLOCKS = [
   { id: 'block3', title: 'Block 3 — Calendar Optimization' },
   { id: 'block4', title: 'Block 4 — Synthetic Validation' },
   { id: 'block5', title: 'Block 5 — Web App & Interactive Tooling' },
+  { id: 'block6', title: 'Block 6 — Vision, Curation & AI Workflow' },
 ];
 
 const CATEGORIES = {
@@ -16,6 +17,7 @@ const CATEGORIES = {
   stats: 'Statistics',
   arch: 'Architecture',
   process: 'Process',
+  ml: 'ML & Vision',
 };
 
 export async function render(el, hash) {
@@ -111,6 +113,12 @@ async function renderDetail(el, block, file) {
 
     // Rewrite relative .md links to SPA lesson links
     let md = data.content;
+    // Cross-block links: ../block4/028_file.md → #/lessons/block4/028_file
+    md = md.replace(
+      /\[([^\]]+)\]\(\.\.\/([^/]+)\/([^)]+)\.md\)/g,
+      (_, text, otherBlock, linkedFile) => `[${text}](#/lessons/${otherBlock}/${linkedFile})`
+    );
+    // Same-block links: 039_file.md → #/lessons/block6/039_file
     md = md.replace(
       /\[([^\]]+)\]\((\d{2,3}[^)]+)\.md\)/g,
       (_, text, linkedFile) => `[${text}](#/lessons/${block}/${linkedFile})`

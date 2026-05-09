@@ -3,6 +3,7 @@
  */
 
 import { createImageCard } from '../components/image-card.js';
+import { showImageDetail } from '../components/image-detail.js';
 
 export async function render(el, hash) {
   const parts = hash.split('/');
@@ -69,9 +70,56 @@ async function renderClusterDetail(el, clusterId) {
     const data = await r.json();
     const grid = el.querySelector('.image-grid');
     grid.innerHTML = '';
+
+    if (!data.items || data.items.length === 0) {
+      // Cluster exists but all images are suppressed — show representative
+      try {
+        const spotR = await fetch(`/api/clusters/${clusterId}/spotlight`);
+        if (spotR.ok) {
+          const spot = await spotR.json();
+          grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:var(--s-6);color:var(--atlas-muted);font-family:var(--mono);font-size:var(--fs-small)">
+              All ${spot.image_count || ''} images in this cluster were consolidated by deduplication.
+              The representative image is shown below.
+            </div>
+          `;
+          if (spot.representative) {
+            const rep = spot.representative;
+            grid.innerHTML += `
+              <div style="grid-column:1/-1;display:flex;justify-content:center">
+                <div style="max-width:400px;border:1px solid var(--atlas-rule-soft);border-radius:var(--r-md);overflow:hidden">
+                  <img src="/thumbs/${rep.source_image_id}.jpg" alt="Representative"
+                       style="width:100%;display:block">
+                  <div style="padding:var(--s-3);font-family:var(--mono);font-size:var(--fs-small);color:var(--atlas-ink-2)">
+                    ${rep.source_image_id} — Representative of ${spot.image_count || 'this'} consolidated images
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        } else {
+          grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:var(--s-6);color:var(--atlas-muted);font-family:var(--mono);font-size:var(--fs-small)">
+              All images in this cluster were consolidated by deduplication. No active images remain.
+            </div>
+          `;
+        }
+      } catch {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:var(--s-6);color:var(--atlas-muted)">
+            No active images in this cluster.
+          </div>
+        `;
+      }
+      el.querySelector('.page-info').textContent = '0 images (all deduplicated)';
+      el.querySelector('.prev-btn').disabled = true;
+      el.querySelector('.next-btn').disabled = true;
+      return;
+    }
+
     data.items.forEach(img => {
       grid.appendChild(createImageCard(img, () => {
-        location.hash = `#/images/${img.image_sk}`;
+        showImageDetail(img.image_sk);
       }));
     });
     el.querySelector('.page-info').textContent =

@@ -88,7 +88,7 @@ def get_cluster(
     ).fetchone()[0]
 
     if total == 0:
-        raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
+        return PaginatedResponse(items=[], total=0, page=1, pages=0)
 
     offset = (page - 1) * per_page
     rows = conn.execute(
@@ -176,6 +176,54 @@ def _compute_spotlight(
     ).fetchall()
 
     if not rows:
+        # All images suppressed — find representative from full (unfiltered) cluster
+        fallback = conn.execute(
+            f"""
+            SELECT d.image_sk, d.source_image_id,
+                   c.distance_to_centroid,
+                   COALESCE(p.posterior_mean, 0) AS score
+            FROM feature_image_cluster c
+            JOIN dim_image d ON d.image_sk = c.image_sk
+            LEFT JOIN mart_image_preference_score p
+                ON p.image_sk = c.image_sk AND p.score_run_id = {LATEST_SCORE_RUN}
+            WHERE c.cluster_type = 'visual'
+              AND c.cluster_id = ?
+              AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
+              AND d.vote_pool_flag = true
+            ORDER BY c.distance_to_centroid ASC
+            LIMIT 1
+            """,
+            [cluster_id],
+        ).fetchone()
+        if fallback:
+            total_in_cluster = conn.execute(
+                f"""
+                SELECT count(*) FROM feature_image_cluster
+                WHERE cluster_type = 'visual' AND cluster_id = ?
+                  AND cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
+                """,
+                [cluster_id],
+            ).fetchone()[0]
+            label_row = conn.execute(
+                f"""
+                SELECT cluster_label FROM mart_image_cluster_summary
+                WHERE cluster_type = 'visual' AND cluster_id = ?
+                  AND cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
+                """,
+                [cluster_id],
+            ).fetchone()
+            return {
+                "cluster_id": cluster_id,
+                "cluster_label": label_row[0] if label_row else None,
+                "image_count": int(total_in_cluster),
+                "all_suppressed": True,
+                "representative": {
+                    "image_sk": int(fallback[0]),
+                    "source_image_id": fallback[1],
+                    "preference_score": float(fallback[3]),
+                },
+                "diverse": [],
+            }
         if allow_empty:
             return None
         raise HTTPException(status_code=404, detail=f"Cluster {cluster_id} not found")
