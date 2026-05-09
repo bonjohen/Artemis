@@ -205,6 +205,16 @@ Three upstream sources serve image data. All permit automated access but require
 
 Design documents live in `docs/`. Once code exists, architecture and methodology docs should follow the numbered scheme from the PDR: `docs/00_project_overview.md` through `docs/15_methodology_for_publication.md`. Lessons learned go in `docs/lessons/` with structured entries (problem, why it matters, design choice, alternatives, what was learned).
 
+## Development Server
+
+After completing any task that modifies web code (routes, JS, CSS, templates), verify the Artemis web server is running on port 8070. If it's down, restart it:
+
+```bash
+PYTHONPATH=src nohup python -c "from artemis_calendar.cli import main; import sys; sys.argv = ['artemis-pipeline', 'serve', '--port', '8070']; main()" > /dev/null 2>&1 &
+```
+
+Verify with `curl -s http://localhost:8070/api/health`. The user keeps the browser open and expects to see changes immediately.
+
 ## Privacy Constraints
 
 - Never store raw voter IDs; use salted hashes

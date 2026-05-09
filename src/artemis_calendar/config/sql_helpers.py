@@ -15,5 +15,13 @@ LATEST_VISUAL_CLUSTER_RUN = """(
     ORDER BY created_at DESC LIMIT 1
 )"""
 
-# Filter to exclude dedup-suppressed images. Use in queries that join dim_image as 'd'.
-ACTIVE_IMAGE_FILTER = "COALESCE(d.is_suppressed, false) = false"
+# Filter to exclude dedup-suppressed and near-black images.
+# Requires dim_image as 'd' and LEFT JOIN feature_image_visual as 'v'.
+# Excludes: (1) non-master dedup members, (2) images >= 92% dark pixels.
+ACTIVE_IMAGE_FILTER = (
+    "COALESCE(d.is_suppressed, false) = false"
+    " AND d.image_sk NOT IN ("
+    "    SELECT image_sk FROM dedup_image_member WHERE is_master = false"
+    " )"
+    " AND COALESCE(v.dark_pixel_ratio, 0) < 0.92"
+)

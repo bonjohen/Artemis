@@ -8,8 +8,8 @@ import duckdb
 import pytest
 
 from artemis_calendar.synthetic.block_generator import (
-    _compute_attribute_match,
-    _compute_block_utility,
+    compute_attribute_match,
+    compute_block_utility,
     generate_block_votes,
 )
 from artemis_calendar.vision.voting_config import (
@@ -104,28 +104,28 @@ def small_config() -> VotingScenarioConfig:
 class TestAttributeMatch:
     def test_full_match(self):
         block = _make_block(all_of=["earth", "moon"])
-        score = _compute_attribute_match({"earth", "moon", "sun"}, block)
+        score = compute_attribute_match({"earth", "moon", "sun"}, block)
         assert score == 1.0
 
     def test_partial_match(self):
         block = _make_block(all_of=["earth", "moon"])
-        score = _compute_attribute_match({"earth"}, block)
+        score = compute_attribute_match({"earth"}, block)
         assert 0.0 < score < 1.0
 
     def test_no_match(self):
         block = _make_block(all_of=["earth", "moon"])
-        score = _compute_attribute_match({"sun"}, block)
+        score = compute_attribute_match({"sun"}, block)
         assert score == 0.0
 
     def test_neutral_block(self):
         block = _make_block(preference_weight=0.0)
-        score = _compute_attribute_match({"earth", "moon"}, block)
+        score = compute_attribute_match({"earth", "moon"}, block)
         assert score == 0.0
 
     def test_none_of_penalty(self):
         block = _make_block(all_of=["earth"], none_of=["moon"])
-        score_clean = _compute_attribute_match({"earth"}, block)
-        score_dirty = _compute_attribute_match({"earth", "moon"}, block)
+        score_clean = compute_attribute_match({"earth"}, block)
+        score_dirty = compute_attribute_match({"earth", "moon"}, block)
         assert score_clean > score_dirty
 
 
@@ -136,8 +136,8 @@ class TestBlockUtility:
         block = _make_block(all_of=["earth", "moon"], preference_weight=3.0, randomness_weight=0.0)
         rng = random.Random(42)
 
-        u_match = _compute_block_utility({"earth", "moon"}, block, 0.5, rng)
-        u_no = _compute_block_utility(set(), block, 0.5, rng)
+        u_match = compute_block_utility({"earth", "moon"}, block, 0.5, rng)
+        u_no = compute_block_utility(set(), block, 0.5, rng)
         assert u_match > u_no
 
     def test_seed_reproducible(self):
@@ -146,8 +146,8 @@ class TestBlockUtility:
         block = _make_block(all_of=["earth"])
         rng1 = random.Random(99)
         rng2 = random.Random(99)
-        u1 = _compute_block_utility({"earth"}, block, 0.5, rng1)
-        u2 = _compute_block_utility({"earth"}, block, 0.5, rng2)
+        u1 = compute_block_utility({"earth"}, block, 0.5, rng1)
+        u2 = compute_block_utility({"earth"}, block, 0.5, rng2)
         assert u1 == u2
 
 

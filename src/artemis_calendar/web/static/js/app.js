@@ -11,6 +11,7 @@ const routes = {
   '/stats': () => import('./pages/stats.js'),
   '/selection': () => import('./pages/selection.js'),
   '/lessons': () => import('./pages/lessons.js'),
+  '/blend': () => import('./pages/blend.js'),
 };
 
 const app = document.getElementById('app');

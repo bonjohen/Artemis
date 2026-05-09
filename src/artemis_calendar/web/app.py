@@ -20,6 +20,7 @@ from artemis_calendar.web.routes.images import router as images_router
 from artemis_calendar.web.routes.lessons import router as lessons_router
 from artemis_calendar.web.routes.selection import router as selection_router
 from artemis_calendar.web.routes.attributes import router as attributes_router
+from artemis_calendar.web.routes.blend import router as blend_router
 from artemis_calendar.web.routes.stats import router as stats_router
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -29,7 +30,13 @@ THUMBS_DIR = RAW_ROOT / "images" / "thumbs"
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response: Response = await call_next(request)
-        csp = "default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://esm.sh"
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' https://esm.sh; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "connect-src 'self' https://esm.sh"
+        )
         response.headers["Content-Security-Policy"] = csp
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -63,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(stats_router)
     app.include_router(selection_router)
     app.include_router(lessons_router)
+    app.include_router(blend_router)
 
     # Mount thumbnail images
     if THUMBS_DIR.exists():

@@ -78,6 +78,7 @@ def get_cluster(
         SELECT COUNT(*)
         FROM feature_image_cluster c
         JOIN dim_image d ON d.image_sk = c.image_sk
+        LEFT JOIN feature_image_visual v ON v.image_sk = c.image_sk
         WHERE c.cluster_type = 'visual'
           AND c.cluster_id = ?
           AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}
@@ -165,6 +166,7 @@ def _compute_spotlight(
         JOIN dim_image d ON d.image_sk = c.image_sk
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = c.image_sk AND p.score_run_id = {LATEST_SCORE_RUN}
+        LEFT JOIN feature_image_visual v ON v.image_sk = c.image_sk
         WHERE c.cluster_type = 'visual'
           AND c.cluster_id = ?
           AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}

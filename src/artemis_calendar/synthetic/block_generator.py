@@ -24,7 +24,7 @@ BATCH_SELECT_COUNT = 5
 VOTING_OUTPUT_DIR = OUTPUT_ROOT / "voting_blocks"
 
 
-def _load_image_attributes(
+def load_image_attributes(
     conn: duckdb.DuckDBPyConnection,
 ) -> dict[int, set[str]]:
     """Load accepted attributes for all vote-pool images. Returns {image_sk: {attr_codes}}."""
@@ -46,7 +46,7 @@ def _load_image_attributes(
     return image_attrs
 
 
-def _compute_attribute_match(
+def compute_attribute_match(
     image_attrs: set[str],
     block: VotingBlockConfig,
 ) -> float:
@@ -82,7 +82,7 @@ def _compute_attribute_match(
     return score / max(max_score, 1.0)
 
 
-def _compute_block_utility(
+def compute_block_utility(
     image_attrs: set[str],
     block: VotingBlockConfig,
     base_appeal: float,
@@ -94,7 +94,7 @@ def _compute_block_utility(
             + preference_weight * attribute_match_score
             + randomness_weight * noise
     """
-    match_score = _compute_attribute_match(image_attrs, block)
+    match_score = compute_attribute_match(image_attrs, block)
     noise = rng.gauss(0, 0.3)
 
     return (
@@ -144,7 +144,7 @@ def generate_block_votes(
         )
 
     # Load image data
-    image_attrs = _load_image_attributes(conn)
+    image_attrs = load_image_attributes(conn)
     all_image_sks = list(image_attrs.keys())
 
     if not all_image_sks:
@@ -252,7 +252,7 @@ def generate_block_votes(
                 scored = []
                 for pos, img_sk in enumerate(shown):
                     attrs = image_attrs.get(img_sk, set())
-                    u = _compute_block_utility(
+                    u = compute_block_utility(
                         attrs, block, base_appeals[img_sk], rng
                     )
                     scored.append((img_sk, pos, u))

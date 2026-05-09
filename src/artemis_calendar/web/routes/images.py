@@ -60,6 +60,7 @@ def timeline_segments(
         FROM dim_image d
         LEFT JOIN mart_image_preference_score p
             ON p.image_sk = d.image_sk AND p.score_run_id = {LATEST_SCORE_RUN}
+        LEFT JOIN feature_image_visual v ON v.image_sk = d.image_sk
         LEFT JOIN feature_image_cluster c
             ON c.image_sk = d.image_sk AND c.cluster_type = 'visual'
             AND c.cluster_run_id = {LATEST_VISUAL_CLUSTER_RUN}

@@ -5,12 +5,13 @@
 const THUMB = '/thumbs/';
 
 // Top-rated images for the hero mosaic (hand-picked for visual variety across clusters)
+// Curated celestial images: moon surfaces, Earth from orbit, crescents, craters
 const HERO_IMAGES = [
-  'ART002-E-10775', 'ART002-E-11601', 'ART002-E-14654', 'ART002-E-21123',
-  'ART002-E-10574', 'ART002-E-23150', 'ART002-E-10366', 'ART002-E-26933',
-  'ART002-E-16097', 'ART002-E-20847', 'ART002-E-22253', 'ART002-E-10318',
-  'ART002-E-29446', 'ART002-E-10491', 'ART002-E-26315', 'ART002-E-24179',
-  'ART002-E-29648', 'ART002-E-20370', 'ART002-E-22767', 'ART002-E-9664',
+  'ART002-E-21001', 'ART002-E-24597', 'ART002-E-23634', 'ART002-E-23536',
+  'ART002-E-23615', 'ART002-E-10366', 'ART002-E-20847', 'ART002-E-26015',
+  'ART002-E-26009', 'ART002-E-21337', 'ART002-E-29446', 'ART002-E-27731',
+  'ART002-E-25359', 'ART002-E-21123', 'ART002-E-24689', 'ART002-E-29123',
+  'ART002-E-24724', 'ART002-E-28194', 'ART002-E-23391', 'ART002-E-26469',
 ];
 
 const SECTIONS = [
@@ -18,8 +19,9 @@ const SECTIONS = [
   { hash: '#/candidates', icon: '&#9733;',  title: 'Calendar Candidates', desc: '5 optimized calendar selections compared by popularity, diversity, month-fit, and redundancy.' },
   { hash: '#/clusters',   icon: '&#11044;', title: 'Cluster Explorer',   desc: '25 visual clusters grouping images by CLIP embedding similarity — from Earth views to crew shots.' },
   { hash: '#/stats',      icon: '&#9881;',  title: 'Stats Dashboard',    desc: 'Score distributions, inter-rater reliability, bias detection, and vote counts.' },
-  { hash: '#/lessons',    icon: '&#9998;',  title: 'Lessons Learned',    desc: '37 standalone lessons on data engineering, statistical methods, optimization, and deployment.' },
+  { hash: '#/blend',      icon: '&#9878;',  title: 'Vote Simulator',     desc: 'Simulate how voter blocs with different visual preferences shape the calendar. Adjust voter counts, run elections, inspect individual ballots.' },
   { hash: '#/selection',  icon: '&#9776;',  title: 'Selection Builder',  desc: 'Interactive 13-slot calendar builder with live composite scoring (local server only).' },
+  { hash: '#/lessons',    icon: '&#9998;',  title: 'Lessons Learned',    desc: '37 standalone lessons on data engineering, statistical methods, optimization, and deployment.' },
 ];
 
 export async function render(el) {
@@ -53,6 +55,7 @@ export async function render(el) {
           <p class="hero-lede">A data science case study in collection optimization — how statistical modeling, visual clustering, and multi-objective scoring select the best calendar from 12,217 Artemis II mission photographs.</p>
           <div class="hero-actions">
             <a href="#/images" class="hero-btn primary">Browse Images</a>
+            <a href="#/blend" class="hero-btn primary">Vote Simulator</a>
             <a href="#/lessons" class="hero-btn secondary">Read Lessons</a>
           </div>
         </div>

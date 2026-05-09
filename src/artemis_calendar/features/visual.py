@@ -95,6 +95,10 @@ def extract_visual_features_for_image(img: Image.Image) -> dict:
     s_channel = np.array(hsv.split()[1], dtype=np.float64)
     saturation = float(s_channel.mean() / 255.0)
 
+    # Dark pixel ratio: fraction of pixels with luminance < 20
+    gray = np.array(img.convert("L"))
+    dark_pixel_ratio = float((gray < 20).mean())
+
     return {
         "orientation": _compute_orientation(width, height),
         "aspect_ratio": round(width / height, 4),
@@ -102,6 +106,7 @@ def extract_visual_features_for_image(img: Image.Image) -> dict:
         "contrast_score": round(contrast, 4),
         "saturation_score": round(saturation, 4),
         "dominant_color_json": json.dumps(_compute_dominant_colors(img)),
+        "dark_pixel_ratio": round(dark_pixel_ratio, 4),
     }
 
 
@@ -125,6 +130,7 @@ def _extract_one(image_sk: int, source_image_id: str, run_id: str, tdir: Path) -
             f["contrast_score"],
             f["saturation_score"],
             f["dominant_color_json"],
+            f["dark_pixel_ratio"],
         )
     except Exception:
         logger.exception(f"Failed to extract features for {source_image_id}")
@@ -188,8 +194,8 @@ def extract_visual_features(
             INSERT INTO feature_image_visual (
                 image_sk, feature_run_id, orientation, aspect_ratio,
                 brightness_score, contrast_score, saturation_score,
-                dominant_color_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                dominant_color_json, dark_pixel_ratio
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             chunk_list,
         )
