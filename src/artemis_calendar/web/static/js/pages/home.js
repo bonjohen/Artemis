@@ -18,7 +18,7 @@ const SECTIONS = [
   { hash: '#/images',     icon: '&#9634;',  title: 'Image Browser',     desc: 'Browse 12,217 mission photos with preference scoring, cluster filtering, and visual detail overlays.' },
   { hash: '#/candidates', icon: '&#9733;',  title: 'Calendar Candidates', desc: '5 optimized calendar selections compared by popularity, diversity, month-fit, and redundancy.' },
   { hash: '#/clusters',   icon: '&#11044;', title: 'Cluster Explorer',   desc: '25 visual clusters grouping images by CLIP embedding similarity — from Earth views to crew shots.' },
-  { hash: '#/stats',      icon: '&#9881;',  title: 'Stats Dashboard',    desc: 'Score distributions, inter-rater reliability, bias detection, and vote counts.' },
+  { hash: '#/stats',      icon: '&#9881;',  title: 'Stats Dashboard',    desc: 'Score distributions, inter-rater reliability, bias detection, and manufactured vote counts.' },
   { hash: '#/blend',      icon: '&#9878;',  title: 'Vote Simulator',     desc: 'Simulate how voter blocs with different visual preferences shape the calendar. Adjust voter counts, run elections, inspect individual ballots.' },
   { hash: '#/selection',  icon: '&#9776;',  title: 'Selection Builder',  desc: 'Interactive 13-slot calendar builder with live composite scoring (local server only).' },
   { hash: '#/lessons',    icon: '&#9998;',  title: 'Lessons Learned',    desc: '37 standalone lessons on data engineering, statistical methods, optimization, and deployment.' },
@@ -103,7 +103,7 @@ export async function render(el) {
       <!-- Top images showcase -->
       <section class="home-showcase">
         <h2 class="section-title">Highest-Rated Imagery</h2>
-        <p class="section-desc">The top 10 images by composite preference score — combining Bayesian smoothing, Elo ratings, and Borda counts from voter data.</p>
+        <p class="section-desc">The top 10 images by composite preference score — combining Bayesian smoothing, Elo ratings, and Borda counts from manufactured voter data.</p>
         <div class="showcase-grid" id="showcase-grid"></div>
         <div style="text-align:center;margin-top:var(--s-5)">
           <a href="#/images" class="hero-btn secondary">View all ${stats.image_count?.toLocaleString() || '12,217'} images &rarr;</a>
