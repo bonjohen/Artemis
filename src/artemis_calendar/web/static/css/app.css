@@ -327,6 +327,118 @@
   color: var(--atlas-muted);
 }
 
+/* ---------- CLUSTER SPOTLIGHT CARDS ---------- */
+.cluster-explainer {
+  color: var(--atlas-muted);
+  font-size: var(--fs-small);
+  max-width: 72ch;
+  margin-bottom: var(--s-5);
+  line-height: 1.6;
+}
+
+.cluster-spotlights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.cluster-spotlight-card {
+  background: var(--atlas-surface);
+  border: 1px solid var(--atlas-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.cluster-spot-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--atlas-border);
+  transition: background 0.15s;
+}
+
+.cluster-spot-header:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.cluster-spot-label {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+
+.cluster-spot-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--atlas-muted);
+}
+
+.cluster-spot-images {
+  display: flex;
+  gap: var(--s-2);
+  padding: var(--s-2);
+  overflow-x: auto;
+}
+
+.cluster-spot-rep {
+  position: relative;
+  flex-shrink: 0;
+  width: 200px;
+  cursor: pointer;
+  border: 2px solid var(--atlas-accent);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cluster-spot-rep img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+
+.cluster-spot-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: rgba(0,0,0,0.75);
+  color: var(--atlas-accent);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cluster-spot-diverse {
+  display: flex;
+  gap: var(--s-2);
+}
+
+.cluster-spot-div-img {
+  flex-shrink: 0;
+  width: 130px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.cluster-spot-div-img:hover {
+  border-color: var(--atlas-accent);
+}
+
+.cluster-spot-div-img img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+
 /* ---------- STATS ---------- */
 .stats-grid {
   display: grid;

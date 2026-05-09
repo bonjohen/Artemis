@@ -15,37 +15,66 @@ export async function render(el, hash) {
 }
 
 async function renderClusterList(el) {
-  const r = await fetch('/api/clusters');
-  const clusters = await r.json();
+  const [clustersResp, spotlightsResp] = await Promise.all([
+    fetch('/api/clusters').then(r => r.json()).catch(() => []),
+    fetch('/api/clusters/spotlights').then(r => r.json()).catch(() => []),
+  ]);
+
+  const spotlightMap = {};
+  for (const s of spotlightsResp) spotlightMap[s.cluster_id] = s;
 
   el.innerHTML = `
     <div class="page-header"><h1>Clusters</h1></div>
-    <div class="cluster-cards"></div>
+    <p class="cluster-explainer">
+      Each cluster groups visually similar images by CLIP embedding proximity.
+      The <strong>spotlight</strong> shows the image closest to the cluster center (most typical)
+      plus five diverse images selected by greedy max-min distance within the cluster.
+    </p>
+    <div class="cluster-spotlights" id="cluster-spotlights"></div>
   `;
 
-  const grid = el.querySelector('.cluster-cards');
-  clusters.forEach(c => {
+  const container = el.querySelector('#cluster-spotlights');
+
+  clustersResp.forEach(c => {
+    const spot = spotlightMap[c.cluster_id];
     const card = document.createElement('div');
-    card.className = 'cluster-card';
-    card.addEventListener('click', () => {
-      location.hash = `#/clusters/${c.cluster_id}`;
-    });
-    const thumbSrc = c.top_image_guid
-      ? `/thumbs/${c.top_image_guid}.jpg`
-      : '';
+    card.className = 'cluster-spotlight-card';
+
+    const rep = spot?.representative;
+    const diverse = spot?.diverse || [];
+
     card.innerHTML = `
-      ${thumbSrc ? `<img src="${thumbSrc}" alt="Cluster ${c.cluster_id}" loading="lazy">` : ''}
-      <div class="cluster-info">
-        <div class="cluster-label">Cluster ${c.cluster_id}</div>
-        <div class="cluster-meta">
-          ${c.image_count} images
-          ${c.mean_preference_score != null
-            ? ` | Score: ${c.mean_preference_score.toFixed(3)}`
-            : ''}
+      <div class="cluster-spot-header" style="cursor:pointer" title="Click to browse all ${c.image_count} images">
+        <span class="cluster-spot-label">Cluster ${c.cluster_id}</span>
+        <span class="cluster-spot-meta">${c.image_count} images${c.mean_preference_score != null ? ` · Score ${c.mean_preference_score.toFixed(3)}` : ''}</span>
+      </div>
+      <div class="cluster-spot-images">
+        ${rep ? `
+          <div class="cluster-spot-rep" data-sk="${rep.image_sk}" title="Center — most typical image in this cluster">
+            <img src="/thumbs/${rep.source_image_id}.jpg" alt="Representative" loading="lazy">
+            <span class="cluster-spot-badge">Center</span>
+          </div>
+        ` : ''}
+        <div class="cluster-spot-diverse">
+          ${diverse.map(d => `
+            <div class="cluster-spot-div-img" data-sk="${d.image_sk}" title="Diverse pick — maximizes visual variety within cluster">
+              <img src="/thumbs/${d.source_image_id}.jpg" alt="Diverse" loading="lazy">
+            </div>
+          `).join('')}
         </div>
       </div>
     `;
-    grid.appendChild(card);
+
+    card.querySelector('.cluster-spot-header').addEventListener('click', () => {
+      location.hash = `#/clusters/${c.cluster_id}`;
+    });
+
+    // Image click → detail modal
+    card.querySelectorAll('[data-sk]').forEach(img => {
+      img.addEventListener('click', () => showImageDetail(parseInt(img.dataset.sk)));
+    });
+
+    container.appendChild(card);
   });
 }
 

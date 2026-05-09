@@ -37,10 +37,6 @@ export async function render(el) {
     lessonCount = lr.length;
   } catch (e) { /* use defaults */ }
 
-  const totalVotes = stats.vote_counts
-    ? (stats.vote_counts.batch_ballots || 0) + (stats.vote_counts.pairwise_votes || 0) + (stats.vote_counts.category_rankings || 0)
-    : 275;
-
   el.innerHTML = `
     <div class="home">
       <!-- Hero -->
@@ -68,7 +64,7 @@ export async function render(el) {
           <span class="stat-label">Mission Photos</span>
         </div>
         <div class="stat-item">
-          <span class="stat-number">25</span>
+          <span class="stat-number">20</span>
           <span class="stat-label">Visual Clusters</span>
         </div>
         <div class="stat-item">
@@ -78,10 +74,6 @@ export async function render(el) {
         <div class="stat-item">
           <span class="stat-number">${lessonCount}</span>
           <span class="stat-label">Lessons Learned</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">${totalVotes}</span>
-          <span class="stat-label">Vote Events</span>
         </div>
       </section>
 
