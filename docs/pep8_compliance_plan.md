@@ -59,12 +59,12 @@ Open  -->  Started  -->  Completed
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Verify web server starts cleanly: `curl -s http://localhost:8070/api/health` |
-| 2.2 | Open | | | Update lesson count in `docs/lessons/lessons.html` hero stats if needed |
-| 2.3 | Open | | | Stage and commit: `docs: verify PEP 8 compliance, update lesson hub` |
+| 2.1 | Completed | 2026-05-10 12:49 AM (PST) | 2026-05-10 12:49 AM (PST) | Verify web server starts cleanly: `curl -s http://localhost:8070/api/health` |
+| 2.2 | Completed | 2026-05-10 12:49 AM (PST) | 2026-05-10 12:51 AM (PST) | Update lesson count in `docs/lessons/lessons.html` hero stats: 58 → 57 (matches actual card count) |
+| 2.3 | Started | 2026-05-10 12:51 AM (PST) | | Stage and commit: `docs: verify PEP 8 compliance, update lesson hub` |
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Verified web server starts cleanly (`/api/health` → ok). Corrected lesson count in `docs/lessons/lessons.html` hero stats from 58 to 57 (matching actual card count).
 - **Changes hosted at:** TBD
-- **Commit:** `docs: verify PEP 8 compliance, update lesson hub`
+- **Commit:** `docs: verify PEP 8 compliance, fix lesson count in hero stats`
