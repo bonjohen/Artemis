@@ -170,28 +170,40 @@ def tag_all_images(
             probs = batch_probs[i]
 
             # Compute derived labels from base confidences
-            base_conf = {code: prob for code, prob in zip(codes, probs)}
+            base_conf = {code: prob for code, prob in zip(codes, probs, strict=True)}
 
-            for code, prob in zip(codes, probs):
+            for code, prob in zip(codes, probs, strict=True):
                 classification = vocab.classify_confidence(prob)
                 is_accepted = classification == "accepted"
-                insert_buffer.append((
-                    image_sk, code, round(prob, 4),
-                    classification, "clip_zero_shot",
-                    "clip-vit-base-patch32", "openai/clip-vit-base-patch32",
-                    is_accepted,
-                ))
+                insert_buffer.append(
+                    (
+                        image_sk,
+                        code,
+                        round(prob, 4),
+                        classification,
+                        "clip_zero_shot",
+                        "clip-vit-base-patch32",
+                        "openai/clip-vit-base-patch32",
+                        is_accepted,
+                    )
+                )
                 tagged += 1
 
             # Derived labels
             derived = vocab.compute_derived_labels(base_conf)
             for dcode in derived:
-                insert_buffer.append((
-                    image_sk, dcode, 1.0,
-                    "accepted", "derived_rule",
-                    None, None,
-                    True,
-                ))
+                insert_buffer.append(
+                    (
+                        image_sk,
+                        dcode,
+                        1.0,
+                        "accepted",
+                        "derived_rule",
+                        None,
+                        None,
+                        True,
+                    )
+                )
                 tagged += 1
 
         # Flush buffer periodically
@@ -240,16 +252,18 @@ def _flush_buffer(conn: duckdb.DuckDBPyConnection, buffer: list[tuple]) -> None:
     if not buffer:
         return
 
-    schema = pa.schema([
-        ("image_sk", pa.int64()),
-        ("attribute_code", pa.string()),
-        ("confidence_score", pa.float64()),
-        ("classification", pa.string()),
-        ("label_source", pa.string()),
-        ("model_name", pa.string()),
-        ("model_version", pa.string()),
-        ("is_accepted", pa.bool_()),
-    ])
+    schema = pa.schema(
+        [
+            ("image_sk", pa.int64()),
+            ("attribute_code", pa.string()),
+            ("confidence_score", pa.float64()),
+            ("classification", pa.string()),
+            ("label_source", pa.string()),
+            ("model_name", pa.string()),
+            ("model_version", pa.string()),
+            ("is_accepted", pa.bool_()),
+        ]
+    )
 
     arrays = [
         pa.array([r[0] for r in buffer], type=pa.int64()),
@@ -300,13 +314,10 @@ def tag_new_attributes(
         existing = {
             r[0]
             for r in conn.execute(
-                "SELECT DISTINCT attribute_code FROM feature_image_attribute "
-                "WHERE label_source = 'clip_zero_shot'"
+                "SELECT DISTINCT attribute_code FROM feature_image_attribute WHERE label_source = 'clip_zero_shot'"
             ).fetchall()
         }
-        attribute_codes = [
-            a.code for a in vocab.base_attributes if a.code not in existing
-        ]
+        attribute_codes = [a.code for a in vocab.base_attributes if a.code not in existing]
         if not attribute_codes:
             logger.info("No new attributes to tag — all vocabulary codes already exist.")
             if own_conn:
@@ -345,15 +356,13 @@ def tag_new_attributes(
         if deps & set(codes):
             derived_to_recompute.append(da.code)
             conn.execute(
-                "DELETE FROM feature_image_attribute "
-                "WHERE attribute_code = ? AND label_source = 'derived_rule'",
+                "DELETE FROM feature_image_attribute WHERE attribute_code = ? AND label_source = 'derived_rule'",
                 [da.code],
             )
 
     # Get all vote-pool images
     rows = conn.execute(
-        "SELECT image_sk, source_image_id FROM dim_image "
-        "WHERE vote_pool_flag = true ORDER BY image_sk"
+        "SELECT image_sk, source_image_id FROM dim_image WHERE vote_pool_flag = true ORDER BY image_sk"
     ).fetchall()
     total = len(rows)
 
@@ -383,17 +392,23 @@ def tag_new_attributes(
 
         for i, image_sk in enumerate(image_sks):
             probs = batch_probs[i]
-            new_conf = {code: prob for code, prob in zip(codes, probs)}
+            new_conf = {code: prob for code, prob in zip(codes, probs, strict=True)}
 
-            for code, prob in zip(codes, probs):
+            for code, prob in zip(codes, probs, strict=True):
                 classification = vocab.classify_confidence(prob)
                 is_accepted = classification == "accepted"
-                insert_buffer.append((
-                    image_sk, code, round(prob, 4),
-                    classification, "clip_zero_shot",
-                    "clip-vit-base-patch32", "openai/clip-vit-base-patch32",
-                    is_accepted,
-                ))
+                insert_buffer.append(
+                    (
+                        image_sk,
+                        code,
+                        round(prob, 4),
+                        classification,
+                        "clip_zero_shot",
+                        "clip-vit-base-patch32",
+                        "openai/clip-vit-base-patch32",
+                        is_accepted,
+                    )
+                )
                 tagged += 1
 
             # Recompute affected derived attributes
@@ -411,12 +426,18 @@ def tag_new_attributes(
                 derived = vocab.compute_derived_labels(existing_conf)
                 for dcode in derived:
                     if dcode in derived_to_recompute:
-                        insert_buffer.append((
-                            image_sk, dcode, 1.0,
-                            "accepted", "derived_rule",
-                            None, None,
-                            True,
-                        ))
+                        insert_buffer.append(
+                            (
+                                image_sk,
+                                dcode,
+                                1.0,
+                                "accepted",
+                                "derived_rule",
+                                None,
+                                None,
+                                True,
+                            )
+                        )
                         tagged += 1
 
         if len(insert_buffer) >= 5000:
@@ -443,10 +464,7 @@ def tag_new_attributes(
         "rate_images_per_sec": round(total / max(elapsed, 0.01), 1),
     }
 
-    logger.info(
-        f"Incremental tagging complete: {len(codes)} codes, "
-        f"{tagged} rows, {summary['elapsed_seconds']}s"
-    )
+    logger.info(f"Incremental tagging complete: {len(codes)} codes, {tagged} rows, {summary['elapsed_seconds']}s")
 
     if own_conn:
         conn.close()

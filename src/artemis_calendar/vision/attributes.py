@@ -75,9 +75,7 @@ class AttributeVocabulary:
             return "tentative"
         return "rejected"
 
-    def compute_derived_labels(
-        self, base_confidences: dict[str, float]
-    ) -> list[str]:
+    def compute_derived_labels(self, base_confidences: dict[str, float]) -> list[str]:
         """Compute derived attribute labels from base confidence scores.
 
         A derived label is present when all required base attributes are
@@ -87,33 +85,21 @@ class AttributeVocabulary:
         labels: list[str] = []
         for da in self.derived_attributes:
             # Check all_of: every required attribute must be accepted
-            all_met = all(
-                base_confidences.get(code, 0.0) >= self.thresholds.accepted
-                for code in da.rule.all_of
-            )
+            all_met = all(base_confidences.get(code, 0.0) >= self.thresholds.accepted for code in da.rule.all_of)
             if not all_met:
                 continue
 
             # Check none_of: every excluded attribute must be below tentative
-            none_met = all(
-                base_confidences.get(code, 0.0) < self.thresholds.tentative
-                for code in da.rule.none_of
-            )
+            none_met = all(base_confidences.get(code, 0.0) < self.thresholds.tentative for code in da.rule.none_of)
             if not none_met:
                 continue
 
             labels.append(da.code)
         return labels
 
-    def compute_accepted_base_labels(
-        self, base_confidences: dict[str, float]
-    ) -> list[str]:
+    def compute_accepted_base_labels(self, base_confidences: dict[str, float]) -> list[str]:
         """Return base attribute codes that meet the accepted threshold."""
-        return [
-            code
-            for code in self.base_codes
-            if base_confidences.get(code, 0.0) >= self.thresholds.accepted
-        ]
+        return [code for code in self.base_codes if base_confidences.get(code, 0.0) >= self.thresholds.accepted]
 
 
 def load_attribute_vocabulary(config_path: Path | None = None) -> AttributeVocabulary:
@@ -124,9 +110,7 @@ def load_attribute_vocabulary(config_path: Path | None = None) -> AttributeVocab
 
     thresholds = Thresholds(**data.get("thresholds", {}))
 
-    base_attrs = [
-        BaseAttribute(**item) for item in data.get("base_attributes", [])
-    ]
+    base_attrs = [BaseAttribute(**item) for item in data.get("base_attributes", [])]
 
     base_codes = {a.code for a in base_attrs}
 
@@ -140,10 +124,7 @@ def load_attribute_vocabulary(config_path: Path | None = None) -> AttributeVocab
         # Validate rule references
         for code in rule.all_of + rule.none_of:
             if code not in base_codes:
-                raise ValueError(
-                    f"Derived attribute {item['code']!r} references "
-                    f"unknown base attribute {code!r}"
-                )
+                raise ValueError(f"Derived attribute {item['code']!r} references unknown base attribute {code!r}")
         derived_attrs.append(DerivedAttribute(**item, rule=rule))
 
     # Check for duplicate codes

@@ -40,10 +40,7 @@ def _get_cluster_dominant_attributes(
         """,
         [cluster_run_id, cluster_type, cluster_id, top_n],
     ).fetchall()
-    return [
-        {"code": r[0], "count": r[1], "avg_confidence": round(r[2], 3)}
-        for r in rows
-    ]
+    return [{"code": r[0], "count": r[1], "avg_confidence": round(r[2], 3)} for r in rows]
 
 
 def _get_cluster_representative_images(
@@ -161,9 +158,7 @@ def label_clusters(
 
     count = 0
     for cluster_id, size in cluster_rows:
-        dominant = _get_cluster_dominant_attributes(
-            conn, cluster_run_id, cluster_type, cluster_id
-        )
+        dominant = _get_cluster_dominant_attributes(conn, cluster_run_id, cluster_type, cluster_id)
         label = _generate_label(dominant)
 
         # Update cluster_label in feature_image_cluster
@@ -227,34 +222,34 @@ def export_cluster_review(
 
     clusters = []
     for cluster_id, label, size in cluster_rows:
-        dominant = _get_cluster_dominant_attributes(
-            conn, cluster_run_id, cluster_type, cluster_id
-        )
-        representatives = _get_cluster_representative_images(
-            conn, cluster_run_id, cluster_type, cluster_id
-        )
-        outliers = _get_cluster_outlier_images(
-            conn, cluster_run_id, cluster_type, cluster_id
-        )
+        dominant = _get_cluster_dominant_attributes(conn, cluster_run_id, cluster_type, cluster_id)
+        representatives = _get_cluster_representative_images(conn, cluster_run_id, cluster_type, cluster_id)
+        outliers = _get_cluster_outlier_images(conn, cluster_run_id, cluster_type, cluster_id)
 
-        clusters.append({
-            "cluster_id": cluster_id,
-            "label": label or "Unlabeled",
-            "image_count": size,
-            "dominant_attributes": dominant,
-            "representative_images": representatives,
-            "outlier_images": outliers,
-        })
+        clusters.append(
+            {
+                "cluster_id": cluster_id,
+                "label": label or "Unlabeled",
+                "image_count": size,
+                "dominant_attributes": dominant,
+                "representative_images": representatives,
+                "outlier_images": outliers,
+            }
+        )
 
     # Write JSON
     json_path = odir / "cluster_review.json"
     with open(json_path, "w", encoding="utf-8") as f:
-        json.dump({
-            "cluster_run_id": cluster_run_id,
-            "cluster_type": cluster_type,
-            "cluster_count": len(clusters),
-            "clusters": clusters,
-        }, f, indent=2)
+        json.dump(
+            {
+                "cluster_run_id": cluster_run_id,
+                "cluster_type": cluster_type,
+                "cluster_count": len(clusters),
+                "clusters": clusters,
+            },
+            f,
+            indent=2,
+        )
 
     # Write Markdown
     md_path = odir / "cluster_review.md"

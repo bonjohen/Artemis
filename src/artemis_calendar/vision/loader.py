@@ -100,8 +100,7 @@ def write_image_attributes(
                  label_source, model_name, model_version, run_id, is_accepted)
             VALUES (?, ?, ?, ?, 'vision_model', ?, ?, ?, ?)
             """,
-            [image_sk, code, confidence, classification,
-             model_name, model_version, run_id, is_accepted],
+            [image_sk, code, confidence, classification, model_name, model_version, run_id, is_accepted],
         )
         count += 1
 

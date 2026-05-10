@@ -13,14 +13,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from artemis_calendar.config.settings import RAW_ROOT
 from artemis_calendar.web.db import close_db, init_db
+from artemis_calendar.web.routes.attributes import router as attributes_router
+from artemis_calendar.web.routes.blend import router as blend_router
 from artemis_calendar.web.routes.candidates import router as candidates_router
-from artemis_calendar.web.routes.dedup import router as dedup_router
 from artemis_calendar.web.routes.clusters import router as clusters_router
+from artemis_calendar.web.routes.dedup import router as dedup_router
 from artemis_calendar.web.routes.images import router as images_router
 from artemis_calendar.web.routes.lessons import router as lessons_router
 from artemis_calendar.web.routes.selection import router as selection_router
-from artemis_calendar.web.routes.attributes import router as attributes_router
-from artemis_calendar.web.routes.blend import router as blend_router
 from artemis_calendar.web.routes.stats import router as stats_router
 
 STATIC_DIR = Path(__file__).parent / "static"

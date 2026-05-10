@@ -25,7 +25,8 @@ def vocab() -> AttributeVocabulary:
 def tmp_config(tmp_path: Path) -> Path:
     """Create a minimal test config."""
     config = tmp_path / "attrs.yaml"
-    config.write_text(textwrap.dedent("""\
+    config.write_text(
+        textwrap.dedent("""\
         thresholds:
           accepted: 0.80
           tentative: 0.50
@@ -54,7 +55,8 @@ def tmp_config(tmp_path: Path) -> Path:
             rule:
               all_of: [earth]
               none_of: [moon, sun]
-    """))
+    """)
+    )
     return config
 
 
@@ -95,7 +97,8 @@ class TestAttributeLoading:
 
     def test_duplicate_code_raises(self, tmp_path: Path) -> None:
         config = tmp_path / "bad.yaml"
-        config.write_text(textwrap.dedent("""\
+        config.write_text(
+            textwrap.dedent("""\
             thresholds: {accepted: 0.80, tentative: 0.50}
             base_attributes:
               - code: earth
@@ -107,13 +110,15 @@ class TestAttributeLoading:
                 description: y
                 type: celestial_body
             derived_attributes: []
-        """))
+        """)
+        )
         with pytest.raises(ValueError, match="Duplicate"):
             load_attribute_vocabulary(config)
 
     def test_bad_derived_reference_raises(self, tmp_path: Path) -> None:
         config = tmp_path / "bad2.yaml"
-        config.write_text(textwrap.dedent("""\
+        config.write_text(
+            textwrap.dedent("""\
             thresholds: {accepted: 0.80, tentative: 0.50}
             base_attributes:
               - code: earth
@@ -126,7 +131,8 @@ class TestAttributeLoading:
                 description: x
                 rule:
                   all_of: [earth, mars]
-        """))
+        """)
+        )
         with pytest.raises(ValueError, match="mars"):
             load_attribute_vocabulary(config)
 

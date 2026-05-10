@@ -81,7 +81,7 @@ def find_duplicates(
         for i_local in range(end - start):
             i_global = start + i_local
             # Only check upper triangle (j > i)
-            sims = sim[i_local, i_global + 1:]
+            sims = sim[i_local, i_global + 1 :]
             above = np.where(sims >= threshold)[0]
             for j_offset in above:
                 j_global = i_global + 1 + j_offset
@@ -92,10 +92,7 @@ def find_duplicates(
         if progress_callback:
             progress_callback(end, n, elapsed)
 
-    logger.info(
-        f"Found {len(pair_rows)} pairs above {threshold} "
-        f"in {time.time() - t1:.1f}s"
-    )
+    logger.info(f"Found {len(pair_rows)} pairs above {threshold} in {time.time() - t1:.1f}s")
 
     if not pair_rows:
         logger.info("No duplicates found.")
@@ -138,9 +135,7 @@ def find_duplicates(
     score_map = {int(r[0]): float(r[1]) for r in score_rows}
 
     # Load brightness for tie-breaking
-    bright_rows = conn.execute(
-        "SELECT image_sk, COALESCE(brightness_score, 0) FROM feature_image_visual"
-    ).fetchall()
+    bright_rows = conn.execute("SELECT image_sk, COALESCE(brightness_score, 0) FROM feature_image_visual").fetchall()
     bright_map = {int(r[0]): float(r[1]) for r in bright_rows}
 
     # Build groups and pick masters
@@ -161,15 +156,21 @@ def find_duplicates(
 
         group_id = f"dedup_{run_id}_{group_label}"
 
-        group_records.append((
-            group_id, best_sk, len(member_sks_list), threshold, run_id,
-        ))
+        group_records.append(
+            (
+                group_id,
+                best_sk,
+                len(member_sks_list),
+                threshold,
+                run_id,
+            )
+        )
 
         # Compute similarity to master for each member
         master_idx = member_indices[member_sks_list.index(best_sk)]
         master_emb = embeddings[master_idx]
 
-        for idx, sk in zip(member_indices, member_sks_list):
+        for idx, sk in zip(member_indices, member_sks_list, strict=True):
             sim_to_master = float(embeddings[idx] @ master_emb)
             is_master = sk == best_sk
             member_records.append((group_id, sk, round(sim_to_master, 6), is_master))
@@ -178,13 +179,15 @@ def find_duplicates(
 
     # Write groups
     if group_records:
-        tbl = pa.table({
-            "group_id": [r[0] for r in group_records],
-            "master_image_sk": pa.array([r[1] for r in group_records], type=pa.int64()),
-            "member_count": [r[2] for r in group_records],
-            "similarity_threshold": [r[3] for r in group_records],
-            "dedup_run_id": [r[4] for r in group_records],
-        })
+        tbl = pa.table(
+            {
+                "group_id": [r[0] for r in group_records],
+                "master_image_sk": pa.array([r[1] for r in group_records], type=pa.int64()),
+                "member_count": [r[2] for r in group_records],
+                "similarity_threshold": [r[3] for r in group_records],
+                "dedup_run_id": [r[4] for r in group_records],
+            }
+        )
         conn.register("_grp", tbl)
         conn.execute("""
             INSERT INTO dedup_image_group
@@ -195,12 +198,14 @@ def find_duplicates(
 
     # Write members
     if member_records:
-        tbl = pa.table({
-            "group_id": [r[0] for r in member_records],
-            "image_sk": pa.array([r[1] for r in member_records], type=pa.int64()),
-            "similarity_to_master": [r[2] for r in member_records],
-            "is_master": [r[3] for r in member_records],
-        })
+        tbl = pa.table(
+            {
+                "group_id": [r[0] for r in member_records],
+                "image_sk": pa.array([r[1] for r in member_records], type=pa.int64()),
+                "similarity_to_master": [r[2] for r in member_records],
+                "is_master": [r[3] for r in member_records],
+            }
+        )
         conn.register("_mem", tbl)
         conn.execute("""
             INSERT INTO dedup_image_member
@@ -272,13 +277,9 @@ def restore_all(
             "(SELECT group_id FROM dedup_image_group WHERE dedup_run_id = ?)",
             [run_id],
         )
-        conn.execute(
-            "DELETE FROM dedup_image_group WHERE dedup_run_id = ?", [run_id]
-        )
+        conn.execute("DELETE FROM dedup_image_group WHERE dedup_run_id = ?", [run_id])
     else:
-        count = conn.execute(
-            "UPDATE dim_image SET is_suppressed = false WHERE is_suppressed = true"
-        ).fetchone()[0]
+        count = conn.execute("UPDATE dim_image SET is_suppressed = false WHERE is_suppressed = true").fetchone()[0]
         conn.execute("DELETE FROM dedup_image_member")
         conn.execute("DELETE FROM dedup_image_group")
 
@@ -293,9 +294,7 @@ def restore_all(
 def get_dedup_summary(conn: duckdb.DuckDBPyConnection) -> dict:
     """Get summary statistics for dedup results."""
     groups = conn.execute("SELECT count(*) FROM dedup_image_group").fetchone()[0]
-    suppressed = conn.execute(
-        "SELECT count(*) FROM dim_image WHERE is_suppressed = true"
-    ).fetchone()[0]
+    suppressed = conn.execute("SELECT count(*) FROM dim_image WHERE is_suppressed = true").fetchone()[0]
     active = conn.execute(
         "SELECT count(*) FROM dim_image WHERE vote_pool_flag = true AND COALESCE(is_suppressed, false) = false"
     ).fetchone()[0]

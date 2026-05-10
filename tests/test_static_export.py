@@ -57,16 +57,22 @@ def populated_db(tmp_path) -> tuple[duckdb.DuckDBPyConnection, str]:
         seed=42,
         blocks=[
             VotingBlockConfig(
-                block_id="biased", label="Biased",
-                voter_count=5, votes_per_voter=10,
+                block_id="biased",
+                label="Biased",
+                voter_count=5,
+                votes_per_voter=10,
                 preference_rules=PreferenceRule(all_of=["earth"]),
-                preference_weight=2.0, randomness_weight=0.3,
+                preference_weight=2.0,
+                randomness_weight=0.3,
             ),
             VotingBlockConfig(
-                block_id="neutral", label="Neutral",
-                voter_count=5, votes_per_voter=10,
+                block_id="neutral",
+                label="Neutral",
+                voter_count=5,
+                votes_per_voter=10,
                 preference_rules=PreferenceRule(),
-                preference_weight=0.0, randomness_weight=1.0,
+                preference_weight=0.0,
+                randomness_weight=1.0,
             ),
         ],
     )
@@ -110,9 +116,7 @@ class TestExportAll:
         conn, scenario_id = populated_db
         export_all_static_json(conn, scenario_id, output_dir=tmp_path)
 
-        data = json.loads(
-            (tmp_path / "voting-block-attribute-lift.json").read_text()
-        )
+        data = json.loads((tmp_path / "voting-block-attribute-lift.json").read_text())
         assert isinstance(data, list)
         if data:
             assert "block_id" in data[0]
@@ -133,8 +137,6 @@ class TestExportAll:
         conn, scenario_id = populated_db
         export_all_static_json(conn, scenario_id, output_dir=tmp_path)
 
-        data = json.loads(
-            (tmp_path / "voting-block-calendar-impact.json").read_text()
-        )
+        data = json.loads((tmp_path / "voting-block-calendar-impact.json").read_text())
         assert data["scenario_id"] == "export_test"
         assert "changed_month_count" in data

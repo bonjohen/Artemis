@@ -76,9 +76,7 @@ class VotingScenarioConfig:
                 for b in self.blocks
             ],
         }
-        return hashlib.sha256(
-            json.dumps(data, sort_keys=True).encode()
-        ).hexdigest()[:16]
+        return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
 
 
 def load_voting_config(config_path: Path) -> VotingScenarioConfig:
@@ -151,26 +149,18 @@ def validate_voting_config(
         # Validate attribute references in rules
         for code in block.preference_rules.all_of:
             if code not in all_codes:
-                errors.append(
-                    f"Block {block.block_id!r}: unknown attribute {code!r} in all_of"
-                )
+                errors.append(f"Block {block.block_id!r}: unknown attribute {code!r} in all_of")
         for code in block.preference_rules.any_of:
             if code not in all_codes:
-                errors.append(
-                    f"Block {block.block_id!r}: unknown attribute {code!r} in any_of"
-                )
+                errors.append(f"Block {block.block_id!r}: unknown attribute {code!r} in any_of")
         for code in block.preference_rules.none_of:
             if code not in all_codes:
-                errors.append(
-                    f"Block {block.block_id!r}: unknown attribute {code!r} in none_of"
-                )
+                errors.append(f"Block {block.block_id!r}: unknown attribute {code!r} in none_of")
 
         # Check for contradictions (same code in all_of and none_of)
         overlap = set(block.preference_rules.all_of) & set(block.preference_rules.none_of)
         if overlap:
-            errors.append(
-                f"Block {block.block_id!r}: attributes {overlap} in both all_of and none_of"
-            )
+            errors.append(f"Block {block.block_id!r}: attributes {overlap} in both all_of and none_of")
 
     return errors
 
@@ -268,9 +258,7 @@ def dry_run(
             warnings.append("Failed to count matching images (attributes may not be loaded)")
 
         if matching < block.votes_per_voter:
-            warnings.append(
-                f"Low image count ({matching}); consider lowering preference strength or adding fallback"
-            )
+            warnings.append(f"Low image count ({matching}); consider lowering preference strength or adding fallback")
 
         block_results.append(
             BlockDryRunResult(
@@ -309,8 +297,7 @@ def save_scenario_to_db(
             seed = EXCLUDED.seed,
             config_hash = EXCLUDED.config_hash
         """,
-        [config.scenario_id, config.scenario_name, config.description,
-         config.seed, config.config_hash],
+        [config.scenario_id, config.scenario_name, config.description, config.seed, config.config_hash],
     )
 
     # Delete existing blocks and rules for this scenario
@@ -325,10 +312,16 @@ def save_scenario_to_db(
                  preference_weight, randomness_weight, description)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            [block.block_id, config.scenario_id, block.label,
-             block.voter_count, block.votes_per_voter,
-             block.preference_weight, block.randomness_weight,
-             block.description],
+            [
+                block.block_id,
+                config.scenario_id,
+                block.label,
+                block.voter_count,
+                block.votes_per_voter,
+                block.preference_weight,
+                block.randomness_weight,
+                block.description,
+            ],
         )
 
         # Insert rules
@@ -347,6 +340,4 @@ def save_scenario_to_db(
                     [block.block_id, config.scenario_id, rule_type, code],
                 )
 
-    logger.info(
-        f"Saved scenario {config.scenario_id!r} with {len(config.blocks)} blocks"
-    )
+    logger.info(f"Saved scenario {config.scenario_id!r} with {len(config.blocks)} blocks")

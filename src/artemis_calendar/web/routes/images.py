@@ -111,16 +111,16 @@ def timeline_segments(
                 for r in sorted_rows[:8]
             ]
 
-            segments.append({
-                "start_frame": seg_start,
-                "end_frame": seg_end,
-                "label": f"E-{seg_start}–{seg_end - 1}",
-                "image_count": len(seg_rows),
-                "top_attributes": [
-                    {"code": r[0], "count": int(r[1])} for r in attr_rows
-                ],
-                "thumbnails": thumbs,
-            })
+            segments.append(
+                {
+                    "start_frame": seg_start,
+                    "end_frame": seg_end,
+                    "label": f"E-{seg_start}–{seg_end - 1}",
+                    "image_count": len(seg_rows),
+                    "top_attributes": [{"code": r[0], "count": int(r[1])} for r in attr_rows],
+                    "thumbnails": thumbs,
+                }
+            )
 
         seg_start = seg_end
 

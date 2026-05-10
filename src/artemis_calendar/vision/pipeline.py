@@ -30,10 +30,7 @@ def _should_flag_for_review(
     reasons = []
 
     # Low overall confidence (few attributes above tentative)
-    above_tentative = sum(
-        1 for v in confidences.values()
-        if v >= vocab.thresholds.tentative
-    )
+    above_tentative = sum(1 for v in confidences.values() if v >= vocab.thresholds.tentative)
     if above_tentative < 2:
         reasons.append("low_overall_confidence")
 
@@ -163,17 +160,19 @@ def run_vision_tagging(
         if review_flag:
             review_flagged += 1
 
-        output_records.append({
-            "image_sk": image_sk,
-            "source_image_id": source_image_id,
-            "attributes": confidences,
-            "accepted_labels": accepted_labels,
-            "derived_labels": derived_labels,
-            "vision_model": tagger.model_name,
-            "model_version": tagger.model_version,
-            "review_flag": review_flag,
-            "review_reasons": review_reasons,
-        })
+        output_records.append(
+            {
+                "image_sk": image_sk,
+                "source_image_id": source_image_id,
+                "attributes": confidences,
+                "accepted_labels": accepted_labels,
+                "derived_labels": derived_labels,
+                "vision_model": tagger.model_name,
+                "model_version": tagger.model_version,
+                "review_flag": review_flag,
+                "review_reasons": review_reasons,
+            }
+        )
 
     # Write output JSON
     output_path = odir / "image_attributes.json"
@@ -181,7 +180,8 @@ def run_vision_tagging(
         json.dump(output_records, f, indent=2)
 
     update_run_status(
-        conn, run_id,
+        conn,
+        run_id,
         row_count_raw=len(image_infos),
         row_count_loaded=total_attrs,
         load_status="complete",

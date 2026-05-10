@@ -109,9 +109,7 @@ class VisionTagger:
             )
             logger.info(f"Model loaded: {self.model_version}")
         except ImportError as e:
-            raise RuntimeError(
-                "Qwen2.5-VL requires: pip install transformers torch qwen-vl-utils"
-            ) from e
+            raise RuntimeError("Qwen2.5-VL requires: pip install transformers torch qwen-vl-utils") from e
         except Exception as e:
             raise RuntimeError(f"Failed to load {self.model_version}: {e}") from e
 
@@ -131,9 +129,7 @@ class VisionTagger:
             }
         ]
 
-        text_input = self._processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
+        text_input = self._processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         image_inputs, video_inputs = process_vision_info(messages)
         inputs = self._processor(
             text=[text_input],
@@ -149,14 +145,12 @@ class VisionTagger:
             output_ids = self._model.generate(**inputs, max_new_tokens=512)
 
         # Decode only the new tokens
-        generated = output_ids[0][inputs.input_ids.shape[1]:]
+        generated = output_ids[0][inputs.input_ids.shape[1] :]
         text = self._processor.decode(generated, skip_special_tokens=True)
 
         return _parse_model_output(text, self.vocab)
 
-    def tag_batch(
-        self, image_paths: list[Path], progress_callback=None
-    ) -> list[dict[str, float]]:
+    def tag_batch(self, image_paths: list[Path], progress_callback=None) -> list[dict[str, float]]:
         """Tag a batch of images sequentially.
 
         Returns list of confidence dicts in same order as input.
@@ -195,9 +189,7 @@ class MockTagger:
                 result[attr.code] = round(byte_val, 4)
         return result
 
-    def tag_batch(
-        self, image_paths: list[Path], progress_callback=None
-    ) -> list[dict[str, float]]:
+    def tag_batch(self, image_paths: list[Path], progress_callback=None) -> list[dict[str, float]]:
         results = []
         for i, path in enumerate(image_paths):
             results.append(self.tag_image(path))

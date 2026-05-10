@@ -152,14 +152,20 @@ class TestVisionPipeline:
 
         # First run
         run_vision_tagging(
-            db_with_images, tagger=tagger, vocab=vocab,
-            thumb_dir=tmp_path, output_dir=tmp_path / "out1",
+            db_with_images,
+            tagger=tagger,
+            vocab=vocab,
+            thumb_dir=tmp_path,
+            output_dir=tmp_path / "out1",
         )
 
         # Second run with changed_only — should skip all
         summary = run_vision_tagging(
-            db_with_images, tagger=tagger, vocab=vocab,
-            thumb_dir=tmp_path, output_dir=tmp_path / "out2",
+            db_with_images,
+            tagger=tagger,
+            vocab=vocab,
+            thumb_dir=tmp_path,
+            output_dir=tmp_path / "out2",
             changed_only=True,
         )
         assert summary["images_processed"] == 0
@@ -167,8 +173,11 @@ class TestVisionPipeline:
     def test_pipeline_with_limit(self, db_with_images, tmp_path, vocab):
         tagger = MockTagger(vocab)
         summary = run_vision_tagging(
-            db_with_images, tagger=tagger, vocab=vocab,
-            thumb_dir=tmp_path, output_dir=tmp_path / "out",
+            db_with_images,
+            tagger=tagger,
+            vocab=vocab,
+            thumb_dir=tmp_path,
+            output_dir=tmp_path / "out",
             limit=2,
         )
         assert summary["images_processed"] == 2
@@ -176,13 +185,14 @@ class TestVisionPipeline:
     def test_db_records_written(self, db_with_images, tmp_path, vocab):
         tagger = MockTagger(vocab)
         run_vision_tagging(
-            db_with_images, tagger=tagger, vocab=vocab,
-            thumb_dir=tmp_path, output_dir=tmp_path / "out",
+            db_with_images,
+            tagger=tagger,
+            vocab=vocab,
+            thumb_dir=tmp_path,
+            output_dir=tmp_path / "out",
         )
 
-        count = db_with_images.execute(
-            "SELECT count(*) FROM feature_image_attribute"
-        ).fetchone()[0]
+        count = db_with_images.execute("SELECT count(*) FROM feature_image_attribute").fetchone()[0]
         assert count > 0
 
         # Check that accepted flags are set correctly

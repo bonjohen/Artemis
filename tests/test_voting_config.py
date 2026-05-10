@@ -28,7 +28,8 @@ def real_config() -> VotingScenarioConfig:
 @pytest.fixture
 def bad_config(tmp_path: Path) -> Path:
     config = tmp_path / "bad.yaml"
-    config.write_text(textwrap.dedent("""\
+    config.write_text(
+        textwrap.dedent("""\
         scenario_id: bad_test
         scenario_name: Bad Test
         description: Invalid config
@@ -53,7 +54,8 @@ def bad_config(tmp_path: Path) -> Path:
             preference_rules:
               all_of: [earth]
               none_of: [earth]
-    """))
+    """)
+    )
     return config
 
 
@@ -148,9 +150,7 @@ class TestValidation:
 
 
 class TestDryRun:
-    def test_dry_run_counts(
-        self, real_config: VotingScenarioConfig, db_with_attrs: duckdb.DuckDBPyConnection
-    ) -> None:
+    def test_dry_run_counts(self, real_config: VotingScenarioConfig, db_with_attrs: duckdb.DuckDBPyConnection) -> None:
         result = dry_run(real_config, db_with_attrs)
         assert isinstance(result, DryRunResult)
         assert result.scenario_id == "earth_moon_bias_test"
@@ -181,9 +181,7 @@ class TestDryRun:
 
 
 class TestSaveToDB:
-    def test_save_and_read(
-        self, real_config: VotingScenarioConfig, db: duckdb.DuckDBPyConnection
-    ) -> None:
+    def test_save_and_read(self, real_config: VotingScenarioConfig, db: duckdb.DuckDBPyConnection) -> None:
         save_scenario_to_db(db, real_config)
 
         # Check scenario
@@ -207,9 +205,7 @@ class TestSaveToDB:
         ).fetchone()[0]
         assert rules > 0
 
-    def test_save_idempotent(
-        self, real_config: VotingScenarioConfig, db: duckdb.DuckDBPyConnection
-    ) -> None:
+    def test_save_idempotent(self, real_config: VotingScenarioConfig, db: duckdb.DuckDBPyConnection) -> None:
         save_scenario_to_db(db, real_config)
         save_scenario_to_db(db, real_config)  # Should not fail or duplicate
 

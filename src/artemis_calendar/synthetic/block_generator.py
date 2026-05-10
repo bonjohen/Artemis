@@ -97,11 +97,7 @@ def compute_block_utility(
     match_score = compute_attribute_match(image_attrs, block)
     noise = rng.gauss(0, 0.3)
 
-    return (
-        base_appeal
-        + block.preference_weight * match_score
-        + block.randomness_weight * noise
-    )
+    return base_appeal + block.preference_weight * match_score + block.randomness_weight * noise
 
 
 def generate_block_votes(
@@ -150,10 +146,7 @@ def generate_block_votes(
     if not all_image_sks:
         # Fallback: use all vote-pool images without attributes
         all_image_sks = [
-            int(r[0])
-            for r in conn.execute(
-                "SELECT image_sk FROM dim_image WHERE vote_pool_flag = true"
-            ).fetchall()
+            int(r[0]) for r in conn.execute("SELECT image_sk FROM dim_image WHERE vote_pool_flag = true").fetchall()
         ]
         image_attrs = {sk: set() for sk in all_image_sks}
 
@@ -194,17 +187,14 @@ def generate_block_votes(
                    VALUES (?, true, ?, ?)""",
                 [voter_hash, synthetic_run_id, f"block_{block.block_id}"],
             )
-            voter_sk = conn.execute(
-                "SELECT currval('seq_voter_sk')"
-            ).fetchone()[0]
+            voter_sk = conn.execute("SELECT currval('seq_voter_sk')").fetchone()[0]
 
             # Record block assignment
             conn.execute(
                 """INSERT INTO synthetic_voter_block_assignment
                    (voter_sk, synthetic_run_id, scenario_id, block_id, synthetic_profile_code)
                    VALUES (?, ?, ?, ?, ?)""",
-                [voter_sk, synthetic_run_id, config.scenario_id,
-                 block.block_id, f"block_{block.block_id}"],
+                [voter_sk, synthetic_run_id, config.scenario_id, block.block_id, f"block_{block.block_id}"],
             )
 
             block_voters.append(voter_sk)
@@ -225,9 +215,7 @@ def generate_block_votes(
                        VALUES (?, 'batch_pick_5_of_50', true, ?)""",
                     [voter_sk, synthetic_run_id],
                 )
-                session_sk = conn.execute(
-                    "SELECT currval('seq_vote_session_sk')"
-                ).fetchone()[0]
+                session_sk = conn.execute("SELECT currval('seq_vote_session_sk')").fetchone()[0]
 
                 # Create ballot
                 conn.execute(
@@ -235,12 +223,9 @@ def generate_block_votes(
                        (vote_session_sk, voter_sk, shown_count, selected_count,
                         synthetic_flag, synthetic_run_id)
                        VALUES (?, ?, ?, ?, true, ?)""",
-                    [session_sk, voter_sk, BATCH_SHOW_COUNT,
-                     BATCH_SELECT_COUNT, synthetic_run_id],
+                    [session_sk, voter_sk, BATCH_SHOW_COUNT, BATCH_SELECT_COUNT, synthetic_run_id],
                 )
-                ballot_sk = conn.execute(
-                    "SELECT currval('seq_batch_ballot_sk')"
-                ).fetchone()[0]
+                ballot_sk = conn.execute("SELECT currval('seq_batch_ballot_sk')").fetchone()[0]
 
                 # Sample images to show
                 shown = rng.sample(
@@ -252,9 +237,7 @@ def generate_block_votes(
                 scored = []
                 for pos, img_sk in enumerate(shown):
                     attrs = image_attrs.get(img_sk, set())
-                    u = compute_block_utility(
-                        attrs, block, base_appeals[img_sk], rng
-                    )
+                    u = compute_block_utility(attrs, block, base_appeals[img_sk], rng)
                     scored.append((img_sk, pos, u))
 
                 scored.sort(key=lambda x: x[2], reverse=True)
@@ -272,8 +255,7 @@ def generate_block_votes(
                             display_position, was_selected,
                             synthetic_flag, synthetic_run_id)
                            VALUES (?, ?, ?, ?, ?, true, ?)""",
-                        [ballot_sk, voter_sk, img_sk, pos,
-                         img_sk in selected_sks, synthetic_run_id],
+                        [ballot_sk, voter_sk, img_sk, pos, img_sk in selected_sks, synthetic_run_id],
                     )
                     block_ballot_images += 1
 
@@ -283,21 +265,18 @@ def generate_block_votes(
         total_ballot_images += block_ballot_images
 
         # Build block summary
-        top_selected = sorted(
-            selected_image_counts.items(), key=lambda x: -x[1]
-        )[:10]
+        top_selected = sorted(selected_image_counts.items(), key=lambda x: -x[1])[:10]
 
-        block_summaries.append({
-            "block_id": block.block_id,
-            "label": block.label,
-            "voter_count": len(block_voters),
-            "ballot_count": block_ballot_count,
-            "ballot_image_count": block_ballot_images,
-            "top_selected_images": [
-                {"image_sk": sk, "selection_count": c}
-                for sk, c in top_selected
-            ],
-        })
+        block_summaries.append(
+            {
+                "block_id": block.block_id,
+                "label": block.label,
+                "voter_count": len(block_voters),
+                "ballot_count": block_ballot_count,
+                "ballot_image_count": block_ballot_images,
+                "top_selected_images": [{"image_sk": sk, "selection_count": c} for sk, c in top_selected],
+            }
+        )
 
         logger.info(
             f"Block {block.block_id!r}: {len(block_voters)} voters, "
@@ -322,7 +301,8 @@ def generate_block_votes(
         json.dump(summary, f, indent=2)
 
     update_run_status(
-        conn, run_id,
+        conn,
+        run_id,
         row_count_raw=total_ballots,
         row_count_loaded=total_ballot_images,
         load_status="complete",

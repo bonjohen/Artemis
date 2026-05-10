@@ -134,9 +134,7 @@ class TestLabelClusters:
 class TestExportClusterReview:
     def test_json_export(self, db, tmp_path):
         label_clusters(db, cluster_run_id="test-run-001")
-        result = export_cluster_review(
-            db, cluster_run_id="test-run-001", output_dir=tmp_path
-        )
+        result = export_cluster_review(db, cluster_run_id="test-run-001", output_dir=tmp_path)
         assert result["cluster_count"] == 2
 
         json_path = Path(result["json_path"])
@@ -151,9 +149,7 @@ class TestExportClusterReview:
 
     def test_md_export(self, db, tmp_path):
         label_clusters(db, cluster_run_id="test-run-001")
-        result = export_cluster_review(
-            db, cluster_run_id="test-run-001", output_dir=tmp_path
-        )
+        result = export_cluster_review(db, cluster_run_id="test-run-001", output_dir=tmp_path)
         md_path = Path(result["md_path"])
         assert md_path.exists()
         content = md_path.read_text()

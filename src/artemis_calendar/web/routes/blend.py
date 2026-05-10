@@ -78,6 +78,7 @@ def _load_simulation_images(
 
     return image_attrs, sid_map
 
+
 # ---------------------------------------------------------------------------
 # Preset block definitions
 # ---------------------------------------------------------------------------
@@ -226,9 +227,7 @@ class BlockInput(BaseModel):
     votes_per_voter: int = Field(default=10, ge=1, le=50)
     preference_weight: float = Field(default=3.0, ge=0.0, le=10.0)
     randomness_weight: float = Field(default=0.5, ge=0.0, le=5.0)
-    preference_rules: dict = Field(
-        default_factory=lambda: {"all_of": [], "any_of": [], "none_of": []}
-    )
+    preference_rules: dict = Field(default_factory=lambda: {"all_of": [], "any_of": [], "none_of": []})
 
 
 class BlendRequest(BaseModel):
@@ -369,15 +368,11 @@ def simulate(req: BlendRequest, conn: duckdb.DuckDBPyConnection = Depends(get_db
 
         for voter_i in range(block_input.voter_count):
             for vote_i in range(block_input.votes_per_voter):
-                shown = rng.sample(
-                    all_image_sks, min(BATCH_SHOW_COUNT, len(all_image_sks))
-                )
+                shown = rng.sample(all_image_sks, min(BATCH_SHOW_COUNT, len(all_image_sks)))
                 scored = []
                 for img_sk in shown:
                     attrs = image_attrs.get(img_sk, set())
-                    u = compute_block_utility(
-                        attrs, block_config, base_appeals[img_sk], rng
-                    )
+                    u = compute_block_utility(attrs, block_config, base_appeals[img_sk], rng)
                     scored.append((img_sk, u))
 
                 scored.sort(key=lambda x: x[1], reverse=True)
@@ -387,8 +382,7 @@ def simulate(req: BlendRequest, conn: duckdb.DuckDBPyConnection = Depends(get_db
                 if voter_i in sample_voter_indices and vote_i == 0:
                     # Build the preference rules' attribute set for matching display
                     rule_attrs = set(
-                        block_input.preference_rules.get("all_of", [])
-                        + block_input.preference_rules.get("any_of", [])
+                        block_input.preference_rules.get("all_of", []) + block_input.preference_rules.get("any_of", [])
                     )
 
                     ballot_images = []
@@ -430,11 +424,7 @@ def simulate(req: BlendRequest, conn: duckdb.DuckDBPyConnection = Depends(get_db
         total_ballots += ballot_count
 
         # Compute selection rates and pick top-13
-        rates = {
-            sk: selected_counts[sk] / max(shown_counts[sk], 1)
-            for sk in all_image_sks
-            if shown_counts[sk] > 0
-        }
+        rates = {sk: selected_counts[sk] / max(shown_counts[sk], 1) for sk in all_image_sks if shown_counts[sk] > 0}
         top_sks = sorted(rates, key=rates.get, reverse=True)[:13]
 
         block_results.append(
@@ -459,9 +449,7 @@ def simulate(req: BlendRequest, conn: duckdb.DuckDBPyConnection = Depends(get_db
 
     # Blended top-13
     blended_rates = {
-        sk: blended_selected[sk] / max(blended_shown[sk], 1)
-        for sk in all_image_sks
-        if blended_shown[sk] > 0
+        sk: blended_selected[sk] / max(blended_shown[sk], 1) for sk in all_image_sks if blended_shown[sk] > 0
     }
     blended_top_sks = sorted(blended_rates, key=blended_rates.get, reverse=True)[:13]
     blended_top_set = set(blended_top_sks)

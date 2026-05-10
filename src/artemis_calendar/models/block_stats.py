@@ -77,19 +77,21 @@ def compute_attribute_lift(
         ci_low = max(0, center - spread)
         ci_high = min(1, center + spread)
 
-        results.append({
-            "scenario_id": scenario_id,
-            "block_id": block_id,
-            "attribute_code": attr_code,
-            "block_selection_rate": round(block_rate, 6),
-            "global_selection_rate": round(global_rate, 6),
-            "lift": round(lift, 4),
-            "odds_ratio": round(odds_ratio, 4),
-            "selected_count": int(block_sel),
-            "exposed_count": int(block_exp),
-            "confidence_interval_low": round(ci_low, 6),
-            "confidence_interval_high": round(ci_high, 6),
-        })
+        results.append(
+            {
+                "scenario_id": scenario_id,
+                "block_id": block_id,
+                "attribute_code": attr_code,
+                "block_selection_rate": round(block_rate, 6),
+                "global_selection_rate": round(global_rate, 6),
+                "lift": round(lift, 4),
+                "odds_ratio": round(odds_ratio, 4),
+                "selected_count": int(block_sel),
+                "exposed_count": int(block_exp),
+                "confidence_interval_low": round(ci_low, 6),
+                "confidence_interval_high": round(ci_high, 6),
+            }
+        )
 
     return results
 
@@ -142,18 +144,20 @@ def compute_cluster_lift(
         expected = (global_sel / max(total_global_selected, 1)) * block_total_sel if total_global_selected else 0
         chi_sq = ((block_sel - expected) ** 2) / max(expected, 1e-10)
 
-        results.append({
-            "scenario_id": scenario_id,
-            "block_id": block_id,
-            "cluster_id": int(cluster_id),
-            "cluster_label": global_label or cluster_label,
-            "block_selection_rate": round(block_rate, 6),
-            "global_selection_rate": round(global_rate, 6),
-            "lift": round(lift, 4),
-            "chi_square_contribution": round(chi_sq, 4),
-            "selected_count": int(block_sel),
-            "expected_count": round(expected, 2),
-        })
+        results.append(
+            {
+                "scenario_id": scenario_id,
+                "block_id": block_id,
+                "cluster_id": int(cluster_id),
+                "cluster_label": global_label or cluster_label,
+                "block_selection_rate": round(block_rate, 6),
+                "global_selection_rate": round(global_rate, 6),
+                "lift": round(lift, 4),
+                "chi_square_contribution": round(chi_sq, 4),
+                "selected_count": int(block_sel),
+                "expected_count": round(expected, 2),
+            }
+        )
 
     return results
 
@@ -195,7 +199,7 @@ def compute_block_similarity(
     results = []
 
     for i, block_a in enumerate(block_ids):
-        for block_b in block_ids[i + 1:]:
+        for block_b in block_ids[i + 1 :]:
             set_a = block_top_sets.get(block_a, set())
             set_b = block_top_sets.get(block_b, set())
 
@@ -246,16 +250,18 @@ def compute_block_similarity(
                 if row:
                     cluster_b.add(row[0])
 
-            results.append({
-                "scenario_id": scenario_id,
-                "block_a": block_a,
-                "block_b": block_b,
-                "jaccard_top_n": round(jaccard, 4),
-                "cosine_similarity": round(cosine, 4),
-                "score_correlation": round(score_corr, 4) if score_corr is not None else None,
-                "top_image_overlap_count": intersection,
-                "top_cluster_overlap_count": len(cluster_a & cluster_b),
-            })
+            results.append(
+                {
+                    "scenario_id": scenario_id,
+                    "block_a": block_a,
+                    "block_b": block_b,
+                    "jaccard_top_n": round(jaccard, 4),
+                    "cosine_similarity": round(cosine, 4),
+                    "score_correlation": round(score_corr, 4) if score_corr is not None else None,
+                    "top_image_overlap_count": intersection,
+                    "top_cluster_overlap_count": len(cluster_a & cluster_b),
+                }
+            )
 
     return results
 
@@ -325,18 +331,20 @@ def compute_score_impact(
         for sk, block_rate, global_rate, delta in deltas[:top_n]:
             r_with = block_rank.get(sk, len(block_rank))
             r_without = global_rank.get(sk, len(global_rank))
-            results.append({
-                "scenario_id": scenario_id,
-                "block_id": block_id,
-                "image_sk": sk,
-                "score_with_block": round(block_rate, 6),
-                "score_without_block": round(global_rate, 6),
-                "score_delta": round(delta, 6),
-                "rank_with_block": r_with,
-                "rank_without_block": r_without,
-                "rank_delta": r_without - r_with,
-                "block_influence_score": round(abs(delta), 6),
-            })
+            results.append(
+                {
+                    "scenario_id": scenario_id,
+                    "block_id": block_id,
+                    "image_sk": sk,
+                    "score_with_block": round(block_rate, 6),
+                    "score_without_block": round(global_rate, 6),
+                    "score_delta": round(delta, 6),
+                    "rank_with_block": r_with,
+                    "rank_without_block": r_without,
+                    "rank_delta": r_without - r_with,
+                    "block_influence_score": round(abs(delta), 6),
+                }
+            )
 
     return results
 
@@ -419,10 +427,7 @@ def compute_detection_status(
             continue
 
         # Find lifts for target attributes
-        block_lifts = [
-            r for r in attribute_lift
-            if r["block_id"] == block_id and r["attribute_code"] in target_attrs
-        ]
+        block_lifts = [r for r in attribute_lift if r["block_id"] == block_id and r["attribute_code"] in target_attrs]
 
         if not block_lifts:
             results[block_id] = {
@@ -481,11 +486,19 @@ def write_block_stats(
                 selected_count, exposed_count,
                 confidence_interval_low, confidence_interval_high)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [r["scenario_id"], r["block_id"], r["attribute_code"],
-             r["block_selection_rate"], r["global_selection_rate"],
-             r["lift"], r["odds_ratio"],
-             r["selected_count"], r["exposed_count"],
-             r["confidence_interval_low"], r["confidence_interval_high"]],
+            [
+                r["scenario_id"],
+                r["block_id"],
+                r["attribute_code"],
+                r["block_selection_rate"],
+                r["global_selection_rate"],
+                r["lift"],
+                r["odds_ratio"],
+                r["selected_count"],
+                r["exposed_count"],
+                r["confidence_interval_low"],
+                r["confidence_interval_high"],
+            ],
         )
     counts["attribute_lift"] = len(attribute_lift)
 
@@ -501,10 +514,18 @@ def write_block_stats(
                 block_selection_rate, global_selection_rate, lift,
                 chi_square_contribution, selected_count, expected_count)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [r["scenario_id"], r["block_id"], r["cluster_id"], r["cluster_label"],
-             r["block_selection_rate"], r["global_selection_rate"],
-             r["lift"], r["chi_square_contribution"],
-             r["selected_count"], r["expected_count"]],
+            [
+                r["scenario_id"],
+                r["block_id"],
+                r["cluster_id"],
+                r["cluster_label"],
+                r["block_selection_rate"],
+                r["global_selection_rate"],
+                r["lift"],
+                r["chi_square_contribution"],
+                r["selected_count"],
+                r["expected_count"],
+            ],
         )
     counts["cluster_lift"] = len(cluster_lift)
 
@@ -520,9 +541,16 @@ def write_block_stats(
                 jaccard_top_n, cosine_similarity, score_correlation,
                 top_image_overlap_count, top_cluster_overlap_count)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            [r["scenario_id"], r["block_a"], r["block_b"],
-             r["jaccard_top_n"], r["cosine_similarity"], r["score_correlation"],
-             r["top_image_overlap_count"], r["top_cluster_overlap_count"]],
+            [
+                r["scenario_id"],
+                r["block_a"],
+                r["block_b"],
+                r["jaccard_top_n"],
+                r["cosine_similarity"],
+                r["score_correlation"],
+                r["top_image_overlap_count"],
+                r["top_cluster_overlap_count"],
+            ],
         )
     counts["similarity"] = len(similarity)
 
@@ -539,10 +567,18 @@ def write_block_stats(
                 rank_with_block, rank_without_block, rank_delta,
                 block_influence_score)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            [r["scenario_id"], r["block_id"], r["image_sk"],
-             r["score_with_block"], r["score_without_block"], r["score_delta"],
-             r["rank_with_block"], r["rank_without_block"], r["rank_delta"],
-             r["block_influence_score"]],
+            [
+                r["scenario_id"],
+                r["block_id"],
+                r["image_sk"],
+                r["score_with_block"],
+                r["score_without_block"],
+                r["score_delta"],
+                r["rank_with_block"],
+                r["rank_without_block"],
+                r["rank_delta"],
+                r["block_influence_score"],
+            ],
         )
     counts["score_impact"] = len(score_impact)
 
@@ -559,16 +595,18 @@ def write_block_stats(
             diversity_score_delta, attribute_distribution_delta_json,
             cluster_distribution_delta_json)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        [calendar_impact["scenario_id"],
-         calendar_impact["selected_images_with_json"],
-         calendar_impact["selected_images_without_json"],
-         calendar_impact["cover_image_with"],
-         calendar_impact["cover_image_without"],
-         calendar_impact["changed_month_count"],
-         calendar_impact["changed_cover_flag"],
-         calendar_impact["diversity_score_delta"],
-         calendar_impact["attribute_distribution_delta_json"],
-         calendar_impact["cluster_distribution_delta_json"]],
+        [
+            calendar_impact["scenario_id"],
+            calendar_impact["selected_images_with_json"],
+            calendar_impact["selected_images_without_json"],
+            calendar_impact["cover_image_with"],
+            calendar_impact["cover_image_without"],
+            calendar_impact["changed_month_count"],
+            calendar_impact["changed_cover_flag"],
+            calendar_impact["diversity_score_delta"],
+            calendar_impact["attribute_distribution_delta_json"],
+            calendar_impact["cluster_distribution_delta_json"],
+        ],
     )
     counts["calendar_impact"] = 1
 
@@ -587,8 +625,7 @@ def write_block_stats(
             """INSERT INTO mart_voting_block_summary
                (scenario_id, block_id, voter_count, vote_count, detection_status)
                VALUES (?, ?, ?, ?, ?)""",
-            [scenario_id, block_id, voter_count,
-             voter_count * votes_per_voter, det.get("status")],
+            [scenario_id, block_id, voter_count, voter_count * votes_per_voter, det.get("status")],
         )
     counts["block_summary"] = len(blocks)
 
@@ -631,7 +668,8 @@ def run_block_analysis(
     detection = compute_detection_status(attr_lift, block_rules)
 
     counts = write_block_stats(
-        conn, scenario_id,
+        conn,
+        scenario_id,
         attribute_lift=attr_lift,
         cluster_lift=clust_lift,
         similarity=sim,

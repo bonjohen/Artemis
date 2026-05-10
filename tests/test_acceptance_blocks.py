@@ -112,32 +112,38 @@ def full_pipeline_db(db) -> tuple[duckdb.DuckDBPyConnection, str]:
             VotingBlockConfig(
                 block_id="earth_moon_block",
                 label="Earth and Moon Preference Block",
-                voter_count=5, votes_per_voter=10,
+                voter_count=5,
+                votes_per_voter=10,
                 preference_rules=PreferenceRule(all_of=["earth", "moon"]),
-                preference_weight=2.5, randomness_weight=0.35,
+                preference_weight=2.5,
+                randomness_weight=0.35,
             ),
             VotingBlockConfig(
                 block_id="earth_only_block",
                 label="Earth-Only Preference Block",
-                voter_count=4, votes_per_voter=10,
-                preference_rules=PreferenceRule(
-                    all_of=["earth"], none_of=["moon", "sun"]
-                ),
-                preference_weight=2.2, randomness_weight=0.40,
+                voter_count=4,
+                votes_per_voter=10,
+                preference_rules=PreferenceRule(all_of=["earth"], none_of=["moon", "sun"]),
+                preference_weight=2.2,
+                randomness_weight=0.40,
             ),
             VotingBlockConfig(
                 block_id="moon_sun_block",
                 label="Moon and Sun Preference Block",
-                voter_count=6, votes_per_voter=10,
+                voter_count=6,
+                votes_per_voter=10,
                 preference_rules=PreferenceRule(all_of=["moon", "sun"]),
-                preference_weight=2.6, randomness_weight=0.30,
+                preference_weight=2.6,
+                randomness_weight=0.30,
             ),
             VotingBlockConfig(
                 block_id="neutral_control",
                 label="Neutral Control Voters",
-                voter_count=10, votes_per_voter=10,
+                voter_count=10,
+                votes_per_voter=10,
                 preference_rules=PreferenceRule(),
-                preference_weight=0.0, randomness_weight=1.0,
+                preference_weight=0.0,
+                randomness_weight=1.0,
             ),
         ],
     )
@@ -153,19 +159,13 @@ def full_pipeline_db(db) -> tuple[duckdb.DuckDBPyConnection, str]:
 
 class TestConfigValidation:
     def test_real_config_valid(self):
-        config_path = (
-            Path(__file__).parent.parent
-            / "config" / "voting_blocks" / "earth_moon_bias_test.yaml"
-        )
+        config_path = Path(__file__).parent.parent / "config" / "voting_blocks" / "earth_moon_bias_test.yaml"
         config = load_voting_config(config_path)
         errors = validate_voting_config(config)
         assert errors == []
 
     def test_expected_voter_counts(self):
-        config_path = (
-            Path(__file__).parent.parent
-            / "config" / "voting_blocks" / "earth_moon_bias_test.yaml"
-        )
+        config_path = Path(__file__).parent.parent / "config" / "voting_blocks" / "earth_moon_bias_test.yaml"
         config = load_voting_config(config_path)
         assert config.total_voters == 125  # Full config
         assert config.total_votes == 5000  # Full config
@@ -188,9 +188,7 @@ class TestVoterGeneration:
 
     def test_vote_counts_generated(self, full_pipeline_db):
         conn, scenario_id = full_pipeline_db
-        ballot_count = conn.execute(
-            "SELECT count(*) FROM fact_batch_ballot WHERE synthetic_flag = true"
-        ).fetchone()[0]
+        ballot_count = conn.execute("SELECT count(*) FROM fact_batch_ballot WHERE synthetic_flag = true").fetchone()[0]
         assert ballot_count == 250  # 25 voters * 10 votes each
 
 
@@ -274,9 +272,7 @@ class TestStaticExport:
         conn, scenario_id = full_pipeline_db
         export_all_static_json(conn, scenario_id, output_dir=tmp_path)
 
-        data = json.loads(
-            (tmp_path / "voting-block-summary.json").read_text()
-        )
+        data = json.loads((tmp_path / "voting-block-summary.json").read_text())
         assert data["block_count"] == 4
         assert data["total_voters"] == 25
 
@@ -284,10 +280,7 @@ class TestStaticExport:
 class TestDryRun:
     def test_dry_run_image_counts(self, full_pipeline_db):
         conn, scenario_id = full_pipeline_db
-        config_path = (
-            Path(__file__).parent.parent
-            / "config" / "voting_blocks" / "earth_moon_bias_test.yaml"
-        )
+        config_path = Path(__file__).parent.parent / "config" / "voting_blocks" / "earth_moon_bias_test.yaml"
         config = load_voting_config(config_path)
         result = dry_run(config, conn)
 

@@ -94,9 +94,7 @@ def small_config() -> VotingScenarioConfig:
         seed=42,
         blocks=[
             _make_block("biased", all_of=["earth", "moon"]),
-            _make_block(
-                "neutral", preference_weight=0.0, randomness_weight=1.0
-            ),
+            _make_block("neutral", preference_weight=0.0, randomness_weight=1.0),
         ],
     )
 

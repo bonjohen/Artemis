@@ -561,9 +561,7 @@ def main() -> None:
     vision_tag.add_argument("--limit", type=int, default=None, help="Max images to process")
     vision_tag.add_argument("--changed-only", action="store_true", help="Skip images that already have attributes")
     vision_tag.add_argument("--model", default="qwen2.5-vl-7b", help="Vision model name (default: qwen2.5-vl-7b)")
-    vision_tag.add_argument(
-        "--model-version", default="Qwen/Qwen2.5-VL-7B-Instruct", help="HuggingFace model ID"
-    )
+    vision_tag.add_argument("--model-version", default="Qwen/Qwen2.5-VL-7B-Instruct", help="HuggingFace model ID")
     vision_tag.add_argument("--mock", action="store_true", help="Use mock tagger (for testing without GPU)")
 
     stats_export = sub.add_parser("stats-export-json", help="Export analysis to static JSON for public site")
@@ -582,9 +580,7 @@ def main() -> None:
     votes_validate.add_argument("--config", required=True, help="Path to voting block YAML config")
     votes_validate.add_argument("--dry-run", action="store_true", help="Count matching images per block")
 
-    vision_label = sub.add_parser(
-        "vision-label-clusters", help="Generate labels for clusters from dominant attributes"
-    )
+    vision_label = sub.add_parser("vision-label-clusters", help="Generate labels for clusters from dominant attributes")
     vision_label.add_argument("--run-id", default=None, help="Cluster run ID (default: latest)")
     vision_label.add_argument("--cluster-type", default="visual", help="Cluster type (default: visual)")
     vision_label.add_argument("--export-review", action="store_true", help="Export cluster review JSON and Markdown")

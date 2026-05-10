@@ -111,14 +111,8 @@ class TestAttributeLift:
         assert len(results) > 0
 
         # Biased block should have higher earth lift than neutral block
-        biased_earth = [
-            r for r in results
-            if r["block_id"] == "biased" and r["attribute_code"] == "earth"
-        ]
-        neutral_earth = [
-            r for r in results
-            if r["block_id"] == "neutral" and r["attribute_code"] == "earth"
-        ]
+        biased_earth = [r for r in results if r["block_id"] == "biased" and r["attribute_code"] == "earth"]
+        neutral_earth = [r for r in results if r["block_id"] == "neutral" and r["attribute_code"] == "earth"]
         assert len(biased_earth) == 1
         assert len(neutral_earth) == 1
         assert biased_earth[0]["lift"] >= neutral_earth[0]["lift"]

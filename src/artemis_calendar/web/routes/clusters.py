@@ -281,10 +281,7 @@ def _compute_spotlight(
                     if emb is None:
                         continue
                     # Min distance to any selected image
-                    min_dist = min(
-                        float(np.linalg.norm(emb - s_emb))
-                        for s_emb in selected_embs
-                    )
+                    min_dist = min(float(np.linalg.norm(emb - s_emb)) for s_emb in selected_embs)
                     if min_dist > best_min_dist:
                         best_min_dist = min_dist
                         best_sk = sk

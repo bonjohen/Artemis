@@ -73,12 +73,10 @@ def export_vision_summary(
             }
             for r in attr_counts
         ],
-        "confidence_distribution": [
-            {"classification": r[0], "count": r[1]} for r in conf_dist
+        "confidence_distribution": [{"classification": r[0], "count": r[1]} for r in conf_dist],
+        "total_images_tagged": conn.execute("SELECT count(DISTINCT image_sk) FROM feature_image_attribute").fetchone()[
+            0
         ],
-        "total_images_tagged": conn.execute(
-            "SELECT count(DISTINCT image_sk) FROM feature_image_attribute"
-        ).fetchone()[0],
     }
 
     path = output_dir / "vision-summary.json"
@@ -130,17 +128,17 @@ def export_voting_block_summary(
         for rtype, code in rules:
             rule_summary.append(f"{rtype}: {code}")
 
-        block_cards.append({
-            "block_id": block_id,
-            "label": label,
-            "voter_count": voter_count,
-            "vote_count": vote_count,
-            "rule_summary": rule_summary,
-            "top_attribute_lifts": [
-                {"attribute": r[0], "lift": round(r[1], 2)} for r in top_lift
-            ],
-            "detection_status": detection,
-        })
+        block_cards.append(
+            {
+                "block_id": block_id,
+                "label": label,
+                "voter_count": voter_count,
+                "vote_count": vote_count,
+                "rule_summary": rule_summary,
+                "top_attribute_lifts": [{"attribute": r[0], "lift": round(r[1], 2)} for r in top_lift],
+                "detection_status": detection,
+            }
+        )
 
     data = {
         "scenario_id": scenario_id,
@@ -177,11 +175,16 @@ def export_attribute_lift(
 
     data = [
         {
-            "block_id": r[0], "attribute_code": r[1],
-            "block_selection_rate": r[2], "global_selection_rate": r[3],
-            "lift": r[4], "odds_ratio": r[5],
-            "selected_count": r[6], "exposed_count": r[7],
-            "ci_low": r[8], "ci_high": r[9],
+            "block_id": r[0],
+            "attribute_code": r[1],
+            "block_selection_rate": r[2],
+            "global_selection_rate": r[3],
+            "lift": r[4],
+            "odds_ratio": r[5],
+            "selected_count": r[6],
+            "exposed_count": r[7],
+            "ci_low": r[8],
+            "ci_high": r[9],
         }
         for r in rows
     ]
@@ -211,10 +214,15 @@ def export_cluster_lift(
 
     data = [
         {
-            "block_id": r[0], "cluster_id": r[1], "cluster_label": r[2],
-            "block_selection_rate": r[3], "global_selection_rate": r[4],
-            "lift": r[5], "chi_square_contribution": r[6],
-            "selected_count": r[7], "expected_count": r[8],
+            "block_id": r[0],
+            "cluster_id": r[1],
+            "cluster_label": r[2],
+            "block_selection_rate": r[3],
+            "global_selection_rate": r[4],
+            "lift": r[5],
+            "chi_square_contribution": r[6],
+            "selected_count": r[7],
+            "expected_count": r[8],
         }
         for r in rows
     ]
@@ -244,10 +252,14 @@ def export_score_impact(
 
     data = [
         {
-            "block_id": r[0], "image_sk": r[1],
-            "score_with_block": r[2], "score_without_block": r[3],
-            "score_delta": r[4], "rank_with_block": r[5],
-            "rank_without_block": r[6], "rank_delta": r[7],
+            "block_id": r[0],
+            "image_sk": r[1],
+            "score_with_block": r[2],
+            "score_without_block": r[3],
+            "score_delta": r[4],
+            "rank_with_block": r[5],
+            "rank_without_block": r[6],
+            "rank_delta": r[7],
             "influence_score": r[8],
         }
         for r in rows
