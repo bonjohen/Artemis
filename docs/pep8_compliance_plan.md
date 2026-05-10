@@ -44,7 +44,7 @@ Open  -->  Started  -->  Completed
 | 1.5 | Completed | 2026-05-10 12:27 AM (PST) | 2026-05-10 12:28 AM (PST) | Verify: `ruff check src/ tests/` reports 0 violations |
 | 1.6 | Completed | 2026-05-10 12:28 AM (PST) | 2026-05-10 12:28 AM (PST) | Verify: `ruff format --check src/ tests/` reports 0 files would be reformatted |
 | 1.7 | Completed | 2026-05-10 12:28 AM (PST) | 2026-05-10 12:38 AM (PST) | Run `pytest` — 245 passed, 14 pre-existing failures (MockTagger hash overflow + missing dedup table in test DB, confirmed on clean main) |
-| 1.8 | Started | 2026-05-10 12:38 AM (PST) | | Stage and commit: `style: apply ruff format, fix zip strict, sort imports, suppress B008` |
+| 1.8 | Completed | 2026-05-10 12:38 AM (PST) | 2026-05-10 12:38 AM (PST) | Stage and commit: `style: apply ruff format, fix zip strict, sort imports, suppress B008` |
 
 ### Phase 1 Summary
 

@@ -20,4 +20,6 @@
   │ resume_safe_pipeline_design         │ Three layers: disk dedup, DB flag filtering, graceful flush on interrupt                     │
   ├─────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
   │ synthetic_data_before_real_data     │ Build and test the full pipeline with known ground truth before real data arrives            │
+  ├─────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ 11-pep-8-compliance                │ Consistent style makes a 15-module codebase searchable, lintable, and AI-friendly           │
   └─────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────┘
