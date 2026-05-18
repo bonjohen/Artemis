@@ -8,7 +8,7 @@ export const PROJECT = {
   summary:
     'A data science case study in collection optimization — selecting 13 balanced calendar images from 12,217 Artemis II mission photographs using statistical modeling, visual clustering, and multi-objective scoring.',
   image_count: 12217,
-  cluster_count: 25,
+  cluster_count: 20,
   scoring_methods: 5,
   selection_methods: 5,
   pipeline_stages: 8,

@@ -19,7 +19,7 @@ const HERO_IMAGES = [
 const SECTIONS = [
   { hash: '#/images',     icon: '&#9634;',  title: 'Image Browser',     desc: 'Browse 12,217 mission photos with preference scoring, cluster filtering, and visual detail overlays.' },
   { hash: '#/candidates', icon: '&#9733;',  title: 'Calendar Candidates', desc: '5 optimized calendar selections compared by popularity, diversity, month-fit, and redundancy.' },
-  { hash: '#/clusters',   icon: '&#11044;', title: 'Cluster Explorer',   desc: '25 visual clusters grouping images by CLIP embedding similarity — from Earth views to crew shots.' },
+  { hash: '#/clusters',   icon: '&#11044;', title: 'Cluster Explorer',   desc: '20 visual clusters grouping images by CLIP embedding similarity — from Earth views to crew shots.' },
   { hash: '#/stats',      icon: '&#9881;',  title: 'Stats Dashboard',    desc: 'Score distributions, inter-rater reliability, bias detection, and manufactured vote counts.' },
   { hash: '#/blend',      icon: '&#9878;',  title: 'Vote Simulator',     desc: 'Simulate how voter blocs with different visual preferences shape the calendar. Adjust voter counts, run elections, inspect individual ballots.' },
   { hash: '#/selection',  icon: '&#9776;',  title: 'Selection Builder',  desc: 'Interactive 13-slot calendar builder with live composite scoring (local server only).' },
@@ -30,13 +30,19 @@ export async function render(el) {
   // Fetch stats for the numbers bar
   let stats = { image_count: PROJECT.image_count };
   let lessonCount = '—';
+  let dedupDuplicates = '—';
+  let clusterCount = PROJECT.cluster_count;
   try {
-    const [sr, lr] = await Promise.all([
+    const [sr, lr, dr, cr] = await Promise.all([
       fetch('/api/stats').then(r => r.json()),
       fetch('/api/lessons').then(r => r.json()),
+      fetch('/api/dedup/summary').then(r => r.json()).catch(() => null),
+      fetch('/api/clusters').then(r => r.json()).catch(() => []),
     ]);
     stats = sr;
     lessonCount = lr.length;
+    if (dr) dedupDuplicates = dr.duplicates.toLocaleString();
+    if (cr.length) clusterCount = cr.length;
   } catch (e) { /* use defaults */ }
 
   el.innerHTML = `
@@ -61,22 +67,30 @@ export async function render(el) {
 
       <!-- Stats bar -->
       <section class="home-stats">
-        <div class="stat-item">
+        <a href="#/images" class="stat-item stat-link">
           <span class="stat-number">${stats.image_count?.toLocaleString() || '12,217'}</span>
           <span class="stat-label">Mission Photos</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">${PROJECT.cluster_count}</span>
+        </a>
+        <a href="#/curation" class="stat-item stat-link">
+          <span class="stat-number">${dedupDuplicates}</span>
+          <span class="stat-label">Near-Duplicates</span>
+        </a>
+        <a href="#/clusters" class="stat-item stat-link">
+          <span class="stat-number">${clusterCount}</span>
           <span class="stat-label">Visual Clusters</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">5</span>
+        </a>
+        <a href="#/stats" class="stat-item stat-link">
+          <span class="stat-number">${PROJECT.scoring_methods}</span>
           <span class="stat-label">Scoring Methods</span>
-        </div>
-        <div class="stat-item">
+        </a>
+        <a href="#/candidates" class="stat-item stat-link">
+          <span class="stat-number">${PROJECT.selection_methods}</span>
+          <span class="stat-label">Calendar Candidates</span>
+        </a>
+        <a href="#/lessons" class="stat-item stat-link">
           <span class="stat-number">${lessonCount}</span>
           <span class="stat-label">Lessons Learned</span>
-        </div>
+        </a>
       </section>
 
       <!-- The Problem -->
@@ -174,7 +188,7 @@ export async function render(el) {
           </li>
           <li class="path-step">
             <span class="path-num">3</span>
-            <div><a href="#/clusters"><strong>Explore Clusters</strong></a> <span class="path-note">— see how CLIP embeddings group 12,217 images into 25 visual themes.</span></div>
+            <div><a href="#/clusters"><strong>Explore Clusters</strong></a> <span class="path-note">— see how CLIP embeddings group 12,217 images into ${clusterCount} visual themes.</span></div>
           </li>
           <li class="path-step">
             <span class="path-num">4</span>

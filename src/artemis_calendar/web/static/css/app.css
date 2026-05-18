@@ -1373,6 +1373,16 @@
 .stat-item {
   text-align: center;
 }
+a.stat-link {
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--r-sm);
+  padding: var(--s-2) var(--s-3);
+  transition: background 0.15s;
+}
+a.stat-link:hover {
+  background: var(--atlas-surface);
+}
 .stat-number {
   display: block;
   font-family: var(--sans);
