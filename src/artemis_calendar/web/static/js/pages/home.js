@@ -2,6 +2,8 @@
  * Home / landing page — hero with top imagery, stats, and section entry points.
  */
 
+import { PROJECT } from '../config.js';
+
 const THUMB = '/thumbs/';
 
 // Top-rated images for the hero mosaic (hand-picked for visual variety across clusters)
@@ -21,13 +23,13 @@ const SECTIONS = [
   { hash: '#/stats',      icon: '&#9881;',  title: 'Stats Dashboard',    desc: 'Score distributions, inter-rater reliability, bias detection, and manufactured vote counts.' },
   { hash: '#/blend',      icon: '&#9878;',  title: 'Vote Simulator',     desc: 'Simulate how voter blocs with different visual preferences shape the calendar. Adjust voter counts, run elections, inspect individual ballots.' },
   { hash: '#/selection',  icon: '&#9776;',  title: 'Selection Builder',  desc: 'Interactive 13-slot calendar builder with live composite scoring (local server only).' },
-  { hash: '#/lessons',    icon: '&#9998;',  title: 'Lessons Learned',    desc: '37 standalone lessons on data engineering, statistical methods, optimization, and deployment.' },
+  { hash: '#/lessons',    icon: '&#9998;',  title: 'Lessons Learned',    desc: 'Standalone lessons on data engineering, statistical methods, optimization, and deployment.' },
 ];
 
 export async function render(el) {
   // Fetch stats for the numbers bar
-  let stats = { image_count: 12217 };
-  let lessonCount = 37;
+  let stats = { image_count: PROJECT.image_count };
+  let lessonCount = '—';
   try {
     const [sr, lr] = await Promise.all([
       fetch('/api/stats').then(r => r.json()),
@@ -64,7 +66,7 @@ export async function render(el) {
           <span class="stat-label">Mission Photos</span>
         </div>
         <div class="stat-item">
-          <span class="stat-number">20</span>
+          <span class="stat-number">${PROJECT.cluster_count}</span>
           <span class="stat-label">Visual Clusters</span>
         </div>
         <div class="stat-item">

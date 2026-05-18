@@ -9,6 +9,7 @@ const BLOCKS = [
   { id: 'block4', title: 'Block 4 — Synthetic Validation' },
   { id: 'block5', title: 'Block 5 — Web App & Interactive Tooling' },
   { id: 'block6', title: 'Block 6 — Vision, Curation & AI Workflow' },
+  { id: 'block7', title: 'Block 7 — Public Presentation' },
 ];
 
 const CATEGORIES = {

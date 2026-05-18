@@ -99,9 +99,9 @@ def _parse_lesson(path: Path, block: str) -> dict | None:
     title_match = re.search(r"^#\s+(?:Lesson\s+\d+:\s*)?(.+)$", text, re.MULTILINE)
     title = title_match.group(1).strip() if title_match else path.stem
 
-    # Extract lesson number from filename
+    # Extract lesson number from filename (or use full stem as slug)
     num_match = re.match(r"(\d+)", path.stem)
-    number = num_match.group(1) if num_match else path.stem[:3]
+    number = num_match.group(1) if num_match else path.stem
 
     # Extract first paragraph after title for description
     desc = ""
