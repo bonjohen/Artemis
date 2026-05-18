@@ -18,9 +18,7 @@ export async function render(el) {
   const total = summary?.total || 12217;
   const threshold = summary?.threshold || 0.98;
   const topGroups = summary?.top_groups || [];
-  const duplicates = topGroups.reduce((s, g) => s + g.member_count, 0) - topGroups.length;
-  // Total duplicates across ALL groups (members - masters)
-  const totalDuplicates = total - (summary?.active || total);
+  const totalDuplicates = summary?.duplicates || 0;
   const darkCount = darkStats?.dark_count || 0;
 
   el.innerHTML = `
@@ -38,12 +36,12 @@ export async function render(el) {
         <span class="curation-stat-label">Duplicate Groups</span>
       </div>
       <div class="curation-stat">
-        <span class="curation-stat-num">${darkCount.toLocaleString()}</span>
-        <span class="curation-stat-label">Dark Frames</span>
+        <span class="curation-stat-num">${totalDuplicates.toLocaleString()}</span>
+        <span class="curation-stat-label">Near-Duplicates</span>
       </div>
       <div class="curation-stat">
-        <span class="curation-stat-num">${threshold}</span>
-        <span class="curation-stat-label">Cosine Threshold</span>
+        <span class="curation-stat-num">${darkCount.toLocaleString()}</span>
+        <span class="curation-stat-label">Dark Frames</span>
       </div>
     </section>
 

@@ -17,6 +17,7 @@ def dedup_summary(
 ):
     """Return dedup statistics with top group representatives."""
     groups = conn.execute("SELECT count(*) FROM dedup_image_group").fetchone()[0]
+    total_members = conn.execute("SELECT count(*) FROM dedup_image_member").fetchone()[0]
     suppressed = conn.execute("SELECT count(*) FROM dim_image WHERE is_suppressed = true").fetchone()[0]
     active = conn.execute(
         "SELECT count(*) FROM dim_image WHERE vote_pool_flag = true AND COALESCE(is_suppressed, false) = false"
@@ -54,6 +55,8 @@ def dedup_summary(
 
     return {
         "groups": int(groups),
+        "total_members": int(total_members),
+        "duplicates": int(total_members) - int(groups),
         "suppressed": int(suppressed),
         "active": int(active),
         "total": int(total),
