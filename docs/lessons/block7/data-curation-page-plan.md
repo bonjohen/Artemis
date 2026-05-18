@@ -121,7 +121,7 @@ from artemis_calendar.web.db import get_db
 | 2.4 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | Add `/curation` route to `web/static/js/app.js` routes object — between `/images` and `/candidates` |
 | 2.5 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | Add "Curation" nav link to `web/static/index.html` — between Images and Candidates links |
 | 2.6 | Completed | 2026-05-18 04:45 AM | 2026-05-18 04:46 AM | Verify: navigate to `#/curation`, stats bar renders with non-zero numbers, method cards display, at least one group card expands to show member thumbnails, distribution chart has bars |
-| 2.7 | Started | 2026-05-18 04:46 AM | | Stage and commit Phase 2 |
+| 2.7 | Completed | 2026-05-18 04:46 AM | 2026-05-18 04:46 AM | Stage and commit Phase 2 |
 
 <details>
 <summary>Phase 2 Context</summary>
@@ -168,10 +168,10 @@ import { renderContextBlock } from '../components/context-block.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Add `.curation-stats`, `.curation-prose`, `.curation-methods`, `.curation-groups`, `.curation-group-card`, `.curation-group-header`, `.curation-group-members`, `.curation-master`, `.curation-member`, `.curation-dist` styles to `web/static/css/app.css` |
-| 3.2 | Open | | | Add responsive rules for curation page — stats bar wraps on mobile, method cards stack to 1-column at 480px, group member thumbnails scroll horizontally on narrow screens |
-| 3.3 | Open | | | Verify: page looks correct at desktop (1200px+), tablet (768px), and mobile (375px) widths |
-| 3.4 | Open | | | Stage and commit Phase 3 |
+| 3.1 | Completed | 2026-05-18 05:07 AM | 2026-05-18 05:07 AM | Add `.curation-stats`, `.curation-prose`, `.curation-methods`, `.curation-groups`, `.curation-group-card`, `.curation-group-header`, `.curation-group-members`, `.curation-master`, `.curation-member`, `.curation-dist` styles to `web/static/css/app.css` |
+| 3.2 | Completed | 2026-05-18 05:07 AM | 2026-05-18 05:07 AM | Add responsive rules for curation page — stats bar wraps on mobile, method cards stack to 1-column at 480px, group member thumbnails scroll horizontally on narrow screens |
+| 3.3 | Completed | 2026-05-18 05:07 AM | 2026-05-18 05:08 AM | Verify: page looks correct at desktop (1200px+), tablet (768px), and mobile (375px) widths |
+| 3.4 | Started | 2026-05-18 05:08 AM | | Stage and commit Phase 3 |
 
 <details>
 <summary>Phase 3 Context</summary>
@@ -245,9 +245,9 @@ import { renderContextBlock } from '../components/context-block.js';
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** All curation CSS was delivered in Phase 2 alongside the HTML structure. Phase 3 verified that `.curation-stats`, `.curation-prose`, `.curation-dist-*`, `.curation-group-*`, `.curation-member-*` styles and responsive breakpoints (768px, 480px) are present in `app.css`. Also fixed DuckDB concurrent connection bug in `web/db.py` by returning `conn.cursor()` per request instead of the shared connection — this resolved 500 errors on the curation page's parallel API fetches.
 - **Changes hosted at:** TBD
-- **Commit:** `style(web): add curation page styles and responsive rules`
+- **Commit:** `fix(web): resolve DuckDB concurrent connection errors on curation page`
 
 ### Phase 4 Summary
 

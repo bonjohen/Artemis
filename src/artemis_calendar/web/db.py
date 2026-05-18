@@ -26,8 +26,13 @@ def close_db(app: FastAPI) -> None:
 
 
 def get_db(request: Request) -> duckdb.DuckDBPyConnection:
-    """FastAPI dependency — returns the shared read-only connection."""
-    return request.app.state.db
+    """FastAPI dependency — returns a per-request cursor.
+
+    DuckDB's Python driver does not support concurrent queries on a single
+    connection object from multiple threads.  Creating a cursor for each
+    request lets uvicorn's thread-pool serve parallel reads safely.
+    """
+    return request.app.state.db.cursor()
 
 
 def _load_cache(app: FastAPI) -> None:
