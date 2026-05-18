@@ -165,7 +165,7 @@ import { PROJECT } from '../config.js';
 | 4.3 | Completed | 2026-05-18 04:02 AM | 2026-05-18 04:02 AM | Add "Review This Project in 5 Minutes" panel to `home.js` after sections grid — 7 numbered steps with one-sentence rationale each |
 | 4.4 | Completed | 2026-05-18 04:02 AM | 2026-05-18 04:03 AM | Add CSS for `.home-problem`, `.home-learning`, `.featured-lesson-card`, `.reviewer-path`, `.path-step` to `app.css` |
 | 4.5 | Completed | 2026-05-18 04:03 AM | 2026-05-18 04:04 AM | Verify: homepage has Problem → Pipeline → Showcase → Explore → Methods → Learning Thread → Reviewer Path → Footer flow. All links resolve. |
-| 4.6 | Started | 2026-05-18 04:04 AM | | Stage and commit Phase 4 |
+| 4.6 | Completed | 2026-05-18 04:04 AM | 2026-05-18 04:04 AM | Stage and commit Phase 4 |
 
 <details>
 <summary>Phase 4 Context</summary>
@@ -197,13 +197,13 @@ import { PROJECT } from '../config.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 5.1 | Open | | | Update `index.html` `<title>` to "Artemis — Data Science Case Study in Calendar Image Selection" |
-| 5.2 | Open | | | Add `<meta name="description">`, `<meta property="og:title">`, `<meta property="og:description">`, `<meta property="og:type">`, `<meta property="og:url">` to `index.html` |
-| 5.3 | Open | | | Add `<noscript>` block to `index.html` with static project summary paragraph and GitHub link |
-| 5.4 | Open | | | Replace bare "Loading..." in `<main>` with project name + brief loading text |
-| 5.5 | Open | | | Audit all pages for `<h1>` presence — ensure each page render outputs exactly one `<h1>` |
-| 5.6 | Open | | | Verify: view-source shows meta tags; disable JS in browser, confirm noscript content visible; Lighthouse accessibility audit has no critical issues |
-| 5.7 | Open | | | Stage and commit Phase 5 |
+| 5.1 | Completed | 2026-05-18 04:09 AM | 2026-05-18 04:09 AM | Update `index.html` `<title>` to "Artemis — Data Science Case Study in Calendar Image Selection" |
+| 5.2 | Completed | 2026-05-18 04:09 AM | 2026-05-18 04:10 AM | Add `<meta name="description">`, `<meta property="og:title">`, `<meta property="og:description">`, `<meta property="og:type">`, `<meta property="og:url">` to `index.html` |
+| 5.3 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:10 AM | Add `<noscript>` block to `index.html` with static project summary paragraph and GitHub link |
+| 5.4 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:10 AM | Replace bare "Loading..." in `<main>` with project name + brief loading text |
+| 5.5 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:10 AM | Audit all pages for `<h1>` presence — ensure each page render outputs exactly one `<h1>` |
+| 5.6 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:11 AM | Verify: view-source shows meta tags; disable JS in browser, confirm noscript content visible; Lighthouse accessibility audit has no critical issues |
+| 5.7 | Started | 2026-05-18 04:11 AM | | Stage and commit Phase 5 |
 
 <details>
 <summary>Phase 5 Context</summary>
@@ -295,7 +295,7 @@ import { PROJECT } from '../config.js';
 
 ### Phase 5 Summary
 
-- **Changes:** TBD
+- **Changes:** Updated `index.html`: title to "Artemis — Data Science Case Study in Calendar Image Selection", added meta description + 4 Open Graph tags (og:title, og:description, og:type, og:url), added `<noscript>` block with static project summary and GitHub link, replaced bare "Loading..." with "Artemis — Loading application...". Audited all 10 page modules for `<h1>` presence — all correct (one per view).
 - **Changes hosted at:** TBD
 - **Commit:** `feat(web): add SEO meta tags, noscript fallback, accessibility headings`
 
