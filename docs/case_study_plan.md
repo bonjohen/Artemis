@@ -246,7 +246,7 @@ import { PROJECT } from '../config.js';
 | 6.9 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify meta/SEO: view-source shows correct title, description, OG tags, noscript |
 | 6.10 | Completed | 2026-05-18 04:16 AM | 2026-05-18 04:16 AM | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
 | 6.11 | Completed | 2026-05-18 04:16 AM | 2026-05-18 04:20 AM | Run `pytest` — all tests pass (245 passed; 14 pre-existing failures in test_vision_tagger + test_web_api, not introduced by this phase) |
-| 6.12 | Started | 2026-05-18 04:20 AM | | Stage and commit Phase 6 (if any fixes were needed) |
+| 6.12 | Completed | 2026-05-18 04:20 AM | 2026-05-18 04:20 AM | Stage and commit Phase 6 (if any fixes were needed) |
 
 <details>
 <summary>Phase 6 Context</summary>
