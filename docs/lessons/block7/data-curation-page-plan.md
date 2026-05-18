@@ -45,7 +45,7 @@ Open  ──>  Started  ──>  Completed
 | 1.3 | Completed | 2026-05-18 04:37 AM | 2026-05-18 04:38 AM | Add `GET /api/dedup/dark-stats` endpoint to `web/routes/dedup.py` — count images with `dark_pixel_ratio >= 0.92` from `feature_image_visual`, return `{dark_count, threshold, total_vote_pool}` |
 | 1.4 | Completed | 2026-05-18 04:38 AM | 2026-05-18 04:41 AM | Verify: `curl` all three new endpoints, confirm JSON response shape and non-empty data |
 | 1.5 | Completed | 2026-05-18 04:41 AM | 2026-05-18 04:41 AM | Run `ruff check src/artemis_calendar/web/routes/dedup.py` and `ruff format --check` — fix any issues |
-| 1.6 | Started | 2026-05-18 04:41 AM | | Stage and commit Phase 1 |
+| 1.6 | Completed | 2026-05-18 04:41 AM | 2026-05-18 04:41 AM | Stage and commit Phase 1 |
 
 <details>
 <summary>Phase 1 Context</summary>
@@ -115,13 +115,13 @@ from artemis_calendar.web.db import get_db
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Create `web/static/js/pages/curation.js` — exports `render(el, hash)`. Fetch `/api/dedup/summary?top_groups=10`, `/api/dedup/distribution`, `/api/dedup/dark-stats` in parallel. Render: context block, `<h1>`, stats bar (total images, groups, duplicates removed, active pool), "Why Curate?" prose, 3 method cards, top groups section, distribution chart |
-| 2.2 | Open | | | In `curation.js` top-groups section: render each group as a card with master thumbnail (accent border), member count, similarity threshold. Add click-to-expand that fetches `/api/dedup/groups/{group_id}/members?limit=12` and renders member thumbnails in a flex row (master highlighted, others dimmed). Cap at 12 thumbnails with "(N more)" label for large groups |
-| 2.3 | Open | | | In `curation.js` distribution section: render horizontal bar chart from `/api/dedup/distribution` data — bucket labels on left, bars proportional to count, count labels on right. Same inline style pattern as stats.js score distribution |
-| 2.4 | Open | | | Add `/curation` route to `web/static/js/app.js` routes object — between `/images` and `/candidates` |
-| 2.5 | Open | | | Add "Curation" nav link to `web/static/index.html` — between Images and Candidates links |
-| 2.6 | Open | | | Verify: navigate to `#/curation`, stats bar renders with non-zero numbers, method cards display, at least one group card expands to show member thumbnails, distribution chart has bars |
-| 2.7 | Open | | | Stage and commit Phase 2 |
+| 2.1 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | Create `web/static/js/pages/curation.js` — exports `render(el, hash)`. Fetch `/api/dedup/summary?top_groups=10`, `/api/dedup/distribution`, `/api/dedup/dark-stats` in parallel. Render: context block, `<h1>`, stats bar (total images, groups, duplicates removed, active pool), "Why Curate?" prose, 3 method cards, top groups section, distribution chart |
+| 2.2 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | In `curation.js` top-groups section: render each group as a card with master thumbnail (accent border), member count, similarity threshold. Add click-to-expand that fetches `/api/dedup/groups/{group_id}/members?limit=12` and renders member thumbnails in a flex row (master highlighted, others dimmed). Cap at 12 thumbnails with "(N more)" label for large groups |
+| 2.3 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | In `curation.js` distribution section: render horizontal bar chart from `/api/dedup/distribution` data — bucket labels on left, bars proportional to count, count labels on right. Same inline style pattern as stats.js score distribution |
+| 2.4 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | Add `/curation` route to `web/static/js/app.js` routes object — between `/images` and `/candidates` |
+| 2.5 | Completed | 2026-05-18 04:43 AM | 2026-05-18 04:45 AM | Add "Curation" nav link to `web/static/index.html` — between Images and Candidates links |
+| 2.6 | Completed | 2026-05-18 04:45 AM | 2026-05-18 04:46 AM | Verify: navigate to `#/curation`, stats bar renders with non-zero numbers, method cards display, at least one group card expands to show member thumbnails, distribution chart has bars |
+| 2.7 | Started | 2026-05-18 04:46 AM | | Stage and commit Phase 2 |
 
 <details>
 <summary>Phase 2 Context</summary>
@@ -239,7 +239,7 @@ import { renderContextBlock } from '../components/context-block.js';
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `web/static/js/pages/curation.js` with context block, stats bar (4 numbers), "Why Curate?" prose, 3 method cards (CLIP similarity, dark frame filtering, master selection), group size distribution horizontal bar chart, and top 10 duplicate group cards with click-to-expand member thumbnails (master highlighted, capped at 12 with "N more" label). Added `/curation` route to `app.js` and "Curation" nav link to `index.html` between Images and Candidates. Added full CSS for curation page to `app.css` (stats bar, prose, distribution chart, group cards, expandable members, responsive rules).
 - **Changes hosted at:** TBD
 - **Commit:** `feat(web): add data curation page with dedup groups and distribution`
 

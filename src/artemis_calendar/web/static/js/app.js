@@ -7,6 +7,7 @@ const routes = {
   '/': () => import('./pages/home.js'),
   '/pipeline': () => import('./pages/pipeline.js'),
   '/images': () => import('./pages/images.js'),
+  '/curation': () => import('./pages/curation.js'),
   '/candidates': () => import('./pages/candidates.js'),
   '/clusters': () => import('./pages/clusters.js'),
   '/stats': () => import('./pages/stats.js'),
