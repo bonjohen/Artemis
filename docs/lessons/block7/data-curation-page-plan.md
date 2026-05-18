@@ -171,7 +171,7 @@ import { renderContextBlock } from '../components/context-block.js';
 | 3.1 | Completed | 2026-05-18 05:07 AM | 2026-05-18 05:07 AM | Add `.curation-stats`, `.curation-prose`, `.curation-methods`, `.curation-groups`, `.curation-group-card`, `.curation-group-header`, `.curation-group-members`, `.curation-master`, `.curation-member`, `.curation-dist` styles to `web/static/css/app.css` |
 | 3.2 | Completed | 2026-05-18 05:07 AM | 2026-05-18 05:07 AM | Add responsive rules for curation page — stats bar wraps on mobile, method cards stack to 1-column at 480px, group member thumbnails scroll horizontally on narrow screens |
 | 3.3 | Completed | 2026-05-18 05:07 AM | 2026-05-18 05:08 AM | Verify: page looks correct at desktop (1200px+), tablet (768px), and mobile (375px) widths |
-| 3.4 | Started | 2026-05-18 05:08 AM | | Stage and commit Phase 3 |
+| 3.4 | Completed | 2026-05-18 05:08 AM | 2026-05-18 05:09 AM | Stage and commit Phase 3 |
 
 <details>
 <summary>Phase 3 Context</summary>
@@ -201,14 +201,14 @@ import { renderContextBlock } from '../components/context-block.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Verify curation page: stats bar shows correct numbers (cross-check with `curl /api/dedup/summary`), all 3 method cards present, at least 3 group cards render with master thumbnails |
-| 4.2 | Open | | | Verify group expand: click a group card, member thumbnails load, master is visually distinguished, "(N more)" appears for large groups |
-| 4.3 | Open | | | Verify distribution chart: bars render, buckets match `curl /api/dedup/distribution` |
-| 4.4 | Open | | | Verify nav: "Curation" link appears between Images and Candidates, highlights correctly when on `#/curation` |
-| 4.5 | Open | | | Verify no regressions: click through Home, Pipeline, Images, Candidates, Clusters, Stats, Vote Simulator, Selection, Lessons — all load |
-| 4.6 | Open | | | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
-| 4.7 | Open | | | Run `pytest` — confirm no new failures beyond pre-existing 14 |
-| 4.8 | Open | | | Stage and commit Phase 4 (if any fixes needed) |
+| 4.1 | Completed | 2026-05-18 05:15 AM | 2026-05-18 05:17 AM | Verify curation page: stats bar shows correct numbers (cross-check with `curl /api/dedup/summary`), all 3 method cards present, at least 3 group cards render with master thumbnails |
+| 4.2 | Completed | 2026-05-18 05:15 AM | 2026-05-18 05:17 AM | Verify group expand: click a group card, member thumbnails load, master is visually distinguished, "(N more)" appears for large groups |
+| 4.3 | Completed | 2026-05-18 05:15 AM | 2026-05-18 05:17 AM | Verify distribution chart: bars render, buckets match `curl /api/dedup/distribution` |
+| 4.4 | Completed | 2026-05-18 05:15 AM | 2026-05-18 05:17 AM | Verify nav: "Curation" link appears between Images and Candidates, highlights correctly when on `#/curation` |
+| 4.5 | Completed | 2026-05-18 05:15 AM | 2026-05-18 05:17 AM | Verify no regressions: click through Home, Pipeline, Images, Candidates, Clusters, Stats, Vote Simulator, Selection, Lessons — all load |
+| 4.6 | Completed | 2026-05-18 05:15 AM | 2026-05-18 05:17 AM | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
+| 4.7 | Completed | 2026-05-18 05:17 AM | 2026-05-18 05:23 AM | Run `pytest` — confirm no new failures beyond pre-existing 14 |
+| 4.8 | Completed | 2026-05-18 05:23 AM | 2026-05-18 05:23 AM | Stage and commit Phase 4 (if any fixes needed) |
 
 <details>
 <summary>Phase 4 Context</summary>
@@ -251,6 +251,6 @@ import { renderContextBlock } from '../components/context-block.js';
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** End-to-end verification of the curation page. Stats bar cross-checked against API (12,217 total, 450 groups, 10,054 duplicates, 5,771 dark frames). Group expand returns 12 members with master highlighted. Distribution chart has 8 buckets, all non-zero. Nav link confirmed between Images and Candidates. All 10 pages return 200. Ruff clean, pytest 245 passed / 14 failed (pre-existing). No code changes needed.
 - **Changes hosted at:** TBD
-- **Commit:** `fix(web): curation page validation and polish`
+- **Commit:** `docs: complete curation page verification (Phase 4)`
