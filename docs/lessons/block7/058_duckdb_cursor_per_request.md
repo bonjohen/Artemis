@@ -37,6 +37,11 @@ def get_db(request: Request) -> duckdb.DuckDBPyConnection:
 - **Read-only connections are the right base.** Opening the connection with `read_only=True` at startup means cursors cannot accidentally write. The cursor-per-request pattern adds no meaningful overhead — cursor creation is near-instant and cursors are garbage-collected after the request completes.
 - **Watch for "works in curl, fails in browser" as a concurrency signal.** When an endpoint works individually but fails when a page loads (which hits multiple endpoints), the first hypothesis should be a shared-state concurrency issue, not a data or query problem.
 
+## Related Lessons
+
+- [Derived Metrics from Immutable Tables](059_derived_metrics_from_immutable_tables.md) — another bug surfaced on the same curation page, from mutable state assumptions
+- [Promise.all as Concurrency Test](063_promise_all_as_concurrency_test.md) — the frontend perspective on the same concurrency bug this lesson fixes
+
 ## Metadata
 
 - **Category:** eng
