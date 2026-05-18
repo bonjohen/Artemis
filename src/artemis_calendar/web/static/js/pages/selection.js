@@ -3,6 +3,8 @@
  * 13-slot calendar grid with cover checkbox, live scoring.
  */
 
+import { renderContextBlock } from '../components/context-block.js';
+
 const MONTH_LABELS = [
   'December 2026', 'January 2027', 'February 2027', 'March 2027',
   'April 2027', 'May 2027', 'June 2027', 'July 2027',
@@ -31,6 +33,7 @@ export async function render(el) {
   }
 
   el.innerHTML = `
+    ${renderContextBlock('Why this page matters', 'Interactive 13-slot calendar builder with live composite scoring. Demonstrates human-in-the-loop decision support.')}
     <div class="page-header">
       <h1>Selection Builder</h1>
       <div class="controls">

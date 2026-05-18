@@ -5,6 +5,7 @@
  */
 
 import { showImageDetail } from '../components/image-detail.js';
+import { renderContextBlock } from '../components/context-block.js';
 
 const SCENARIO_PRESETS = {
   balanced:       { label: 'Balanced (all 10)',  values: { earth_moon: 10, earth_only: 10, moon_only: 10, sun_only: 10, crescent: 10, eclipse: 10, crew: 10, equipment: 10, moon_sun: 10, neutral: 10 } },
@@ -39,6 +40,7 @@ export async function render(el) {
   }).catch(() => ({ blocks: DEFAULT_BLOCKS, attributes: [] }));
 
   el.innerHTML = `
+    ${renderContextBlock('Why this page matters', 'Simulate how different voter blocs shape the calendar outcome. Demonstrates sensitivity analysis and election modeling.')}
     <div class="page-header">
       <h1>Vote Simulator</h1>
       <div class="controls">

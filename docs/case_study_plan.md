@@ -46,7 +46,7 @@ Open  ──>  Started  ──>  Completed
 | 1.3 | Completed | 2026-05-18 01:07 AM | 2026-05-18 01:07 AM | Update `web/static/js/pages/lessons.js` BLOCKS array — add block7 entry |
 | 1.4 | Completed | 2026-05-18 01:07 AM | 2026-05-18 01:08 AM | Update `web/static/js/pages/home.js` — import config, replace hardcoded "20" with `PROJECT.cluster_count`, replace fallback `37` with actual API count, update SECTIONS lessons description to use dynamic count |
 | 1.5 | Completed | 2026-05-18 01:08 AM | 2026-05-18 01:09 AM | Verify: `curl /api/lessons` returns block7 entries; homepage shows 25 clusters and correct lesson count |
-| 1.6 | Started | 2026-05-18 01:09 AM | | Stage and commit Phase 1 |
+| 1.6 | Completed | 2026-05-18 01:09 AM | 2026-05-18 01:25 AM | Stage and commit Phase 1 |
 
 <details>
 <summary>Phase 1 Context</summary>
@@ -79,17 +79,17 @@ import { PROJECT } from '../config.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 2.1 | Open | | | Create `web/static/js/components/context-block.js` — exports `renderContextBlock(title, text)` returning an HTML string with `.context-block` class |
-| 2.2 | Open | | | Add `.context-block` styles to `web/static/css/app.css` — subtle background, left border accent, compact padding, collapsible on mobile |
-| 2.3 | Open | | | Add context block to `pages/images.js` render function |
-| 2.4 | Open | | | Add context block to `pages/candidates.js` render function |
-| 2.5 | Open | | | Add context block to `pages/clusters.js` render function |
-| 2.6 | Open | | | Add context block to `pages/stats.js` render function |
-| 2.7 | Open | | | Add context block to `pages/blend.js` (Vote Simulator) render function |
-| 2.8 | Open | | | Add context block to `pages/selection.js` render function |
-| 2.9 | Open | | | Add context block to `pages/lessons.js` render function (replace existing `<p>` subtitle) |
-| 2.10 | Open | | | Verify: click through all 7 section pages, confirm context block visible at top of each |
-| 2.11 | Open | | | Stage and commit Phase 2 |
+| 2.1 | Completed | 2026-05-18 03:46 AM | 2026-05-18 03:47 AM | Create `web/static/js/components/context-block.js` — exports `renderContextBlock(title, text)` returning an HTML string with `.context-block` class |
+| 2.2 | Completed | 2026-05-18 03:47 AM | 2026-05-18 03:48 AM | Add `.context-block` styles to `web/static/css/app.css` — subtle background, left border accent, compact padding, collapsible on mobile |
+| 2.3 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/images.js` render function |
+| 2.4 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/candidates.js` render function |
+| 2.5 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/clusters.js` render function |
+| 2.6 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/stats.js` render function |
+| 2.7 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/blend.js` (Vote Simulator) render function |
+| 2.8 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/selection.js` render function |
+| 2.9 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/lessons.js` render function (replace existing `<p>` subtitle) |
+| 2.10 | Completed | 2026-05-18 03:49 AM | 2026-05-18 03:50 AM | Verify: click through all 7 section pages, confirm context block visible at top of each |
+| 2.11 | Started | 2026-05-18 03:50 AM | | Stage and commit Phase 2 |
 
 <details>
 <summary>Phase 2 Context</summary>
@@ -276,7 +276,7 @@ import { PROJECT } from '../config.js';
 
 ### Phase 2 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `components/context-block.js` exporting `renderContextBlock(title, text)`. Added `.context-block` styles to `app.css` (left border accent, subtle background, dark mode support). Added import and context block call to all 7 section pages: images, candidates, clusters, stats, blend (vote simulator), selection, lessons. Replaced inline `<p>` subtitle on lessons page with context block.
 - **Changes hosted at:** TBD
 - **Commit:** `feat(web): add context blocks explaining each page's purpose`
 

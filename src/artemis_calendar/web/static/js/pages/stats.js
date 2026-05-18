@@ -2,8 +2,11 @@
  * Stats dashboard page — image analysis, content attributes, dedup, scoring.
  */
 
+import { renderContextBlock } from '../components/context-block.js';
+
 export async function render(el) {
   el.innerHTML = `
+    ${renderContextBlock('Why this page matters', 'Score distributions, inter-rater reliability, and bias detection across synthetic voter cohorts. Demonstrates statistical validation and manufactured-data transparency.')}
     <div class="page-header"><h1>Stats</h1></div>
     <div class="stats-grid" id="stats-grid"></div>
   `;

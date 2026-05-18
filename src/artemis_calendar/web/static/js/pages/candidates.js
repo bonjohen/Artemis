@@ -2,6 +2,8 @@
  * Candidates page — comparison view with method explanations and detail.
  */
 
+import { renderContextBlock } from '../components/context-block.js';
+
 const METHOD_INFO = {
   method_a: {
     label: 'Method A — Top Popularity',
@@ -54,6 +56,7 @@ async function renderList(el) {
   const candidates = await r.json();
 
   el.innerHTML = `
+    ${renderContextBlock('Why this page matters', 'Five optimized calendar selections compared by composite score, diversity, month-fit, and redundancy. Demonstrates multi-objective optimization output.')}
     <div class="page-header"><h1>Calendar Candidates</h1></div>
     <p style="color:var(--atlas-ink-2);max-width:64ch;margin-bottom:var(--s-6);line-height:var(--lh-body)">
       Five selection methods each produce a 13-image calendar. Each method makes different tradeoffs between

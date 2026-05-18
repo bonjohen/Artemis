@@ -1940,3 +1940,39 @@
   .blend-columns { grid-template-columns: 1fr; }
   .blend-config { grid-template-columns: 1fr; }
 }
+
+/* ---------- CONTEXT BLOCK ---------- */
+.context-block {
+  border-left: 3px solid var(--atlas-accent);
+  background: var(--atlas-paper-2);
+  padding: var(--s-4) var(--s-5);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  margin-bottom: var(--s-5);
+  max-width: 64ch;
+}
+
+.context-block-title {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--atlas-accent);
+  margin: 0 0 var(--s-1);
+}
+
+.context-block-text {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--atlas-ink-2);
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .context-block {
+    background: rgba(255,255,255,.05);
+    border-left-color: var(--atlas-accent-2);
+  }
+  .context-block-title { color: var(--atlas-accent-2); }
+  .context-block-text  { color: var(--atlas-muted); }
+}

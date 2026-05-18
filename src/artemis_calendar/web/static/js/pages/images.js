@@ -5,6 +5,7 @@
 
 import { createImageCard } from '../components/image-card.js';
 import { showImageDetail } from '../components/image-detail.js';
+import { renderContextBlock } from '../components/context-block.js';
 
 let currentPage = 1;
 let currentSort = 'score';
@@ -135,6 +136,7 @@ function renderPage(container) {
 
 export async function render(el) {
   el.innerHTML = `
+    ${renderContextBlock('Why this page matters', 'Searchable, filterable access to all 12,217 mission photos with preference scores and cluster assignments. Demonstrates data curation and feature-enriched browsing.')}
     <div class="dedup-banner" style="display:none"></div>
     <div class="page-header">
       <h1>Images</h1>

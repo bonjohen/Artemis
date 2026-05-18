@@ -4,6 +4,7 @@
 
 import { createImageCard } from '../components/image-card.js';
 import { showImageDetail } from '../components/image-detail.js';
+import { renderContextBlock } from '../components/context-block.js';
 
 export async function render(el, hash) {
   const parts = hash.split('/');
@@ -24,6 +25,7 @@ async function renderClusterList(el) {
   for (const s of spotlightsResp) spotlightMap[s.cluster_id] = s;
 
   el.innerHTML = `
+    ${renderContextBlock('Why this page matters', '25 visual clusters from CLIP embeddings \u2014 each grouping images by scene content and composition. Demonstrates unsupervised visual similarity analysis.')}
     <div class="page-header"><h1>Clusters</h1></div>
     <p class="cluster-explainer">
       Each cluster groups visually similar images by CLIP embedding proximity.

@@ -2,6 +2,8 @@
  * Lessons page — card grid listing + detail view with markdown rendering.
  */
 
+import { renderContextBlock } from '../components/context-block.js';
+
 const BLOCKS = [
   { id: 'block1', title: 'Block 1 — Infrastructure & Scaling' },
   { id: 'block2', title: 'Block 2 — Statistical Methods' },
@@ -45,9 +47,7 @@ async function renderList(el) {
     let html = `
       <header style="margin-bottom:var(--s-6)">
         <h1 class="h2">Lessons Learned</h1>
-        <p style="color:var(--atlas-ink-2);max-width:56ch;margin-top:var(--s-2)">
-          Patterns, mistakes, and decisions from building the Artemis II calendar image selection pipeline.
-        </p>
+        ${renderContextBlock('Why this page matters', 'Reusable engineering patterns and mistakes extracted from building this system. Demonstrates reflective practice and knowledge capture.')}
       </header>
       <div style="display:flex;gap:var(--s-2);flex-wrap:wrap;margin-bottom:var(--s-5)">
         <button class="filter-btn ${activeFilter === 'all' ? 'active' : ''}" data-cat="all">All (${lessons.length})</button>
