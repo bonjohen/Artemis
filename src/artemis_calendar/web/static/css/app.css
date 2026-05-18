@@ -1976,3 +1976,152 @@
   .context-block-title { color: var(--atlas-accent-2); }
   .context-block-text  { color: var(--atlas-muted); }
 }
+
+/* ---------- PIPELINE PAGE ---------- */
+.pipeline-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-width: 72ch;
+}
+
+.stage-card {
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  transition: box-shadow var(--t-fast) var(--ease);
+}
+
+.stage-card:hover {
+  box-shadow: var(--shadow-2);
+}
+
+.stage-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  cursor: pointer;
+  user-select: none;
+}
+
+.stage-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  background: var(--atlas-accent);
+  color: white;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.stage-name {
+  font-family: var(--serif);
+  font-size: var(--fs-h3);
+  font-weight: 500;
+  flex: 1;
+}
+
+.stage-toggle {
+  font-family: var(--mono);
+  font-size: 18px;
+  color: var(--atlas-muted);
+  transition: transform var(--t-fast) var(--ease);
+}
+
+.stage-card.expanded .stage-toggle {
+  transform: rotate(45deg);
+}
+
+.stage-detail {
+  display: none;
+  padding: 0 var(--s-5) var(--s-5);
+}
+
+.stage-card.expanded .stage-detail {
+  display: block;
+}
+
+.stage-purpose {
+  color: var(--atlas-ink-2);
+  line-height: var(--lh-body);
+  margin: 0 0 var(--s-4);
+}
+
+.stage-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.stage-field {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: var(--s-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+}
+
+.stage-field-label {
+  font-weight: 600;
+  color: var(--atlas-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: var(--fs-meta);
+  padding-top: 2px;
+}
+
+.stage-field-value {
+  color: var(--atlas-ink-2);
+}
+
+.stage-field-value code {
+  font-family: var(--mono);
+  font-size: var(--fs-meta);
+  background: var(--atlas-paper-2);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.stage-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.stage-lesson-link {
+  color: var(--atlas-accent);
+  text-decoration: none;
+  font-size: var(--fs-small);
+}
+
+.stage-lesson-link:hover {
+  text-decoration: underline;
+}
+
+.stage-app-link {
+  display: inline-block;
+  margin-top: var(--s-4);
+  color: var(--atlas-accent);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.stage-app-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .stage-field {
+    grid-template-columns: 1fr;
+  }
+  .stage-field-label {
+    margin-bottom: calc(-1 * var(--s-2));
+  }
+}

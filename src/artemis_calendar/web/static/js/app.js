@@ -5,6 +5,7 @@
 
 const routes = {
   '/': () => import('./pages/home.js'),
+  '/pipeline': () => import('./pages/pipeline.js'),
   '/images': () => import('./pages/images.js'),
   '/candidates': () => import('./pages/candidates.js'),
   '/clusters': () => import('./pages/clusters.js'),

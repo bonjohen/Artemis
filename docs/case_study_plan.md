@@ -89,7 +89,7 @@ import { PROJECT } from '../config.js';
 | 2.8 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/selection.js` render function |
 | 2.9 | Completed | 2026-05-18 03:48 AM | 2026-05-18 03:49 AM | Add context block to `pages/lessons.js` render function (replace existing `<p>` subtitle) |
 | 2.10 | Completed | 2026-05-18 03:49 AM | 2026-05-18 03:50 AM | Verify: click through all 7 section pages, confirm context block visible at top of each |
-| 2.11 | Started | 2026-05-18 03:50 AM | | Stage and commit Phase 2 |
+| 2.11 | Completed | 2026-05-18 03:50 AM | 2026-05-18 03:51 AM | Stage and commit Phase 2 |
 
 <details>
 <summary>Phase 2 Context</summary>
@@ -120,12 +120,12 @@ import { PROJECT } from '../config.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 3.1 | Open | | | Create `web/static/js/pages/pipeline.js` — 8 stage cards (Extract, Features, Cluster, Score, Optimize, Assign, Render, Validate) each with purpose, inputs, outputs, key files, validation, related lessons, app-section link |
-| 3.2 | Open | | | Add `/pipeline` route to `web/static/js/app.js` router |
-| 3.3 | Open | | | Add "Pipeline" nav link to `web/static/index.html` between Home and Images |
-| 3.4 | Open | | | Add `.pipeline-page`, `.stage-card`, `.stage-detail` styles to `app.css` |
-| 3.5 | Open | | | Verify: navigate to `#/pipeline`, all 8 stages render, links to app sections work, nav highlights correctly |
-| 3.6 | Open | | | Stage and commit Phase 3 |
+| 3.1 | Completed | 2026-05-18 03:56 AM | 2026-05-18 03:57 AM | Create `web/static/js/pages/pipeline.js` — 8 stage cards (Extract, Features, Cluster, Score, Optimize, Assign, Render, Validate) each with purpose, inputs, outputs, key files, validation, related lessons, app-section link |
+| 3.2 | Completed | 2026-05-18 03:57 AM | 2026-05-18 03:57 AM | Add `/pipeline` route to `web/static/js/app.js` router |
+| 3.3 | Completed | 2026-05-18 03:57 AM | 2026-05-18 03:58 AM | Add "Pipeline" nav link to `web/static/index.html` between Home and Images |
+| 3.4 | Completed | 2026-05-18 03:58 AM | 2026-05-18 03:59 AM | Add `.pipeline-page`, `.stage-card`, `.stage-detail` styles to `app.css` |
+| 3.5 | Completed | 2026-05-18 03:59 AM | 2026-05-18 04:00 AM | Verify: navigate to `#/pipeline`, all 8 stages render, links to app sections work, nav highlights correctly |
+| 3.6 | Started | 2026-05-18 04:00 AM | | Stage and commit Phase 3 |
 
 <details>
 <summary>Phase 3 Context</summary>
@@ -235,17 +235,18 @@ import { PROJECT } from '../config.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Start dev server on port 8070, navigate every page, confirm no console errors |
-| 6.2 | Open | | | Verify homepage counts match: 25 clusters, actual lesson count from API, 12,217 images, 5 scoring methods |
-| 6.3 | Open | | | Verify pipeline page: all 8 stages present, all internal links resolve |
-| 6.4 | Open | | | Verify context blocks: present on all 7 section pages |
-| 6.5 | Open | | | Verify lessons: block7 entries appear in lesson list, detail view loads |
-| 6.6 | Open | | | Verify reviewer path: all 7 steps link to correct pages |
-| 6.7 | Open | | | Verify featured lessons on homepage: cards render, links work |
-| 6.8 | Open | | | Verify meta/SEO: view-source shows correct title, description, OG tags, noscript |
-| 6.9 | Open | | | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
-| 6.10 | Open | | | Run `pytest` — all tests pass |
-| 6.11 | Open | | | Stage and commit Phase 6 (if any fixes were needed) |
+| 6.1 | Open | | | Add plain-English interpretation to Stats page cards: Krippendorff's Alpha (what it measures, why low alpha is expected with diverse synthetic voters), Bias Detection (what each test checks, high p-value = good), Score Distribution (what the shape means for candidate selection) |
+| 6.2 | Open | | | Start dev server on port 8070, navigate every page, confirm no console errors |
+| 6.3 | Open | | | Verify homepage counts match: 25 clusters, actual lesson count from API, 12,217 images, 5 scoring methods |
+| 6.4 | Open | | | Verify pipeline page: all 8 stages present, all internal links resolve |
+| 6.5 | Open | | | Verify context blocks: present on all 7 section pages |
+| 6.6 | Open | | | Verify lessons: block7 entries appear in lesson list, detail view loads |
+| 6.7 | Open | | | Verify reviewer path: all 7 steps link to correct pages |
+| 6.8 | Open | | | Verify featured lessons on homepage: cards render, links work |
+| 6.9 | Open | | | Verify meta/SEO: view-source shows correct title, description, OG tags, noscript |
+| 6.10 | Open | | | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
+| 6.11 | Open | | | Run `pytest` — all tests pass |
+| 6.12 | Open | | | Stage and commit Phase 6 (if any fixes were needed) |
 
 <details>
 <summary>Phase 6 Context</summary>
@@ -282,7 +283,7 @@ import { PROJECT } from '../config.js';
 
 ### Phase 3 Summary
 
-- **Changes:** TBD
+- **Changes:** Created `pages/pipeline.js` with 8 expandable stage cards (Extract, Features, Cluster, Score, Optimize, Assign, Render, Validate), each showing purpose, inputs, outputs, key files, validation checks, related lessons (linked), and app-section links. Added `/pipeline` route to `app.js` router. Added "Pipeline" nav link to `index.html`. Added pipeline page CSS (accordion cards, numbered stage badges, responsive field grid).
 - **Changes hosted at:** TBD
 - **Commit:** `feat(web): add dedicated pipeline walkthrough page`
 
