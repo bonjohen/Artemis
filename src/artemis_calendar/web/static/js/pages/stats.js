@@ -98,7 +98,8 @@ export async function render(el) {
     const detail = Object.entries(stats.reliability)
       .map(([mode, alpha]) => `${mode}: ${alpha?.toFixed(4) ?? '—'}`)
       .join('<br>');
-    addCard(grid, 'Inter-Rater Reliability', 'Krippendorff\'s Alpha', detail);
+    addCard(grid, 'Inter-Rater Reliability', 'Krippendorff\'s Alpha', detail,
+      'Measures how consistently different voters agree on image rankings. Low alpha (< 0.3) is expected here — synthetic voters have deliberately diverse preferences, so disagreement is by design, not a data quality problem.');
   }
 
   // Vote counts
@@ -127,7 +128,8 @@ export async function render(el) {
         ? `Voter segments: ${b.voter_segment_count}`
         : null,
     ].filter(Boolean).join('<br>');
-    addCard(grid, 'Bias Detection', 'Results', detail);
+    addCard(grid, 'Bias Detection', 'Results', detail,
+      'Position bias tests whether images shown earlier get more votes. Cluster bias checks if some visual groups are over- or under-selected. Score-Truth correlation validates that computed scores track the planted ground truth. High p-values (> 0.05) mean no significant bias detected — that\'s the good outcome.');
   }
 
   // Score distribution
@@ -147,6 +149,7 @@ export async function render(el) {
     card.innerHTML = `
       <h3>Score Distribution</h3>
       <div style="display:flex;flex-direction:column;gap:2px">${bars}</div>
+      <div class="stat-interpret">Most images cluster near the mean — a right-skewed tail means a small number of images score substantially higher than the rest. Calendar optimization selects from this tail while enforcing visual diversity, so the shape matters: a flat distribution would make selection harder, while a peaked distribution with a clear tail makes the top candidates more defensible.</div>
     `;
     grid.appendChild(card);
   }
@@ -160,13 +163,14 @@ function addSectionHeader(grid, title) {
   grid.appendChild(header);
 }
 
-function addCard(grid, title, value, detail) {
+function addCard(grid, title, value, detail, interpret) {
   const card = document.createElement('div');
   card.className = 'stat-card';
   card.innerHTML = `
     <h3>${title}</h3>
     <div class="stat-value">${value}</div>
     ${detail ? `<div class="stat-detail">${detail}</div>` : ''}
+    ${interpret ? `<div class="stat-interpret">${interpret}</div>` : ''}
   `;
   grid.appendChild(card);
 }

@@ -475,6 +475,16 @@
   margin-top: var(--s-2);
 }
 
+.stat-interpret {
+  font-size: var(--fs-small);
+  color: var(--atlas-muted);
+  line-height: var(--lh-body);
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--atlas-rule-soft);
+  font-style: italic;
+}
+
 /* ---------- SELECTION BUILDER ---------- */
 .sb-layout {
   display: grid;

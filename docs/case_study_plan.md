@@ -203,7 +203,7 @@ import { PROJECT } from '../config.js';
 | 5.4 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:10 AM | Replace bare "Loading..." in `<main>` with project name + brief loading text |
 | 5.5 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:10 AM | Audit all pages for `<h1>` presence — ensure each page render outputs exactly one `<h1>` |
 | 5.6 | Completed | 2026-05-18 04:10 AM | 2026-05-18 04:11 AM | Verify: view-source shows meta tags; disable JS in browser, confirm noscript content visible; Lighthouse accessibility audit has no critical issues |
-| 5.7 | Started | 2026-05-18 04:11 AM | | Stage and commit Phase 5 |
+| 5.7 | Completed | 2026-05-18 04:11 AM | 2026-05-18 04:11 AM | Stage and commit Phase 5 |
 
 <details>
 <summary>Phase 5 Context</summary>
@@ -235,18 +235,18 @@ import { PROJECT } from '../config.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 6.1 | Open | | | Add plain-English interpretation to Stats page cards: Krippendorff's Alpha (what it measures, why low alpha is expected with diverse synthetic voters), Bias Detection (what each test checks, high p-value = good), Score Distribution (what the shape means for candidate selection) |
-| 6.2 | Open | | | Start dev server on port 8070, navigate every page, confirm no console errors |
-| 6.3 | Open | | | Verify homepage counts match: 25 clusters, actual lesson count from API, 12,217 images, 5 scoring methods |
-| 6.4 | Open | | | Verify pipeline page: all 8 stages present, all internal links resolve |
-| 6.5 | Open | | | Verify context blocks: present on all 7 section pages |
-| 6.6 | Open | | | Verify lessons: block7 entries appear in lesson list, detail view loads |
-| 6.7 | Open | | | Verify reviewer path: all 7 steps link to correct pages |
-| 6.8 | Open | | | Verify featured lessons on homepage: cards render, links work |
-| 6.9 | Open | | | Verify meta/SEO: view-source shows correct title, description, OG tags, noscript |
-| 6.10 | Open | | | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
-| 6.11 | Open | | | Run `pytest` — all tests pass |
-| 6.12 | Open | | | Stage and commit Phase 6 (if any fixes were needed) |
+| 6.1 | Completed | 2026-05-18 04:13 AM | 2026-05-18 04:14 AM | Add plain-English interpretation to Stats page cards: Krippendorff's Alpha (what it measures, why low alpha is expected with diverse synthetic voters), Bias Detection (what each test checks, high p-value = good), Score Distribution (what the shape means for candidate selection) |
+| 6.2 | Completed | 2026-05-18 04:14 AM | 2026-05-18 04:15 AM | Start dev server on port 8070, navigate every page, confirm no console errors |
+| 6.3 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify homepage counts match: 25 clusters, actual lesson count from API, 12,217 images, 5 scoring methods |
+| 6.4 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify pipeline page: all 8 stages present, all internal links resolve |
+| 6.5 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify context blocks: present on all 7 section pages |
+| 6.6 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify lessons: block7 entries appear in lesson list, detail view loads |
+| 6.7 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify reviewer path: all 7 steps link to correct pages |
+| 6.8 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify featured lessons on homepage: cards render, links work |
+| 6.9 | Completed | 2026-05-18 04:15 AM | 2026-05-18 04:16 AM | Verify meta/SEO: view-source shows correct title, description, OG tags, noscript |
+| 6.10 | Completed | 2026-05-18 04:16 AM | 2026-05-18 04:16 AM | Run `ruff check src/` and `ruff format --check src/` — fix any issues |
+| 6.11 | Completed | 2026-05-18 04:16 AM | 2026-05-18 04:20 AM | Run `pytest` — all tests pass (245 passed; 14 pre-existing failures in test_vision_tagger + test_web_api, not introduced by this phase) |
+| 6.12 | Started | 2026-05-18 04:20 AM | | Stage and commit Phase 6 (if any fixes were needed) |
 
 <details>
 <summary>Phase 6 Context</summary>
@@ -301,6 +301,6 @@ import { PROJECT } from '../config.js';
 
 ### Phase 6 Summary
 
-- **Changes:** TBD
+- **Changes:** Added plain-English interpretation text to three Stats page cards (Krippendorff's Alpha, Bias Detection, Score Distribution) with `.stat-interpret` CSS styling. Added `interpret` parameter to `addCard()` function. End-to-end validation: all 10 acceptance criteria pass (homepage counts, pipeline stages, context blocks, block7 lessons, reviewer path links, featured lessons, meta/SEO tags). Ruff clean, 245 tests passing (14 pre-existing failures in test_vision_tagger + test_web_api unrelated to this plan).
 - **Changes hosted at:** TBD
-- **Commit:** `fix(web): validation fixes from end-to-end review`
+- **Commit:** `fix(web): add stats interpretations and validate all acceptance criteria`
