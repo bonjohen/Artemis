@@ -2,7 +2,7 @@
  * Home / landing page — hero with top imagery, stats, and section entry points.
  */
 
-import { PROJECT } from '../config.js';
+import { PROJECT, FEATURED_LESSONS } from '../config.js';
 
 const THUMB = '/thumbs/';
 
@@ -79,6 +79,15 @@ export async function render(el) {
         </div>
       </section>
 
+      <!-- The Problem -->
+      <section class="home-problem">
+        <h2 class="section-title">The Problem</h2>
+        <div class="problem-text">
+          <p>Selecting 13 images for a calendar sounds simple — just pick the top-ranked photos. But top-N ranking produces visually redundant sets: similar compositions, repeated color palettes, no month variety. The real problem is <strong>collection optimization</strong>: choosing images that work <em>together</em>, balancing voter preference against visual diversity, mission coverage, and month suitability.</p>
+          <p>This project treats calendar selection as a multi-objective optimization problem — not a popularity contest. Every stage of the pipeline exists to transform 12,217 raw mission photographs into a balanced, defensible 13-image collection.</p>
+        </div>
+      </section>
+
       <!-- Pipeline overview -->
       <section class="home-pipeline">
         <h2 class="section-title">The Pipeline</h2>
@@ -150,12 +159,82 @@ export async function render(el) {
         </div>
       </section>
 
+      <!-- Reviewer Path -->
+      <section class="home-reviewer">
+        <h2 class="section-title">Review This Project in 5 Minutes</h2>
+        <p class="section-desc">A guided path through the key sections — from problem statement to lessons learned.</p>
+        <ol class="reviewer-path">
+          <li class="path-step">
+            <span class="path-num">1</span>
+            <div><strong>Read the project summary</strong> <span class="path-note">— you're here. Understand why top-N fails and what collection optimization means.</span></div>
+          </li>
+          <li class="path-step">
+            <span class="path-num">2</span>
+            <div><a href="#/pipeline"><strong>Open Pipeline</strong></a> <span class="path-note">— trace data from raw download through eight stages to validated calendar.</span></div>
+          </li>
+          <li class="path-step">
+            <span class="path-num">3</span>
+            <div><a href="#/clusters"><strong>Explore Clusters</strong></a> <span class="path-note">— see how CLIP embeddings group 12,217 images into 25 visual themes.</span></div>
+          </li>
+          <li class="path-step">
+            <span class="path-num">4</span>
+            <div><a href="#/stats"><strong>Check Stats</strong></a> <span class="path-note">— review scoring distributions, reliability metrics, and bias detection.</span></div>
+          </li>
+          <li class="path-step">
+            <span class="path-num">5</span>
+            <div><a href="#/blend"><strong>Try Vote Simulator</strong></a> <span class="path-note">— watch how shifting voter preferences change the calendar outcome.</span></div>
+          </li>
+          <li class="path-step">
+            <span class="path-num">6</span>
+            <div><a href="#/selection"><strong>Review Selection</strong></a> <span class="path-note">— see human-in-the-loop calendar assembly with live scoring.</span></div>
+          </li>
+          <li class="path-step">
+            <span class="path-num">7</span>
+            <div><a href="#/lessons"><strong>Read Lessons</strong></a> <span class="path-note">— ${lessonCount}+ engineering lessons captured as reusable knowledge artifacts.</span></div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Learning Thread -->
+      <section class="home-learning">
+        <h2 class="section-title">Learning Thread</h2>
+        <p class="section-desc">Each stage of the pipeline produced reusable engineering lessons — patterns, mistakes, and design decisions worth extracting. Here are six highlights, one per category.</p>
+        <div class="featured-lessons-grid" id="featured-lessons"></div>
+        <div style="text-align:center;margin-top:var(--s-5)">
+          <a href="#/lessons" class="hero-btn secondary" style="color:var(--atlas-ink);border-color:var(--atlas-rule-soft)">All ${lessonCount} lessons &rarr;</a>
+        </div>
+      </section>
+
       <footer class="home-footer">
         <p>Artemis II Calendar Image Selection &middot; A data science case study by <a href="https://github.com/bonjohen" target="_blank">John Boen</a></p>
         <p style="margin-top:var(--s-2)">Imagery courtesy NASA Johnson Space Center &middot; <a href="https://eol.jsc.nasa.gov" target="_blank">eol.jsc.nasa.gov</a></p>
       </footer>
     </div>
   `;
+
+  // Populate featured lessons
+  const lessonsGrid = el.querySelector('#featured-lessons');
+  try {
+    const allLessons = await fetch('/api/lessons').then(r => r.json());
+    const lessonMap = {};
+    for (const l of allLessons) lessonMap[l.file] = l;
+    for (const fl of FEATURED_LESSONS) {
+      const lesson = lessonMap[fl.file];
+      if (!lesson) continue;
+      const cat = lesson.category || 'eng';
+      const card = document.createElement('a');
+      card.href = `#/lessons/${fl.block}/${fl.file}`;
+      card.className = 'featured-lesson-card';
+      card.innerHTML = `
+        <span class="featured-lesson-cat cat-${cat}">${cat}</span>
+        <h4 class="featured-lesson-title">${lesson.title}</h4>
+        <p class="featured-lesson-highlight">${fl.highlight}</p>
+      `;
+      lessonsGrid.appendChild(card);
+    }
+  } catch (e) {
+    lessonsGrid.textContent = 'Could not load featured lessons.';
+  }
 
   // Populate showcase grid with top 10 images
   const grid = el.querySelector('#showcase-grid');

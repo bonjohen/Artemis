@@ -1560,6 +1560,127 @@
   margin: 0;
 }
 
+/* --- Problem --- */
+.home-problem {
+  padding: var(--s-8) var(--s-7);
+  text-align: center;
+}
+.problem-text {
+  max-width: 58ch;
+  margin: 0 auto;
+  text-align: left;
+}
+.problem-text p {
+  line-height: var(--lh-body);
+  color: var(--atlas-ink-2);
+  margin: 0 0 var(--s-4);
+}
+.problem-text p:last-child { margin-bottom: 0; }
+.problem-text strong { color: var(--atlas-ink); }
+.problem-text em { font-style: italic; }
+
+/* --- Reviewer Path --- */
+.home-reviewer {
+  padding: var(--s-8) var(--s-7);
+  text-align: center;
+}
+.reviewer-path {
+  list-style: none;
+  padding: 0;
+  max-width: 54ch;
+  margin: 0 auto;
+  text-align: left;
+  counter-reset: none;
+}
+.path-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--atlas-rule-soft);
+}
+.path-step:last-child { border-bottom: none; }
+.path-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--atlas-ink);
+  color: var(--atlas-paper);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.path-step strong { color: var(--atlas-ink); }
+.path-step a { color: var(--atlas-accent); text-decoration: none; }
+.path-step a:hover { text-decoration: underline; }
+.path-note {
+  color: var(--atlas-ink-2);
+  font-size: var(--fs-small);
+}
+
+/* --- Learning Thread --- */
+.home-learning {
+  padding: var(--s-8) var(--s-7);
+  background: var(--atlas-paper-2);
+  text-align: center;
+}
+.featured-lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--s-4);
+  text-align: left;
+}
+.featured-lesson-card {
+  padding: var(--s-5);
+  background: var(--atlas-paper);
+  border: 1px solid var(--atlas-rule-soft);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-base) var(--ease);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.featured-lesson-card:hover {
+  border-color: color-mix(in oklab, var(--atlas-ink) 20%, transparent);
+  transform: translateY(-2px);
+}
+.featured-lesson-cat {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  align-self: flex-start;
+}
+.cat-eng    { background: #1a2a3a; color: #6eb5e7; }
+.cat-stats  { background: #2a1a3a; color: #b56ee7; }
+.cat-arch   { background: #1a3a2a; color: #6ee7a0; }
+.cat-data   { background: #3a2a1a; color: #e7b56e; }
+.cat-process{ background: #2a2a2a; color: var(--atlas-muted); }
+.cat-ml     { background: #3a1a2a; color: #e76eb5; }
+.featured-lesson-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  line-height: var(--lh-snug);
+}
+.featured-lesson-highlight {
+  font-size: var(--fs-small);
+  color: var(--atlas-ink-2);
+  line-height: var(--lh-body);
+  margin: 0;
+}
+
 /* --- Footer --- */
 .home-footer {
   padding: var(--s-7);
@@ -1587,6 +1708,9 @@
   .home-showcase,
   .home-sections,
   .home-methods,
+  .home-problem,
+  .home-reviewer,
+  .home-learning,
   .home-footer { padding-left: var(--s-4); padding-right: var(--s-4); }
   .pipeline-steps { gap: var(--s-1); }
   .pipe-step { padding: var(--s-1) var(--s-3); font-size: 11px; }
@@ -1602,6 +1726,7 @@
   .hero-actions { flex-direction: column; }
   .hero-btn { text-align: center; }
   .methods-grid { grid-template-columns: 1fr; }
+  .featured-lessons-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- BLEND SIMULATOR ---------- */

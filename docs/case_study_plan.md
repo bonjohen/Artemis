@@ -125,7 +125,7 @@ import { PROJECT } from '../config.js';
 | 3.3 | Completed | 2026-05-18 03:57 AM | 2026-05-18 03:58 AM | Add "Pipeline" nav link to `web/static/index.html` between Home and Images |
 | 3.4 | Completed | 2026-05-18 03:58 AM | 2026-05-18 03:59 AM | Add `.pipeline-page`, `.stage-card`, `.stage-detail` styles to `app.css` |
 | 3.5 | Completed | 2026-05-18 03:59 AM | 2026-05-18 04:00 AM | Verify: navigate to `#/pipeline`, all 8 stages render, links to app sections work, nav highlights correctly |
-| 3.6 | Started | 2026-05-18 04:00 AM | | Stage and commit Phase 3 |
+| 3.6 | Completed | 2026-05-18 04:00 AM | 2026-05-18 04:01 AM | Stage and commit Phase 3 |
 
 <details>
 <summary>Phase 3 Context</summary>
@@ -160,12 +160,12 @@ import { PROJECT } from '../config.js';
 
 | PhaseNo | Status | Started (PST) | Completed (PST) | Description |
 |---------|--------|---------------|------------------|-------------|
-| 4.1 | Open | | | Add "The Problem" section to `home.js` between stats bar and pipeline — 3-4 sentences on why top-N fails and what collection optimization means |
-| 4.2 | Open | | | Add "Learning Thread" section to `home.js` after methods section — intro paragraph + 6-8 featured lesson cards (from config.js) with title, category badge, one-line highlight |
-| 4.3 | Open | | | Add "Review This Project in 5 Minutes" panel to `home.js` after sections grid — 7 numbered steps with one-sentence rationale each |
-| 4.4 | Open | | | Add CSS for `.home-problem`, `.home-learning`, `.featured-lesson-card`, `.reviewer-path`, `.path-step` to `app.css` |
-| 4.5 | Open | | | Verify: homepage has Problem → Pipeline → Showcase → Explore → Methods → Learning Thread → Reviewer Path → Footer flow. All links resolve. |
-| 4.6 | Open | | | Stage and commit Phase 4 |
+| 4.1 | Completed | 2026-05-18 04:00 AM | 2026-05-18 04:01 AM | Add "The Problem" section to `home.js` between stats bar and pipeline — 3-4 sentences on why top-N fails and what collection optimization means |
+| 4.2 | Completed | 2026-05-18 04:01 AM | 2026-05-18 04:02 AM | Add "Learning Thread" section to `home.js` after methods section — intro paragraph + 6-8 featured lesson cards (from config.js) with title, category badge, one-line highlight |
+| 4.3 | Completed | 2026-05-18 04:02 AM | 2026-05-18 04:02 AM | Add "Review This Project in 5 Minutes" panel to `home.js` after sections grid — 7 numbered steps with one-sentence rationale each |
+| 4.4 | Completed | 2026-05-18 04:02 AM | 2026-05-18 04:03 AM | Add CSS for `.home-problem`, `.home-learning`, `.featured-lesson-card`, `.reviewer-path`, `.path-step` to `app.css` |
+| 4.5 | Completed | 2026-05-18 04:03 AM | 2026-05-18 04:04 AM | Verify: homepage has Problem → Pipeline → Showcase → Explore → Methods → Learning Thread → Reviewer Path → Footer flow. All links resolve. |
+| 4.6 | Started | 2026-05-18 04:04 AM | | Stage and commit Phase 4 |
 
 <details>
 <summary>Phase 4 Context</summary>
@@ -289,7 +289,7 @@ import { PROJECT } from '../config.js';
 
 ### Phase 4 Summary
 
-- **Changes:** TBD
+- **Changes:** Added three new homepage sections to `pages/home.js`: "The Problem" (collection optimization framing between stats bar and pipeline), "Review This Project in 5 Minutes" (7-step guided reviewer path with numbered steps and links), and "Learning Thread" (6 featured lesson cards from `config.js` with category badges and highlights). Added CSS for `.home-problem`, `.home-reviewer`, `.reviewer-path`, `.path-step`, `.home-learning`, `.featured-lesson-card`, and category badge colors to `app.css`. Imported `FEATURED_LESSONS` from config. Added responsive padding rules for new sections.
 - **Changes hosted at:** TBD
 - **Commit:** `feat(web): add problem statement, learning thread, and reviewer path to homepage`
 
