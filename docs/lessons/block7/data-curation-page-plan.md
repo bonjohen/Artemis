@@ -129,7 +129,7 @@ from artemis_calendar.web.db import get_db
 **PDR sections:** Design doc §§ "Page layout", "Design decisions"
 
 **Context block text:**
-"How near-duplicate detection and dark-frame filtering reduce 12,217 mission photos to a pool of visually distinct candidates before scoring and optimization."
+"How near-duplicate detection and dark-frame filtering reduce 12,217 mission photos to a pool of visually distinct candidates before scoring and optimization. (Data has been trimed to create a compact demo website.)"
 
 **Why Curate prose (from design doc):**
 "Selecting 13 images for a calendar sounds simple — just pick the top-ranked photos. But the raw collection contains thousands of functionally identical frames: consecutive shots from the same camera angle, near-black images of empty space, and sequences that differ by only a few pixels. Without curation, identical frames inflate preference scores, bias cluster assignments, and waste the optimizer's budget. A calendar optimizer that sees 6,810 copies of the same dark frame will overweight that 'image' — producing a calendar dominated by redundant selections."

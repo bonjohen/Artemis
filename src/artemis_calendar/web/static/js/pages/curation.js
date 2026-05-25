@@ -22,7 +22,7 @@ export async function render(el) {
   const darkCount = darkStats?.dark_count || 0;
 
   el.innerHTML = `
-    ${renderContextBlock('Why this page matters', 'How near-duplicate detection and dark-frame filtering reduce 12,217 mission photos to a pool of visually distinct candidates before scoring and optimization.')}
+    ${renderContextBlock('Why this page matters', 'How near-duplicate detection and dark-frame filtering reduce 12,217 mission photos to a pool of visually distinct candidates before scoring and optimization. (Data has been trimed to create a compact demo website.)')}
     <div class="page-header"><h1>Data Curation</h1></div>
 
     <!-- Stats bar -->
